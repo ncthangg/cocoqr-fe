@@ -1,0 +1,101 @@
+name: Release MyWallet BE
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.vars.outputs.VERSION }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: vars
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build image
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKER_USERNAME }}/mywallet-fe:${{ steps.vars.outputs.VERSION }} \
+            .
+
+      - name: Push image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/mywallet-fe:${{ steps.vars.outputs.VERSION }}
+
+  deploy-staging:
+    if: contains(github.ref_name, '-rc')
+    needs: build
+    runs-on: ubuntu-latest
+    environment: STAGING
+
+    steps:
+      - name: Deploy to Staging via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            docker pull ${{ secrets.DOCKER_USERNAME }}/mywallet-fe:${{ needs.build.outputs.version }}
+            cd /opt/mywallet-fe-staging
+            export IMAGE_TAG=${{ needs.build.outputs.version }}
+            docker compose up -d mywallet-fe-staging
+            docker image prune -f
+
+  deploy-production:
+    if: "!contains(github.ref_name, '-rc')"
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: PRODUCTION
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if RC exists
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          BASE_VERSION=${VERSION%%-*}
+
+          echo "Checking RC for $BASE_VERSION"
+
+          RC_TAGS=$(git tag -l "${BASE_VERSION}-rc*")
+
+          if [ -z "$RC_TAGS" ]; then
+            echo "❌ No RC tag found for ${BASE_VERSION}"
+            exit 1
+          fi
+
+           echo "Found RC tags:"
+           echo "$RC_TAGS"
+           echo "✅ RC exists. Continue deploying."
+
+      - name: Deploy to Production via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            docker pull ${{ secrets.DOCKER_USERNAME }}/mywallet-fe:${{ needs.build.outputs.version }}
+            cd /opt/mywallet-fe-production
+            export IMAGE_TAG=${{ needs.build.outputs.version }}
+            docker compose up -d mywallet-fe-production
+            docker image prune -f
