@@ -36,8 +36,8 @@ jobs:
 
           docker build \
            --build-arg VITE_MODE=$MODE \
-           --build-arg VITE_STAGING_API_URL=${{ secrets.STAGING_API_URL }} \
-           --build-arg VITE_PRODUCTION_API_URL=${{ secrets.PRODUCTION_API_URL }} \
+           --build-arg VITE_STAGING_API_URL=${{ vars.VITE_STAGING_API_URL }} \
+           --build-arg VITE_PRODUCTION_API_URL=${{ vars.VITE_PRODUCTION_API_URL }} \
            -t ${{ secrets.DOCKER_USERNAME }}/mywallet-fe:${{ steps.vars.outputs.VERSION }} \
            .
 
