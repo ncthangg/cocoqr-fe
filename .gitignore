@@ -1,0 +1,73 @@
+# =========================
+# Node
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Build output
+# =========================
+dist/
+build/
+.next/
+out/
+coverage/
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.local
+.env.*.local
+
+# allow example env
+!.env.example
+
+# =========================
+# Logs
+# =========================
+logs
+*.log
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Temporary
+# =========================
+tmp/
+temp/
+
+# =========================
+# Docker
+# =========================
+.dockerignore
+
+# =========================
+# Misc
+# =========================
+*.swp
+*.swo
+
+# =========================
+# DOCKER
+# =========================
+node_modules
+dist
+.env
+.env.*
+.vscode
+.idea
+.DS_Store
