@@ -1,4 +1,4 @@
-name: Release MyWallet BE
+name: Release MyWallet FE
 
 on:
   push:
