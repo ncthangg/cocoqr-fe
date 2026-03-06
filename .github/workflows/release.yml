@@ -29,8 +29,9 @@ jobs:
       - name: Build image
         run: |
           docker build \
-            -t ${{ secrets.DOCKER_USERNAME }}/mywallet-fe:${{ steps.vars.outputs.VERSION }} \
-            .
+            --build-arg VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }} \
+           -t ${{ secrets.DOCKER_USERNAME }}/mywallet-fe:${{ steps.vars.outputs.VERSION }} \
+           .
 
       - name: Push image
         run: |
