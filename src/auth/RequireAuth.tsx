@@ -1,12 +1,22 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { useAuthContext } from "./AuthContext";
-import { RouteConstant } from "../constants/route.constant";
+import { useUnauthorized } from "./UnauthorizedContext";
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
-    const { isAuthenticated, isLoading } = useAuthContext();
-    const location = useLocation();
-    if (isLoading) return <div>Loading...</div>;
-    if (!isAuthenticated) return <Navigate to={RouteConstant.HOME} state={{ from: location }} replace />;
+    // console.log('RequireAuth');
+    const { isAuthenticated, isLoading, isIntentionalLogout } = useAuthContext();
+    const { showSessionExpired } = useUnauthorized();
+
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            if (!isIntentionalLogout) {
+                showSessionExpired();
+            }
+        }
+    }, [isLoading, isAuthenticated, showSessionExpired, isIntentionalLogout]);
+
+    if (isLoading || !isAuthenticated) return null;
+
     return <>{children}</>;
 };
 export default RequireAuth;

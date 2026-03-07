@@ -12,6 +12,7 @@ interface AuthContextType {
     // logout: () => void;
     isAuthenticated: boolean;
     isLoading: boolean;
+    isIntentionalLogout: boolean;
     logout: () => void;
 }
 
@@ -27,8 +28,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     const isLoading = false;
+    const isIntentionalLogout = React.useRef(false);
 
     const logout = () => {
+        isIntentionalLogout.current = true;
         dispatch(clearCredentials());
         removeCookie("accessToken");
         removeCookie("refreshToken");
@@ -36,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return (
         <AuthContext.Provider
-            value={{ user, token, roles, isAuthenticated, isLoading, logout }}
+            value={{ user, token, roles, isAuthenticated, isLoading, logout, isIntentionalLogout: isIntentionalLogout.current }}
         >
             {children}
         </AuthContext.Provider>

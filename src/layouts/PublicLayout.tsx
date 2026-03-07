@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from "../store/redux.hooks";
 import { useAuth } from "../auth/useAuth";
 import { clearCredentials, openAuthModal } from "../store/slices/auth.slice";
 import { toast } from "react-toastify";
-import { Footer } from "../pages/public/ui/footer";
+import { Footer } from "../pages/public/components/footer";
 import { authApi } from "../services/auth-api.service";
 
 const PublicLayout: React.FC = () => {
@@ -62,8 +62,8 @@ const PublicLayout: React.FC = () => {
     };
 
     const handleLogout = async () => {
-        dispatch(clearCredentials());
         await authApi.signOut();
+        dispatch(clearCredentials());
         setProfileMenuOpen(false);
     };
     //#endregion

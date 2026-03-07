@@ -5,4 +5,35 @@ export const ApiConstant = {
         SIGN_OUT: "/auths/signout",
         ME: "/auths/me",
     },
+    ACCOUNT: {
+        GET_ALL: "/accounts",
+        GET_BY_ID: (id: string) => `/accounts/${id}`,
+        POST: "/accounts",
+        PUT: (id: string) => `/accounts/${id}`,
+        DELETE: (id: string) => `/accounts/${id}`,
+    },
+    BANKINFO: {
+        GET_ALL: "/bankinfos",
+        GET_BY_ID: (id: string) => `/bankinfos/${id}`,
+        POST: "/bankinfos",
+        PUT: (id: string) => `/bankinfos/${id}`,
+        DELETE: (id: string) => `/bankinfos/${id}`,
+    },
+    ROLE: {
+        GET_ALL: "/roles",
+        GET_BY_ID: (id: string) => `/roles/${id}`,
+        POST: "/roles",
+        PUT: (id: string) => `/roles/${id}`,
+        DELETE: (id: string) => `/roles/${id}`,
+    },
+    USER_ROLE: {
+        GET_ALL: "/userroles",
+        GET_ROLES_BY_USER_ID: (userId: string) => `/userroles/${userId}/roles`,
+        ADD_USER_TO_ROLE: "/userroles",
+        REMOVE_USER_FROM_ROLE: "/userroles",
+    },
+    QR: {
+        CREATE: "/qrs",
+    },
+
 };

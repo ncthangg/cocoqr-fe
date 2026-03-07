@@ -1,10 +1,13 @@
 import Button from "../../../components/UICustoms/Button"
 import { ArrowRight } from "lucide-react"
 import qrHero from "../../../assets/qr-hero.jpg"
+import { openAuthModal } from "../../../store/slices/auth.slice"
+import { useAppDispatch } from "../../../store/redux.hooks"
 
 export function HeroSection() {
+    const dispatch = useAppDispatch()
     return (
-        <section id="hero" className="w-full h-full min-h-[500px] snap-start snap-always flex items-center justify-center overflow-hidden bg-background">
+        <section id="hero" className="w-full min-h-[calc(100vh-73px)] snap-start snap-always py-12 lg:py-0 flex items-center justify-center overflow-hidden bg-background">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--color-accent),transparent_70%)]" />
             <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-12 px-6 lg:flex-row lg:gap-16">
                 <div className="flex flex-1 flex-col items-center text-center lg:items-start lg:text-left">
@@ -19,9 +22,16 @@ export function HeroSection() {
                         Chỉ cần vài bước đơn giản, bạn có thể tạo mã QR thanh toán cho mọi ngân hàng tại Việt Nam. Nhận tiền dễ dàng, mọi lúc mọi nơi.
                     </p>
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                        <Button size="large" className="text-base w-full sm:w-auto">
+                        <Button
+                            size="large"
+                            className="text-base w-full sm:w-auto"
+                            onClick={() => {
+                                dispatch(openAuthModal())
+                            }}
+                        >
                             Tạo QR ngay
                             <ArrowRight className="h-4 w-4" />
+
                         </Button>
                         <Button size="large" className="text-base w-full sm:w-auto border border-border" bgColor="bg-transparent" textColor="text-foreground" hoverColor="hover:bg-surface">
                             Tìm hiểu thêm

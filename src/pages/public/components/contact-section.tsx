@@ -6,7 +6,7 @@ import Button from "../../../components/UICustoms/Button"
 
 export function ContactSection() {
     return (
-        <section id="contact" className="w-full h-full min-h-[500px] snap-start snap-always flex flex-col justify-center bg-background">
+        <section id="contact" className="w-full min-h-[calc(100vh-73px)] snap-start snap-always py-16 flex flex-col justify-center bg-background">
             <div className="mx-auto max-w-6xl px-6">
                 <div className="mx-auto mb-14 max-w-2xl text-center">
                     <span className="mb-3 inline-block text-sm font-semibold tracking-wide text-primary">
@@ -30,10 +30,10 @@ export function ContactSection() {
                                 <div>
                                     <p className="text-sm font-medium text-muted-foreground">Email</p>
                                     <a
-                                        href="mailto:support@qrpay.vn"
+                                        href="mailto:ncthang2206.work@gmail.com"
                                         className="font-semibold text-foreground transition-colors hover:text-primary"
                                     >
-                                        support@qrpay.vn
+                                        ncthang2206.work@gmail.com
                                     </a>
                                 </div>
                             </CardContent>
@@ -47,10 +47,10 @@ export function ContactSection() {
                                 <div>
                                     <p className="text-sm font-medium text-muted-foreground">Hotline</p>
                                     <a
-                                        href="tel:19001234"
+                                        href="tel:0335991255"
                                         className="font-semibold text-foreground transition-colors hover:text-primary"
                                     >
-                                        1900 1234
+                                        0335 991 255
                                     </a>
                                 </div>
                             </CardContent>

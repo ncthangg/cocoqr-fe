@@ -30,7 +30,7 @@ const features = [
 
 export function FeaturesSection() {
     return (
-        <section id="features" className="w-full h-full min-h-[500px] snap-start snap-always flex flex-col justify-center bg-card">
+        <section id="features" className="w-full min-h-[calc(100vh-73px)] snap-start snap-always py-16 flex flex-col justify-center bg-card">
             <div className="mx-auto max-w-6xl px-6">
                 <div className="mx-auto mb-14 max-w-2xl text-center">
                     <span className="mb-3 inline-block text-sm font-semibold tracking-wide text-primary">

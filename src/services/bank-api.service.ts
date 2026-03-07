@@ -1,0 +1,40 @@
+import { ApiConstant } from "../constants/api.constant";
+import type { PagingVM, BankRes } from "../models/entity.model";
+import { axiosPrivate, axiosPublic } from "../api/axios.instance";
+import type { PostBankInfoReq, PutBankInfoReq } from "../models/entity.request.model";
+
+export const bankApi = {
+    getAll: async (pageNumber: number, pageSize: number, isActive: boolean | null, searchValue: string | null): Promise<PagingVM<BankRes>> => {
+        const response = await axiosPublic.get(ApiConstant.BANKINFO.GET_ALL,
+            {
+                params: {
+                    pageNumber: pageNumber,
+                    pageSize: pageSize,
+                    isActive: isActive,
+                    searchValue: searchValue,
+                }
+            }
+        );
+        return response.data.data;
+    },
+    getById: async (id: string): Promise<BankRes> => {
+        const response = await axiosPrivate.get(ApiConstant.BANKINFO.GET_BY_ID(id));
+        return response.data;
+    },
+    post: async (req: PostBankInfoReq | FormData): Promise<string> => {
+        const response = await axiosPrivate.post(ApiConstant.BANKINFO.POST, req, {
+            headers: req instanceof FormData ? { "Content-Type": "multipart/form-data" } : undefined
+        });
+        return response.data;
+    },
+    put: async (id: string, req: PutBankInfoReq | FormData): Promise<string> => {
+        const response = await axiosPrivate.put(ApiConstant.BANKINFO.PUT(id), req, {
+            headers: req instanceof FormData ? { "Content-Type": "multipart/form-data" } : undefined
+        });
+        return response.data;
+    },
+    delete: async (id: string): Promise<string> => {
+        const response = await axiosPrivate.delete(ApiConstant.BANKINFO.DELETE(id));
+        return response.data;
+    },
+};

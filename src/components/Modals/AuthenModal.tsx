@@ -143,7 +143,6 @@ const AuthenModal: React.FC = () => {
         // 3. Đăng ký listener cho postMessage
         listenerCleanupRef.current = registerGoogleAuthListener(backendOrigin, handleMessage);
 
-        console.log("authUrl", authUrl);
         // 4. Mở popup OAuth
         const popup = openGooglePopup(authUrl);
         if (!popup) {

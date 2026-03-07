@@ -19,6 +19,7 @@ switch (import.meta.env.MODE) {
 
 const EnvConfig = {
     API_BASE_URL: baseUrl + "/api",
+    BASE_URL: baseUrl,
 };
 
 export default EnvConfig;
