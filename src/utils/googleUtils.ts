@@ -95,9 +95,9 @@ const transformRoleRes = (roles: any[]): RoleRes[] => {
   if (!roles || !Array.isArray(roles)) return [];
 
   return roles.map(role => ({
-    roleId: role.id ?? role.Id,
-    roleName: role.name ?? role.Name,
-    roleNameUpperCase: role.nameUpperCase ?? role.NameUpperCase
+    id: role.id ?? role.Id,
+    name: role.name ?? role.Name,
+    nameUpperCase: role.nameUpperCase ?? role.NameUpperCase
   }));
 };
 

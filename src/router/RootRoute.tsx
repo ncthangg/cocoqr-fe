@@ -7,6 +7,8 @@ import { RoleConstant } from "../constants/role.constant";
 const RootRoute = () => {
     const { isAuthenticated, roles, isLoading } = useAuthContext();
 
+    console.log(isAuthenticated, roles);
+
     if (isLoading) {
         return (
             <div className="flex h-screen items-center justify-center bg-background">
@@ -20,11 +22,11 @@ const RootRoute = () => {
     }
 
     // Role-based redirect for root
-    if (roles.some(r => r.roleName === RoleConstant.ADMIN)) {
+    if (roles.some(r => r.name === RoleConstant.ADMIN)) {
         return <Navigate to={RouteConstant.ADMIN} replace />;
     }
 
-    if (roles.some(r => r.roleName === RoleConstant.USER)) {
+    if (roles.some(r => r.name === RoleConstant.USER)) {
         return <Navigate to={RouteConstant.USER} replace />;
     }
 
