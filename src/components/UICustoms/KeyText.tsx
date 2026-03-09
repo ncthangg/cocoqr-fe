@@ -147,10 +147,7 @@ export default function KeyText({
                         type="button"
                         onClick={handleViewClick}
                         icon={showKey ? <EyeOff size={18} /> : <Eye size={18} />}
-                        className="p-1.5 rounded hover:bg-surface-subtle min-w-0 h-auto w-auto border-0 shadow-none !gap-0"
-                        bgColor="bg-transparent"
-                        textColor="text-text-subtle"
-                        hoverColor="hover:text-text-secondary hover:bg-surface-subtle"
+                        className="btn-primary"
                         size="small"
                         aria-label={showKey ? "Ẩn key" : "Hiện key"}
                         disabled={disabled}
@@ -161,10 +158,7 @@ export default function KeyText({
                         type="button"
                         onClick={onCopy}
                         icon={<Copy size={18} />}
-                        className="p-1.5 rounded hover:bg-surface-subtle min-w-0 h-auto w-auto border-0 shadow-none !gap-0"
-                        bgColor="bg-transparent"
-                        textColor="text-text-subtle"
-                        hoverColor="hover:text-text-secondary hover:bg-surface-subtle"
+                        className="btn-primary"
                         size="small"
                         aria-label="Copy key"
                         disabled={disabled}

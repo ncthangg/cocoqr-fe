@@ -28,9 +28,9 @@ export default function Button({
     size = "medium",
     width,
     height,
-    bgColor = "bg-blue-500",
-    textColor = "text-white",
-    hoverColor = "hover:bg-blue-600",
+    bgColor,
+    textColor,
+    hoverColor,
     icon,
     className,
     disabled = false,
@@ -55,14 +55,14 @@ export default function Button({
             onClick={handleClick}
             disabled={disabled || loading}
             className={clsx(
-                "flex items-center justify-center gap-2 transition-all duration-200 rounded-md",
+                "btn",
                 sizeClasses[size],
                 bgColor && bgColor,
                 textColor && textColor,
                 hoverColor && hoverColor,
                 width,
                 height,
-                className, // className sẽ override các styles ở trên nếu cần
+                className,
                 (disabled || loading) && "opacity-60 cursor-not-allowed"
             )}
             {...rest}
