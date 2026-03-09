@@ -9,14 +9,14 @@ const RequireRole = ({ roleName, children }: { roleName: string; children: React
     const { showNoPermission } = useUnauthorized();
 
     const hasRole = roles?.some(
-        (r) => r.roleName?.toLowerCase() === roleName.toLowerCase()
+        (r) => r.name?.toLowerCase() === roleName.toLowerCase()
     );
 
     useEffect(() => {
         if (isLoading || !isAuthenticated) return;
 
         if (!hasRole) {
-            const isAdmin = roles?.some(r => r.roleName?.toLowerCase() === "admin");
+            const isAdmin = roles?.some(r => r.name?.toLowerCase() === "admin");
             const redirectPath = isAdmin ? RouteConstant.ADMIN : RouteConstant.USER;
             showNoPermission(redirectPath);
         }
