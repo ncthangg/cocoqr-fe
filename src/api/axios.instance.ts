@@ -10,6 +10,20 @@ const axiosPublic = axios.create({
     },
 });
 
+axiosPublic.interceptors.response.use(
+    (response) => {
+        return response.data;
+    },
+    async (error) => {
+        const prevRequest = error?.config;
+        if (error?.response?.status === 401 && !prevRequest?.sent) {
+            prevRequest.sent = true;
+            // Handle token refresh logic here if needed
+        }
+        return Promise.reject(error);
+    }
+);
+
 const axiosPrivate = axios.create({
     baseURL: EnvConfig.API_BASE_URL,
     withCredentials: true,
