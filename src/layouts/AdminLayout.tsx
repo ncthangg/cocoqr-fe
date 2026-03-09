@@ -59,7 +59,7 @@ const AdminLayout: React.FC = () => {
     };
 
     return (
-        <div className="admin-layout min-h-screen flex flex-col">
+        <div className="h-screen flex flex-col overflow-hidden bg-background">
             <div className="shrink-0 z-50">
                 <header className="p-4 border-b border-border bg-[#343a40] text-white flex justify-between items-center">
                     <div className="flex items-center gap-8 lg:gap-12">
@@ -67,20 +67,20 @@ const AdminLayout: React.FC = () => {
                             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
                                 <QrCode className="h-5 w-5 text-primary-foreground" />
                             </div>
-                            <span className="text-xl font-bold text-foreground">Dashboard</span>
+                            <span className="text-xl font-bold text-white">Dashboard</span>
                         </Link>
 
                         <nav className="hidden items-center gap-6 md:flex">
-                            <Link to={RouteConstant.ADMIN_BANKS} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                            <Link to={RouteConstant.ADMIN_BANKS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
                                 Bank
                             </Link>
-                            <Link to={RouteConstant.ADMIN_USERS} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                            <Link to={RouteConstant.ADMIN_USERS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
                                 User
                             </Link>
-                            <Link to={RouteConstant.ADMIN_ROLES} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                            <Link to={RouteConstant.ADMIN_ROLES} className="text-sm font-bold text-white transition-colors hover:text-foreground">
                                 Role
                             </Link>
-                            <Link to={RouteConstant.ADMIN_HISTORY} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                            <Link to={RouteConstant.ADMIN_HISTORY} className="text-sm font-bold text-white transition-colors hover:text-foreground">
                                 History
                             </Link>
                         </nav>
@@ -128,7 +128,7 @@ const AdminLayout: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={handleViewProfile}
-                                        className="flex w-full items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
+                                        className="flex w-full gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                                     >
                                         <UserIcon className="w-4 h-4" />
                                         Thông tin tài khoản
@@ -147,7 +147,7 @@ const AdminLayout: React.FC = () => {
                     </div>
                 </header>
             </div>
-            <main className="p-8 flex-1">
+            <main className="p-8 flex-1 overflow-y-auto flex flex-col">
                 <Outlet />
             </main>
             <footer className="p-4 border-t border-border text-center bg-[#343a40] text-white">
