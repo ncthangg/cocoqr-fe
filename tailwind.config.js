@@ -8,8 +8,26 @@ export default {
         extend: {
             colors: {
                 bg: "var(--color-bg)",
-                text: "var(--color-text)",
+                surface: "var(--color-surface)",
+                border: "var(--color-border)",
+
+                foreground: "var(--color-text-primary)",
+                "foreground-muted": "var(--color-text-secondary)",
+
                 primary: "var(--color-primary)",
+
+                success: "var(--color-success)",
+                warning: "var(--color-warning)",
+                danger: "var(--color-danger)",
+
+                "btn-primary-bg": "var(--color-btn-primary-bg)",
+                "btn-primary-text": "var(--color-btn-primary-text)",
+
+                "btn-secondary-bg": "var(--color-btn-secondary-bg)",
+                "btn-secondary-text": "var(--color-btn-secondary-text)",
+
+                "btn-outline-border": "var(--color-btn-outline-border)",
+                "btn-outline-text": "var(--color-btn-outline-text)",
             },
             borderRadius: {
                 DEFAULT: "8px",
@@ -19,10 +37,10 @@ export default {
                 secondary: ["Roboto", "sans-serif"],
             },
             fontSize: {
-                sm: "12px",
-                base: "14px",
-                lg: "16px",
-                xl: "20px",
+                sm: ["12px", "18px"],
+                base: ["14px", "22px"],
+                lg: ["16px", "24px"],
+                xl: ["20px", "28px"],
             },
             spacing: {
                 sm: "8px",
