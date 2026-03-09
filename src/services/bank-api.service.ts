@@ -4,18 +4,24 @@ import { axiosPrivate, axiosPublic } from "../api/axios.instance";
 import type { PostBankInfoReq, PutBankInfoReq } from "../models/entity.request.model";
 
 export const bankApi = {
-    getAll: async (pageNumber: number, pageSize: number, isActive: boolean | null, searchValue: string | null): Promise<PagingVM<BankRes>> => {
+    getAll: async (pageNumber: number, pageSize: number,
+        sortField: string | null,
+        sortDirection: "asc" | "desc" | null,
+        isActive: boolean | null,
+        searchValue: string | null): Promise<PagingVM<BankRes>> => {
         const response = await axiosPublic.get(ApiConstant.BANKINFO.GET_ALL,
             {
                 params: {
                     pageNumber: pageNumber,
                     pageSize: pageSize,
+                    sortField: sortField,
+                    sortDirection: sortDirection,
                     isActive: isActive,
                     searchValue: searchValue,
                 }
             }
         );
-        return response.data.data;
+        return response.data;
     },
     getById: async (id: string): Promise<BankRes> => {
         const response = await axiosPrivate.get(ApiConstant.BANKINFO.GET_BY_ID(id));
