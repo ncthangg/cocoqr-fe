@@ -13,11 +13,11 @@ export interface BaseRes {
     updatedBy?: string;
     deletedBy?: string;
 
-    createdAt: string;
+    createdAt?: string;
     updatedAt?: string;
     deletedAt?: string;
 
-    status: boolean;
+    status?: boolean;
 }
 
 ///===================================================
@@ -34,10 +34,15 @@ export interface UserRes {
     fullName: string;
     email: string;
     pictureUrl?: string;
-    salt: string;
-    encryptedUserKeyWithUMK?: string;
-    isNewUser?: boolean;
     roles?: RoleRes[];
+}
+
+export interface GetUserBaseRes extends BaseRes {
+    userId: string;
+    fullName: string;
+    email: string;
+    pictureUrl?: string;
+    getRolesRes?: RoleRes[];
 }
 
 export interface TokenRes {
@@ -45,10 +50,9 @@ export interface TokenRes {
     refreshToken?: string;
 }
 
-export interface RoleRes {
-    roleId?: string;
-    roleName?: string;
-    roleNameUpperCase?: string;
+export interface RoleRes extends BaseRes {
+    name: string;
+    nameUpperCase: string;
 }
 
 export interface BankRes extends BaseRes {
@@ -60,3 +64,15 @@ export interface BankRes extends BaseRes {
     logoUrl?: string;
     isActive: boolean;
 }
+
+export interface AccountRes extends BaseRes {
+    userId: string;
+    accountNumber?: string;
+    accountHolder?: string;
+    bankCode: string;
+    bankName: string;
+    accountType: string;
+    balance?: number;
+    isActive: boolean;
+}
+
