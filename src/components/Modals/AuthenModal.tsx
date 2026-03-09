@@ -123,7 +123,7 @@ const AuthenModal: React.FC = () => {
                 }));
 
                 // Redirection logic
-                if (roles[0].roleName === "admin") {
+                if (roles[0].name === "admin") {
                     navigate(RouteConstant.ADMIN);
                 } else {
                     navigate(RouteConstant.USER);
@@ -201,7 +201,7 @@ const AuthenModal: React.FC = () => {
     }
     return (
         <div
-            className="modal-overlay bg-black/60 px-4 py-6"
+            className="modal-overlay px-4 py-6"
             onClick={handleClose}
         >
             <div
@@ -234,25 +234,23 @@ const AuthenModal: React.FC = () => {
 
                 <div className="flex w-full flex-col justify-center gap-6 p-10 md:w-1/2">
                     <div>
-                        <h3 className="text-2xl font-semibold text-text-primary">Tiếp tục với Google</h3>
+                        <h3 className="text-2xl font-semibold">Đăng nhập với Google</h3>
                     </div>
 
                     <Button
                         type="button"
-                        value="Login with Google"
                         icon={<GoogleIcon />}
                         onClick={handleLoginWithGoogle}
                         loading={isLoading}
                         size="large"
-                        width="w-full"
-                        bgColor="bg-surface-base"
-                        textColor="text-text-emphasis"
-                        hoverColor="hover:bg-surface-muted"
-                        className="border border-border-strong font-semibold shadow-sm"
-                    />
+                        width="w-full h-13"
+                        className="btn-outline font-semibold shadow-sm"
+                    >
+                        <span className="text-lg font-bold text-foreground">Login Google</span>
+                    </Button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

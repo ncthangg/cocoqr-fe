@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { bankApi } from "../../../services/bank-api.service";
 import type { BankRes, PagingVM } from "../../../models/entity.model";
-import { Search, Plus, Edit, Trash2 } from "lucide-react";
-import Button from "../../../components/UICustoms/Button";
+import { Edit, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import BankModal from "./components/BankModal";
 import DeleteConfirmModal from "./components/DeleteConfirmModal";
 import { resolveAvatarPreview } from "../../../utils/imageConvertUtils";
+import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
+import { DataTable } from "@/components/UICustoms/Table/data-table";
+import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 
 const BankPage: React.FC = () => {
     const [banks, setBanks] = useState<BankRes[]>([]);
@@ -25,6 +27,8 @@ const BankPage: React.FC = () => {
 
     const [searchValue, setSearchValue] = useState<string>("");
     const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+    const [sortState, setSortState] = useState<{ field: string, dir: "asc" | "desc" } | null>(null);
+    const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
 
     // Debounce search input
     useEffect(() => {
@@ -34,12 +38,16 @@ const BankPage: React.FC = () => {
         return () => clearTimeout(handler);
     }, [searchValue]);
 
-    const fetchBanks = useCallback(async (page: number, size: number, search: string) => {
+    const fetchBanks = useCallback(async (page: number, size: number, search?: string, sortField?: string, sortDir?: "asc" | "desc", isActive?: boolean) => {
         try {
             setLoading(true);
-            const res = await bankApi.getAll(page, size, false, search);
+
+            const res = await bankApi.getAll(page, size, sortField ?? null, sortDir ?? null, isActive ?? null, search ?? null);
+
             if (res) {
-                setBanks(res.list || []);
+                let list = res.list || [];
+
+                setBanks(list);
                 setPaging(res);
             }
         } catch (error) {
@@ -51,8 +59,8 @@ const BankPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch);
-    }, [fetchBanks, paging.pageNumber, paging.pageSize, debouncedSearch]);
+        fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter);
+    }, [fetchBanks, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, statusFilter]);
 
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
@@ -80,121 +88,127 @@ const BankPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col gap-6">
-            <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-6 flex-1 min-h-0">
+            <div className="flex justify-between items-center shrink-0">
                 <h1 className="text-2xl font-bold text-foreground">Bank Management</h1>
-                <Button
-                    className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-                    onClick={handleOpenCreateModal}
-                >
-                    <Plus className="w-4 h-4" /> Add Bank
-                </Button>
             </div>
 
-            <div className="bg-surface border border-border rounded-lg shadow-sm">
-                <div className="p-4 border-b border-border flex items-center justify-between">
-                    <div className="relative w-full max-w-sm">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <input
-                            type="text"
-                            placeholder="Search banks..."
-                            value={searchValue}
-                            onChange={(e) => setSearchValue(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        />
-                    </div>
+            <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
+                <div className="shrink-0 border-b border-border">
+                    <TableToolbar
+                        value={searchValue}
+                        onChange={setSearchValue}
+                        placeholder="Search banks..."
+                        handleOpenCreateModal={handleOpenCreateModal}
+                        onResetPage={() => handlePageChange(1)}
+                    />
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
-                            <tr>
-                                <th className="px-6 py-3">Logo</th>
-                                <th className="px-6 py-3">Code</th>
-                                <th className="px-6 py-3">Short Name</th>
-                                <th className="px-6 py-3">Bank Name</th>
-                                <th className="px-6 py-3">Status</th>
-                                <th className="px-6 py-3">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
-                                        Loading banks...
-                                    </td>
-                                </tr>
-                            ) : banks.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
-                                        No banks found.
-                                    </td>
-                                </tr>
-                            ) : (
-                                banks.map((bank) => (
-                                    <tr key={bank.id} className="border-b border-border hover:bg-muted/20">
-                                        <td className="px-6 py-4">
-                                            {bank.logoUrl ? (
-                                                <img src={resolveAvatarPreview(bank.logoUrl ?? null)} alt={bank.shortName} className="w-10 h-10 object-contain rounded" />
-                                            ) : (
-                                                <div className="w-10 h-10 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
-                                                    #N/A
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 font-medium">{bank.bankCode}</td>
-                                        <td className="px-6 py-4">{bank.shortName}</td>
-                                        <td className="px-6 py-4 max-w-xs truncate" title={bank.bankName}>{bank.bankName}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${bank.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                {bank.isActive ? 'Active' : 'Inactive'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <button
-                                                    onClick={() => handleOpenEditModal(bank)}
-                                                    className="text-blue-600 hover:text-blue-800 transition-colors"
-                                                    title="Edit"
-                                                >
-                                                    <Edit className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenDeleteModal(bank)}
-                                                    className="text-red-600 hover:text-red-800 transition-colors"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                <div className="min-h-0 flex-1 overflow-hidden">
+                    <DataTable
+                        loading={loading}
+                        data={banks}
+                        sortState={sortState ? { index: ["bankCode", "shortName", "bankName", "isActive"].indexOf(sortState.field) + 1, dir: sortState.dir } : null} // Rough mapping index to state config
+                        filterState={statusFilter !== undefined ? { 4: statusFilter } : {}}
+                        onSortChange={(index, dir) => {
+                            const columns = ["logo", "bankCode", "shortName", "bankName", "isActive", "actions"];
+                            const field = columns[index];
+                            if (!dir) setSortState(null);
+                            else setSortState({ field, dir });
+                        }}
+                        onFilterChange={(index, value) => {
+                            if (index === 4) setStatusFilter(value);
+                        }}
+                        onResetPage={() => handlePageChange(1)}
+                        showIndex
+                        pageNumber={paging.pageNumber}
+                        pageSize={paging.pageSize}
+                        columns={[
+                            {
+                                header: "Logo",
+                                accessor: (bank) => bank.logoUrl,
+                                cell: (bank) => bank.logoUrl ? (
+                                    <img src={resolveAvatarPreview(bank.logoUrl ?? null)} alt={bank.shortName} className="w-10 h-10 object-contain rounded" />
+                                ) : (
+                                    <div className="w-10 h-10 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                                        #N/A
+                                    </div>
+                                )
+                            },
+                            {
+                                header: "Code",
+                                accessor: (bank) => bank.bankCode,
+                                type: "string",
+                                sortable: true,
+                                filterable: false,
+                                cell: (bank) => <span className="font-medium">{bank.bankCode}</span>
+                            },
+                            {
+                                header: "Short Name",
+                                accessor: (bank) => bank.shortName,
+                                type: "string",
+                                sortable: true,
+                                filterable: false,
+                                cell: (bank) => bank.shortName
+                            },
+                            {
+                                header: "Bank Name",
+                                accessor: (bank) => bank.bankName,
+                                type: "string",
+                                sortable: true,
+                                filterable: false,
+                                cell: (bank) => <div className="max-w-xs truncate" title={bank.bankName}>{bank.bankName}</div>
+                            },
+                            {
+                                header: "Status",
+                                accessor: (bank) => bank.isActive,
+                                type: "boolean",
+                                sortable: false,
+                                filterable: true,
+                                cell: (bank) => (
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${bank.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        {bank.isActive ? 'Active' : 'Inactive'}
+                                    </span>
+                                )
+                            },
+                            {
+                                header: "Actions",
+                                accessor: (bank) => bank.id,
+                                cell: (bank) => (
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => handleOpenEditModal(bank)}
+                                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                                            title="Edit"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleOpenDeleteModal(bank)}
+                                            className="text-red-600 hover:text-red-800 transition-colors"
+                                            title="Delete"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )
+                            }
+                        ]}
+                    />
                 </div>
 
-                <div className="p-4 border-t border-border flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                        Showing <span className="font-medium">{banks.length > 0 ? (paging.pageNumber - 1) * paging.pageSize + 1 : 0}</span> to <span className="font-medium">{Math.min(paging.pageNumber * paging.pageSize, paging.totalItems)}</span> of <span className="font-medium">{paging.totalItems}</span> entries
-                    </div>
-                    <div className="flex gap-2">
-                        <Button
-                            className="px-3 py-1 bg-surface border border-border text-foreground hover:bg-muted disabled:opacity-50"
-                            onClick={() => handlePageChange(paging.pageNumber - 1)}
-                            disabled={paging.pageNumber <= 1 || loading}
-                        >
-                            Previous
-                        </Button>
-                        <Button
-                            className="px-3 py-1 bg-surface border border-border text-foreground hover:bg-muted disabled:opacity-50"
-                            onClick={() => handlePageChange(paging.pageNumber + 1)}
-                            disabled={paging.pageNumber >= paging.totalPages || loading}
-                        >
-                            Next
-                        </Button>
-                    </div>
+                <div className="shrink-0">
+                    <TablePagination
+                        pageNumber={paging.pageNumber}
+                        pageSize={paging.pageSize}
+                        totalItems={paging.totalItems}
+                        totalPages={paging.totalPages}
+                        loading={loading}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={(newSize) => {
+                            setPaging(prev => ({ ...prev, pageSize: newSize, pageNumber: 1 }));
+                        }}
+                    />
                 </div>
             </div>
 

@@ -41,21 +41,19 @@ export default function UnauthorizedModal({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                         </svg>
                     </div>
-                    <h3 className="text-2xl font-semibold text-[color:var(--color-text-primary)] mb-3">{title}</h3>
-                    <p className="text-sm text-[color:var(--color-text-secondary)] mb-6 px-2">
+                    <h3 className="text-2xl font-semibold text-foreground mb-3">{title}</h3>
+                    <p className="text-sm text-foreground mb-6 px-2">
                         {description}
                     </p>
                 </div>
                 <div className="flex justify-center w-full">
                     <Button
                         value={buttonText}
-                        bgColor="bg-red-600"
-                        textColor="text-white"
-                        hoverColor="hover:bg-red-700"
                         onClick={onAction}
                         type="button"
                         size="large"
                         width="w-full"
+                        className="btn-danger"
                     />
                 </div>
             </div>

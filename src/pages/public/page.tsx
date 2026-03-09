@@ -7,7 +7,7 @@ import { Footer } from "./components/footer";
 
 const HomePage: React.FC = () => {
     return (
-        <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
+        <div className="flex flex-col h-screen w-full overflow-hidden">
             <div className="shrink-0 z-50">
                 <Header />
             </div>
@@ -16,7 +16,7 @@ const HomePage: React.FC = () => {
                 <FeaturesSection />
                 <ContactSection />
                 <div className="w-full snap-start border-t border-border shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative">
-                    <div className="absolute top-0 w-full h-full bg-card -z-10" />
+                    <div className="absolute top-0 w-full h-full" />
                     <Footer />
                 </div>
             </main>

@@ -26,8 +26,10 @@ export const ApiConstant = {
         PUT: (id: string) => `/roles/${id}`,
         DELETE: (id: string) => `/roles/${id}`,
     },
+    USER: {
+        GET_ALL: "/users",
+    },
     USER_ROLE: {
-        GET_ALL: "/userroles",
         GET_ROLES_BY_USER_ID: (userId: string) => `/userroles/${userId}/roles`,
         ADD_USER_TO_ROLE: "/userroles",
         REMOVE_USER_FROM_ROLE: "/userroles",

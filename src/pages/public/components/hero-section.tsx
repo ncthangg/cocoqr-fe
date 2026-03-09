@@ -7,8 +7,8 @@ import { useAppDispatch } from "../../../store/redux.hooks"
 export function HeroSection() {
     const dispatch = useAppDispatch()
     return (
-        <section id="hero" className="w-full min-h-[calc(100vh-73px)] snap-start snap-always py-12 lg:py-0 flex items-center justify-center overflow-hidden bg-background">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--color-accent),transparent_70%)]" />
+        <section id="hero" className="relative w-full min-h-[calc(100vh-73px)] snap-start snap-always py-12 lg:py-0 flex items-center justify-center overflow-hidden bg-bg">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--color-surface),transparent_70%)]" />
             <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-12 px-6 lg:flex-row lg:gap-16">
                 <div className="flex flex-1 flex-col items-center text-center lg:items-start lg:text-left">
                     <span className="mb-4 inline-block rounded-full bg-primary/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-primary">
@@ -18,13 +18,13 @@ export function HeroSection() {
                         Tạo mã QR thanh toán{" "}
                         <span className="text-primary">nhanh chóng</span>
                     </h1>
-                    <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
+                    <p className="mt-5 max-w-xl text-lg leading-relaxed text-foreground-muted">
                         Chỉ cần vài bước đơn giản, bạn có thể tạo mã QR thanh toán cho mọi ngân hàng tại Việt Nam. Nhận tiền dễ dàng, mọi lúc mọi nơi.
                     </p>
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                         <Button
                             size="large"
-                            className="text-base w-full sm:w-auto"
+                            className="btn-primary text-base w-full sm:w-auto"
                             onClick={() => {
                                 dispatch(openAuthModal())
                             }}
@@ -33,7 +33,9 @@ export function HeroSection() {
                             <ArrowRight className="h-4 w-4" />
 
                         </Button>
-                        <Button size="large" className="text-base w-full sm:w-auto border border-border" bgColor="bg-transparent" textColor="text-foreground" hoverColor="hover:bg-surface">
+                        <Button size="large"
+                            className="btn-outline text-base w-full sm:w-auto"
+                        >
                             Tìm hiểu thêm
                         </Button>
                     </div>
