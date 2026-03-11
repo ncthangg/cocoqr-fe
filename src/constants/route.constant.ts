@@ -6,6 +6,7 @@ export const RouteConstant = {
     ADMIN_BANKS: "banks",
     ADMIN_USERS: "users",
     ADMIN_ROLES: "roles",
+    ADMIN_ACCOUNTS: "accounts",
     ADMIN_HISTORY: "history",
 
     CREATE_QR: "create-qr",

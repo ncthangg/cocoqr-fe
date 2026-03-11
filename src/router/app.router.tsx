@@ -15,6 +15,7 @@ import BankPage from "../pages/admin/bank/page";
 import UserPage from "../pages/admin/user/page";
 import RolePage from "../pages/admin/role/page";
 import HistoryPage from "../pages/admin/history/page";
+import AccountPage from "@/pages/admin/account/page";
 
 const RootWrapper = () => (
     <>
@@ -64,6 +65,7 @@ export const router = createBrowserRouter([
                     { path: RouteConstant.ADMIN_BANKS, element: <BankPage /> },
                     { path: RouteConstant.ADMIN_USERS, element: <UserPage /> },
                     { path: RouteConstant.ADMIN_ROLES, element: <RolePage /> },
+                    { path: RouteConstant.ADMIN_ACCOUNTS, element: <AccountPage /> },
                     { path: RouteConstant.ADMIN_HISTORY, element: <HistoryPage /> },
                 ],
             },
