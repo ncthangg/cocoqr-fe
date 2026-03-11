@@ -80,6 +80,9 @@ const AdminLayout: React.FC = () => {
                             <Link to={RouteConstant.ADMIN_ROLES} className="text-sm font-bold text-white transition-colors hover:text-foreground">
                                 Role
                             </Link>
+                            <Link to={RouteConstant.ADMIN_ACCOUNTS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                Account
+                            </Link>
                             <Link to={RouteConstant.ADMIN_HISTORY} className="text-sm font-bold text-white transition-colors hover:text-foreground">
                                 History
                             </Link>

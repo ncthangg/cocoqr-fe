@@ -59,11 +59,7 @@ const UserLayout: React.FC = () => {
     };
 
     return (
-        // <div className="user-layout min-h-screen flex flex-col">
-        //     <header className="p-4 border-b border-border bg-surface flex justify-between items-center">
-
-        //     </header >
-        <div className="user-layout min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col">
             <div className="shrink-0 z-50">
                 <header className="p-4 border-b border-border bg-surface flex justify-between items-center">
                     <div className="flex items-center gap-8 lg:gap-12">
@@ -75,10 +71,10 @@ const UserLayout: React.FC = () => {
                         </Link>
 
                         <nav className="hidden items-center gap-6 md:flex">
-                            <Link to={RouteConstant.ACCOUNTS} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                            <Link to={RouteConstant.ACCOUNTS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                 Accounts
                             </Link>
-                            <Link to={RouteConstant.QR_HISTORY} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                            <Link to={RouteConstant.QR_HISTORY} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                 QR History
                             </Link>
                         </nav>
