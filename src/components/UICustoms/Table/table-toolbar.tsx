@@ -11,6 +11,7 @@ type TableToolbarProps = {
     filterOptions?: { label: string, value: any }[] | null
     filterValue?: string | null
     onFilterChange?: ((value: string) => void) | null
+    filterPlaceholder?: string | null
 }
 
 export function TableToolbar({
@@ -21,7 +22,8 @@ export function TableToolbar({
     onResetPage,
     filterOptions,
     filterValue,
-    onFilterChange
+    onFilterChange,
+    filterPlaceholder
 }: TableToolbarProps) {
     const showSearch = value !== undefined && value !== null && !!onChange;
 
@@ -49,12 +51,20 @@ export function TableToolbar({
                 <div className="shrink-0 flex items-center gap-2">
                     <select
                         className="h-12 w-[180px] px-3 text-base rounded-md border border-input bg-surface text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
-                        value={filterValue || ""}
+                        value={filterValue ?? ""}
                         onChange={(e) => {
-                            onFilterChange(e.target.value);
+                            const val = e.target.value;
+                            if (val === "") {
+                                onFilterChange(undefined as any);
+                            } else {
+                                onFilterChange(val);
+                            }
                             if (onResetPage) onResetPage();
                         }}
                     >
+                        {filterPlaceholder && (
+                            <option value="" disabled hidden>{filterPlaceholder}</option>
+                        )}
                         <option value="">Tất cả</option>
                         {filterOptions.map((opt, i) => (
                             <option key={i} value={String(opt.value)}>
