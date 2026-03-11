@@ -4,7 +4,7 @@ import type { BankRes, PagingVM } from "../../../models/entity.model";
 import { Edit, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import BankModal from "./components/BankModal";
-import DeleteConfirmModal from "./components/DeleteConfirmModal";
+import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
 import { resolveAvatarPreview } from "../../../utils/imageConvertUtils";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
@@ -87,6 +87,22 @@ const BankPage: React.FC = () => {
         fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch);
     };
 
+    const handleDeleteBank = async () => {
+        if (!selectedBank) return;
+        try {
+            setLoading(true);
+            await bankApi.delete(selectedBank.id);
+            toast.success("Bank deleted successfully!");
+            handleModalSuccess();
+            setIsDeleteModalOpen(false);
+        } catch (error) {
+            console.error("Error deleting bank:", error);
+            toast.error("Failed to delete bank.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex justify-between items-center shrink-0">
@@ -108,7 +124,10 @@ const BankPage: React.FC = () => {
                     <DataTable
                         loading={loading}
                         data={banks}
-                        sortState={sortState ? { index: ["bankCode", "shortName", "bankName", "isActive"].indexOf(sortState.field) + 1, dir: sortState.dir } : null} // Rough mapping index to state config
+                        sortState={sortState ? {
+                            index: ["bankCode", "shortName", "bankName", "isActive"]
+                                .indexOf(sortState.field) + 1, dir: sortState.dir
+                        } : null}
                         filterState={statusFilter !== undefined ? { 4: statusFilter } : {}}
                         onSortChange={(index, dir) => {
                             const columns = ["logo", "bankCode", "shortName", "bankName", "isActive", "actions"];
@@ -128,10 +147,10 @@ const BankPage: React.FC = () => {
                                 header: "Logo",
                                 accessor: (bank) => bank.logoUrl,
                                 cell: (bank) => bank.logoUrl ? (
-                                    <img src={resolveAvatarPreview(bank.logoUrl ?? null)} alt={bank.shortName} className="w-10 h-10 object-contain rounded" />
+                                    <img src={resolveAvatarPreview(bank.logoUrl ?? null)} alt={bank.shortName} className="w-10 h-10 object-contain rounded bg-white p-1 border border-border" />
                                 ) : (
-                                    <div className="w-10 h-10 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
-                                        #N/A
+                                    <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-text-secondary">
+                                        {bank.bankCode}
                                     </div>
                                 )
                             },
@@ -222,9 +241,9 @@ const BankPage: React.FC = () => {
             <DeleteConfirmModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
-                onSuccess={handleModalSuccess}
-                bankId={selectedBank?.id || ""}
-                bankName={selectedBank?.bankName || ""}
+                onConfirm={handleDeleteBank}
+                itemName={selectedBank?.bankName || ""}
+                loading={loading}
             />
         </div>
     );

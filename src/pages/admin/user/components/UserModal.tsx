@@ -5,6 +5,7 @@ import type { GetUserBaseRes } from "../../../../models/entity.model";
 import { toast } from "react-toastify";
 import { X, Shield, Plus, Trash2 } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
+import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 
 interface UserModalProps {
     isOpen: boolean;
@@ -17,6 +18,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
     const [allRoles, setAllRoles] = useState<any[]>([]);
 
     const [loading, setLoading] = useState<boolean>(false);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [selectedRoleToAdd, setSelectedRoleToAdd] = useState<string>("");
 
@@ -80,13 +82,20 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
         }
     };
 
-    const handleRemoveRole = async (roleIdToRemove: string) => {
-        if (!user || !roleIdToRemove) return;
+    const [roleToRemove, setRoleToRemove] = useState<{ id: string, name: string } | null>(null);
+
+    const handleRemoveRoleClick = (roleId: string, roleName: string) => {
+        setRoleToRemove({ id: roleId, name: roleName });
+        setIsConfirmOpen(true);
+    };
+
+    const executeRemoveRole = async () => {
+        if (!user || !roleToRemove) return;
         try {
             setIsSubmitting(true);
 
             const currentIds = userRoles.map(r => r.id || r.roleId || r.Id).filter(Boolean);
-            const updatedRoleIds = currentIds.filter(id => id !== roleIdToRemove);
+            const updatedRoleIds = currentIds.filter(id => id !== roleToRemove.id);
 
             await userRoleApi.postPut({
                 userId: user.userId,
@@ -95,6 +104,8 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
 
             toast.success("Xóa role thành công!");
             fetchUserRoles();
+            setIsConfirmOpen(false);
+            setRoleToRemove(null);
         } catch (error) {
             console.error("Failed to remove role", error);
             toast.error("Xóa role thất bại.");
@@ -105,7 +116,6 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
 
     if (!isOpen || !user) return null;
 
-    // Filter available roles
     const availableRoles = allRoles.filter(role =>
         !userRoles.some(ur => (ur.id || ur.roleId || ur.Id) === (role.id || role.Id))
     );
@@ -113,7 +123,6 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
     return (
         <div
             className="modal-overlay bg-black/60 px-4 py-6"
-            onClick={onClose}
         >
             <div
                 className="modal-content max-w-modal-lg relative flex flex-col overflow-hidden rounded-2xl p-6 md:p-8 text-center shadow-2xl"
@@ -179,7 +188,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
                                                 <span className="font-medium text-foreground">{roleName}</span>
                                             </div>
                                             <button
-                                                onClick={() => handleRemoveRole(roleId)}
+                                                onClick={() => handleRemoveRoleClick(roleId, roleName)}
                                                 disabled={isSubmitting}
                                                 title="Xóa role này"
                                                 className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-colors disabled:opacity-50"
@@ -204,6 +213,17 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
                     </Button>
                 </div>
             </div>
+
+            <ActionConfirmModal
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={executeRemoveRole}
+                title="Xác nhận xóa Role khỏi User"
+                description={`Bạn có chắc chắn muốn xóa role ${roleToRemove?.name || ''} khỏi người dùng này?`}
+                loading={isSubmitting}
+                confirmText="Xóa"
+                confirmButtonClass="bg-red-600 text-white hover:bg-red-700 px-4 py-2 border-transparent"
+            />
         </div >
     );
 };

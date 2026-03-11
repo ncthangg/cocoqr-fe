@@ -1,3 +1,5 @@
+import type { AccountProvider } from "./enum";
+
 export interface PostRoleReq {
     name: string;
 }
@@ -33,22 +35,20 @@ export interface PutBankInfoReq {
 }
 
 export interface PostAccountReq {
+    accountNumber: string;
+    accountHolder: string;
     bankCode: string;
-    napasCode?: string;
-    swiftCode?: string;
-    bankName: string;
-    shortName: string;
-    logoUrl?: File;
-    isActive: boolean;
+    bankName?: string;
+    provider: AccountProvider;
+    isActive?: boolean;
 }
 
 export interface PutAccountReq {
+    accountNumber: string;
+    accountHolder: string;
     bankCode: string;
-    napasCode?: string;
-    swiftCode?: string;
-    bankName: string;
-    shortName: string;
-    logoUrl?: File;
-    isActive: boolean;
-    isDeleteFile?: boolean;
-}   
+    bankName?: string;
+    provider: AccountProvider;
+    isPinned?: boolean;
+    isActive?: boolean;
+}

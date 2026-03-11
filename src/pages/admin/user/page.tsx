@@ -7,7 +7,6 @@ import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import UserModal from "./components/UserModal";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 
 const UserPage: React.FC = () => {
     const [users, setUsers] = useState<GetUserBaseRes[]>([]);
@@ -112,8 +111,11 @@ const UserPage: React.FC = () => {
                     <DataTable
                         loading={loading}
                         data={users}
-                        sortState={sortState ? { index: ["fullName", "email", "createdAt", "status"].indexOf(sortState.field) + 1, dir: sortState.dir } : null} // Rough mapping index to state config
-                        filterState={statusFilter !== undefined ? { 4: statusFilter } : {}}
+                        sortState={sortState ? {
+                            index: ["fullName", "email", "createdAt", "status"].indexOf(sortState.field),
+                            dir: sortState.dir
+                        } : null}
+                        filterState={statusFilter !== undefined ? { 3: statusFilter } : {}}
                         onSortChange={(index, dir) => {
                             const columns = ["fullName", "email", "createdAt", "status", "actions"];
                             const field = columns[index];
@@ -121,7 +123,7 @@ const UserPage: React.FC = () => {
                             else setSortState({ field, dir });
                         }}
                         onFilterChange={(index, value) => {
-                            if (index === 4) setStatusFilter(value);
+                            if (index === 3) setStatusFilter(value);
                         }}
                         onResetPage={() => handlePageChange(1)}
                         showIndex

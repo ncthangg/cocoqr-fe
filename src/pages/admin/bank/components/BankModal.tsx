@@ -6,6 +6,7 @@ import { bankApi } from "../../../../services/bank-api.service";
 import type { BankRes } from "../../../../models/entity.model";
 import type { PostBankInfoReq } from "../../../../models/entity.request.model";
 import { resolveAvatarPreview } from "../../../../utils/imageConvertUtils";
+import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 
 interface BankModalProps {
     isOpen: boolean;
@@ -27,6 +28,8 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
     const [file, setFile] = useState<File | undefined>(undefined);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -52,6 +55,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                 setPreviewUrl(null);
             }
             setFile(undefined);
+            setIsConfirmOpen(false);
         }
     }, [isOpen, bank]);
 
@@ -73,14 +77,18 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!formData.bankCode || !formData.bankName || !formData.shortName) {
-            toast.error("Please fill in all required fields.");
+            toast.error("Vui lòng điền các trường bắt buộc.");
             return;
         }
 
+        setIsConfirmOpen(true);
+    };
+
+    const executeSave = async () => {
         try {
             setLoading(true);
 
@@ -99,16 +107,18 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
             if (bank) {
                 reqFormData.append('isDeleteFile', String(!file && !previewUrl));
                 await bankApi.put(bank.id, reqFormData as any);
-                toast.success("Bank updated successfully!");
+                toast.success("Cập nhật ngân hàng thành công!");
             } else {
                 await bankApi.post(reqFormData as any);
-                toast.success("Bank created successfully!");
+                toast.success("Thêm mới ngân hàng thành công!");
             }
+
+            setIsConfirmOpen(false);
             onSuccess();
             onClose();
         } catch (error) {
             console.error("Error saving bank:", error);
-            toast.error("Failed to save bank information.");
+            toast.error("Có lỗi xảy ra khi lưu ngân hàng.");
         } finally {
             setLoading(false);
         }
@@ -117,7 +127,6 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
     return (
         <div
             className="modal-overlay bg-black/60 px-4 py-6"
-            onClick={onClose}
         >
             <div
                 className="modal-content max-w-modal-lg relative flex flex-col overflow-hidden rounded-2xl p-6 md:p-8 text-center shadow-2xl"
@@ -132,7 +141,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[80vh]">
+                <form onSubmit={handleFormSubmit} className="p-6 overflow-y-auto max-h-[80vh]">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Logo Upload */}
                         <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
@@ -251,13 +260,23 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                         <Button
                             type="submit"
                             className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2"
-                            disabled={loading}
+                            disabled={loading || isConfirmOpen}
                         >
                             {loading ? "Saving..." : "Save Bank"}
                         </Button>
                     </div>
                 </form>
             </div>
+
+            <ActionConfirmModal
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={executeSave}
+                title={bank ? "Xác nhận cập nhật ngân hàng" : "Xác nhận tạo ngân hàng"}
+                description={`Bạn có chắc chắn muốn ${bank ? "cập nhật" : "tạo mới"} ngân hàng ${formData.shortName || formData.bankCode}?`}
+                loading={loading}
+                confirmText={bank ? "Cập nhật" : "Tạo mới"}
+            />
         </div>
     );
 };

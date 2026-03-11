@@ -1,3 +1,5 @@
+import type { AccountProvider } from "@/models/enum";
+
 export interface PagingVM<T> {
     list?: T[];
     pageSize: number;
@@ -71,8 +73,9 @@ export interface AccountRes extends BaseRes {
     accountHolder?: string;
     bankCode: string;
     bankName: string;
-    accountType: string;
+    provider: AccountProvider;
     balance?: number;
+    isPinned?: boolean;
     isActive: boolean;
 }
 

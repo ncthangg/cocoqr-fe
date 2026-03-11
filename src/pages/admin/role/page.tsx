@@ -4,7 +4,7 @@ import type { RoleRes } from "../../../models/entity.model";
 import { Edit, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import RoleModal from "./components/RoleModal";
-import DeleteConfirmModal from "./components/DeleteConfirmModal";
+import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 
@@ -53,6 +53,22 @@ const RolePage: React.FC = () => {
 
     const handleModalSuccess = () => {
         fetchRoles();
+    };
+
+    const handleDeleteRole = async () => {
+        if (!selectedRole) return;
+        try {
+            setLoading(true);
+            await roleApi.delete(selectedRole.id);
+            toast.success("Role deleted successfully!");
+            handleModalSuccess();
+            setIsDeleteModalOpen(false);
+        } catch (error) {
+            console.error("Error deleting role:", error);
+            toast.error("Failed to delete role.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -135,9 +151,9 @@ const RolePage: React.FC = () => {
             <DeleteConfirmModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
-                onSuccess={handleModalSuccess}
-                roleId={selectedRole?.id || ""}
-                roleName={selectedRole?.name || ""}
+                onConfirm={handleDeleteRole}
+                itemName={selectedRole?.name || ""}
+                loading={loading}
             />
         </div>
     );
