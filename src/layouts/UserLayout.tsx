@@ -59,7 +59,7 @@ const UserLayout: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="h-screen flex flex-col overflow-hidden bg-background">
             <div className="shrink-0 z-50">
                 <header className="p-4 border-b border-border bg-surface flex justify-between items-center">
                     <div className="flex items-center gap-8 lg:gap-12">
@@ -140,10 +140,10 @@ const UserLayout: React.FC = () => {
                     </div>
                 </header>
             </div>
-            <main className="p-8 flex-1">
+            <main className="p-8 flex-1 overflow-auto flex flex-col min-h-0">
                 <Outlet />
             </main>
-            <footer className="p-4 border-t border-border text-center bg-surface">
+            <footer className="shrink-0 p-4 border-t border-border text-center bg-surface">
                 <p>&copy; 2026 MyWallet - User Panel</p>
             </footer>
         </div >

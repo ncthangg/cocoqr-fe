@@ -150,10 +150,10 @@ const AdminLayout: React.FC = () => {
                     </div>
                 </header>
             </div>
-            <main className="p-8 flex-1 overflow-y-auto flex flex-col">
+            <main className="p-8 flex-1 overflow-auto flex flex-col min-h-0">
                 <Outlet />
             </main>
-            <footer className="p-4 border-t border-border text-center bg-[#343a40] text-white">
+            <footer className="shrink-0 p-4 border-t border-border text-center bg-[#343a40] text-white">
                 <p>&copy; 2026 MyWallet - Administration</p>
             </footer>
         </div>
