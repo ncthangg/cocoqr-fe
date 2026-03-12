@@ -42,6 +42,12 @@ type DataTableProps<T> = {
     showIndex?: boolean
     pageNumber?: number
     pageSize?: number
+
+    // Click handler for rows
+    onRowClick?: (row: T) => void
+    
+    // Predicate to determine if row is currently selected
+    selectedRowPredicate?: (row: T) => boolean
 }
 
 export function DataTable<T>({
@@ -55,7 +61,9 @@ export function DataTable<T>({
     onResetPage,
     showIndex = false,
     pageNumber = 1,
-    pageSize = 10
+    pageSize = 10,
+    onRowClick,
+    selectedRowPredicate
 }: DataTableProps<T>) {
 
     const handleFilterChange = (index: number, value: any) => {
@@ -76,7 +84,7 @@ export function DataTable<T>({
     }
 
     return (
-        <div className="relative h-full flex flex-col w-full [&>div]:flex-1 [&>div]:overflow-auto">
+        <div className="relative h-full flex flex-col w-full min-h-[150px] [&>div]:flex-1 [&>div]:overflow-auto">
             <Table>
                 <TableHeader className="sticky top-0 z-10 bg-surface shadow-sm outline outline-1 outline-border">
                     <TableRow className="bg-surface hover:bg-surface border-none">
@@ -139,7 +147,11 @@ export function DataTable<T>({
                         </TableRow>
                     ) : (
                         data.map((row, i) => (
-                            <TableRow key={i} className="hover:bg-surface/50 border-border transition-colors">
+                            <TableRow 
+                                key={i} 
+                                className={`hover:bg-surface/50 border-border transition-colors ${onRowClick ? 'cursor-pointer' : ''} ${selectedRowPredicate?.(row) ? 'bg-blue-50/50 outline outline-[1.5px] outline-blue-500 outline-offset-[-1px] font-medium' : ''}`}
+                                onClick={() => onRowClick?.(row)}
+                            >
                                 {showIndex && (
                                     <TableCell className="h-16 px-6 py-3 text-base text-center font-medium">
                                         {(pageNumber - 1) * pageSize + i + 1}

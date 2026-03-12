@@ -205,7 +205,7 @@ const AuthenModal: React.FC = () => {
             onClick={handleClose}
         >
             <div
-                className="modal-content max-w-modal-xl relative flex flex-col overflow-hidden rounded-2xl p-0 md:flex-row shadow-2xl"
+                className="modal-content max-w-modal-md relative flex flex-col overflow-hidden rounded-2xl p-0 md:flex-row shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
