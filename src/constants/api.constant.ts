@@ -7,6 +7,7 @@ export const ApiConstant = {
     },
     ACCOUNT: {
         GET_ALL: "/accounts",
+        GET_ALL_BY_ADMIN: "/accounts/by-admin",
         GET_BY_ID: (id: string) => `/accounts/${id}`,
         POST: "/accounts",
         PUT: (id: string) => `/accounts/${id}`,
