@@ -11,6 +11,7 @@ import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { AccountProvider } from "@/models/enum";
 import { getProviderLabel } from "@/utils/providerUtils";
+import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 
 const AccountsPage: React.FC = () => {
     const [accounts, setAccounts] = useState<AccountRes[]>([]);
@@ -26,6 +27,7 @@ const AccountsPage: React.FC = () => {
     const [searchValue, setSearchValue] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [sortState, setSortState] = useState<{ field: string, dir: "asc" | "desc" } | null>(null);
+    const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
     const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
     const [providerFilter, setProviderFilter] = useState<AccountProvider | undefined>(undefined);
 
@@ -42,18 +44,26 @@ const AccountsPage: React.FC = () => {
         return () => clearTimeout(handler);
     }, [searchValue]);
 
-    const fetchAccounts = useCallback(async (page: number, size: number, search?: string, sortField?: string, sortDir?: "asc" | "desc", isActive?: boolean, provider?: AccountProvider) => {
+    const fetchAccounts = useCallback(async (page: number, size: number,
+        sortField?: string, sortDir?: "asc" | "desc",
+        search?: string,
+        provider?: AccountProvider,
+        isActive?: boolean,
+        isDeleted?: boolean,
+        status?: boolean) => {
         try {
             setLoading(true);
-            const res = await accountApi.getAll(
+            const res = await accountApi.getAllByAdmin(
                 page,
                 size,
-                null, // userId
                 sortField ?? null,
                 sortDir ?? null,
+                null,
                 provider ?? null,
+                search ?? null,
                 isActive ?? null,
-                search ?? null
+                isDeleted ?? null,
+                status ?? null,
             );
             if (res) {
                 setAccounts(res.list || []);
@@ -68,8 +78,8 @@ const AccountsPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter, providerFilter);
-    }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, statusFilter, providerFilter]);
+        fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter, false, statusFilter);
+    }, [fetchAccounts, paging.pageNumber, paging.pageSize, sortState, debouncedSearch, providerFilter, activeFilter, statusFilter]);
 
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
@@ -93,7 +103,7 @@ const AccountsPage: React.FC = () => {
     };
 
     const handleModalSuccess = () => {
-        fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter, providerFilter);
+        fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter, false, statusFilter);
     };
 
     const handleDeleteAccount = async () => {
@@ -137,7 +147,7 @@ const AccountsPage: React.FC = () => {
                             value: String(value)
                         }))}
                         filterPlaceholder="Chọn loại tài khoản..."
-                        onFilterChange={(val) => setProviderFilter(val === undefined ? undefined : Number(val) as AccountProvider)}
+                        onFilterChange={(val) => setProviderFilter(val === undefined ? undefined : String(val) as AccountProvider)}
                     />
                 </div>
 
@@ -146,28 +156,38 @@ const AccountsPage: React.FC = () => {
                         loading={loading}
                         data={accounts}
                         sortState={sortState ? {
-                            index: ["accountHolder", "provider", "bankCode", "accountNumber", "createdAt", "isActive"]
-                                .indexOf(sortState.field), dir: sortState.dir
+                            index: ["accountHolder", "provider", "bankCode", "accountNumber", "createdAt", "isActive", "status"]
+                                .indexOf(sortState.field) + 1, dir: sortState.dir
                         } : null}
                         filterState={{
-                            ...(statusFilter !== undefined ? { 5: statusFilter } : {}),
-                            ...(providerFilter !== undefined ? { 1: providerFilter } : {})
+                            ...(providerFilter !== undefined ? { 1: providerFilter } : {}),
+                            ...(activeFilter !== undefined ? { 5: activeFilter } : {}),
+                            ...(statusFilter !== undefined ? { 6: statusFilter } : {}),
                         }}
                         onSortChange={(index, dir) => {
-                            const columns = ["accountHolder", "provider", "bankCode", "accountNumber", "createdAt", "isActive", "actions"];
+                            const columns = ["createdByName", "accountHolder", "provider", "bankCode", "accountNumber", "createdAt", "isActive", "status", "actions"];
                             const field = columns[index];
                             if (!dir) setSortState(null);
                             else setSortState({ field, dir });
                         }}
                         onFilterChange={(index, value) => {
                             if (index === 1) setProviderFilter(value as AccountProvider | undefined);
-                            if (index === 5) setStatusFilter(value as boolean | undefined);
+                            if (index === 5) setActiveFilter(value as boolean | undefined);
+                            if (index === 6) setStatusFilter(value as boolean | undefined);
                         }}
                         onResetPage={() => handlePageChange(1)}
                         showIndex
                         pageNumber={paging.pageNumber}
                         pageSize={paging.pageSize}
                         columns={[
+                            {
+                                header: "TÊN NGƯỜI TẠO",
+                                accessor: (acc) => acc.createdByName,
+                                type: "string",
+                                sortable: false,
+                                filterable: false,
+                                cell: (acc) => <span className="font-semibold uppercase">{acc.createdByName}</span>
+                            },
                             {
                                 header: "CHỦ TÀI KHOẢN",
                                 accessor: (acc) => acc.accountHolder,
@@ -195,8 +215,14 @@ const AccountsPage: React.FC = () => {
                                 sortable: true,
                                 filterable: false,
                                 cell: (acc) => (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {acc.bankCode} {acc.bankName && acc.bankName !== acc.bankCode ? `- ${acc.bankName}` : ''}
+                                    <span className="inline-flex items-center gap-2">
+                                        {acc.logoUrl ? (
+                                            <img src={resolveAvatarPreview(acc.logoUrl ?? null)} alt={acc.shortName} className="w-10 h-10 object-contain rounded bg-white p-1 border border-border" />
+                                        ) : (
+                                            <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-text-secondary">
+                                                {acc.bankCode}
+                                            </div>
+                                        )} {acc.bankName && acc.bankName !== acc.bankCode ? acc.bankName : ''}
                                     </span>
                                 )
                             },
@@ -224,7 +250,19 @@ const AccountsPage: React.FC = () => {
                                 filterable: true,
                                 cell: (acc) => (
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${acc.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                        {acc.isActive ? 'Active' : 'Inactive'}
+                                        {acc.isActive ? 'Public' : 'Private'}
+                                    </span>
+                                )
+                            },
+                            {
+                                header: "STATUS",
+                                accessor: (acc) => acc.status,
+                                type: "boolean",
+                                sortable: false,
+                                filterable: true,
+                                cell: (acc) => (
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${acc.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        {acc.status ? 'Active' : 'Inactive'}
                                     </span>
                                 )
                             },

@@ -112,7 +112,10 @@ const RolePage: React.FC = () => {
                                 header: "Status",
                                 accessor: (role) => role.status,
                                 type: "boolean",
-                                cell: (role) => <span className="text-muted-foreground">{role.status ? "Active" : "Inactive"}</span>
+                                cell: (role) =>
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${role.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        {role.status ? 'Active' : 'Inactive'}
+                                    </span>
                             },
                             {
                                 header: "Actions",

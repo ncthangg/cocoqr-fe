@@ -179,14 +179,14 @@ const BankPage: React.FC = () => {
                                 cell: (bank) => <div className="max-w-xs truncate" title={bank.bankName}>{bank.bankName}</div>
                             },
                             {
-                                header: "Status",
+                                header: "TRẠNG THÁI",
                                 accessor: (bank) => bank.isActive,
                                 type: "boolean",
                                 sortable: false,
                                 filterable: true,
                                 cell: (bank) => (
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${bank.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                        {bank.isActive ? 'Active' : 'Inactive'}
+                                        {bank.isActive ? 'Public' : 'Private'}
                                     </span>
                                 )
                             },

@@ -7,8 +7,7 @@ import type { AccountRes } from "@/models/entity.model";
 import type { PutAccountReq } from "@/models/entity.request.model";
 import { AccountProvider } from "@/models/enum";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
-import BankSelectionModal from "@/components/UICustoms/Modal/BankSelectionModal";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
+import AccountProviderSelector from "@/components/UICustoms/Form/AccountProviderSelector";
 
 interface AccountModalProps {
     isOpen: boolean;
@@ -29,7 +28,6 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
         isActive: true,
     });
     const [selectedBankLogo, setSelectedBankLogo] = useState<string | null>(null);
-    const [isBankModalOpen, setIsBankModalOpen] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -59,11 +57,10 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
     const handleSelectBank = (code: string, name: string, logoUrl?: string) => {
         setFormData(prev => ({ ...prev, bankCode: code, bankName: name }));
         if (logoUrl) {
-            setSelectedBankLogo(resolveAvatarPreview(logoUrl));
+            setSelectedBankLogo(logoUrl);
         } else {
             setSelectedBankLogo(null);
         }
-        setIsBankModalOpen(false);
     };
 
     useEffect(() => {
@@ -75,7 +72,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
             setFormData(prev => ({ ...prev, bankCode: "ZALOPAY", bankName: "Ví ZaloPay" }));
         } else {
             // Clear if switched from wallet to bank, unless we are editing an existing bank account
-            if (["MOMO", "VNPAY", "ZALOPAY"].includes(formData.bankCode)) {
+            if ([AccountProvider.MOMO, AccountProvider.VNPAY, AccountProvider.ZALOPAY].toString().includes(formData.provider.toString())) {
                 setFormData(prev => ({ ...prev, bankCode: "", bankName: "" }));
             }
         }
@@ -144,39 +141,15 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
                 </h2>
 
                 <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-text-secondary">Loại tài khoản</label>
-                        <select
-                            className="input cursor-pointer"
-                            value={formData.provider}
-                            onChange={(e) => setFormData({ ...formData, provider: Number(e.target.value) as AccountProvider })}
-                        >
-                            <option value={AccountProvider.BANK}>Ngân hàng</option>
-                            <option value={AccountProvider.MOMO}>Ví MoMo</option>
-                            <option value={AccountProvider.VNPAY}>Ví VNPay</option>
-                            <option value={AccountProvider.ZALOPAY}>Ví ZaloPay</option>
-                        </select>
-                    </div>
-
-                    {formData.provider === AccountProvider.BANK && (
-                        <div className="flex flex-col gap-2 relative">
-                            <label className="text-sm font-medium text-text-secondary">Ngân hàng</label>
-                            <div 
-                                className="input cursor-pointer flex items-center justify-between min-h-[42px]" 
-                                onClick={() => setIsBankModalOpen(true)}
-                            >
-                                <div className="flex items-center gap-2 overflow-hidden w-full">
-                                    {selectedBankLogo && (
-                                        <img src={selectedBankLogo} alt="Logo" className="w-6 h-6 object-contain flex-shrink-0" />
-                                    )}
-                                    <span className="truncate w-full text-left text-sm">
-                                        {formData.bankName ? `${formData.bankCode} - ${formData.bankName}` : <span className="text-text-subtle">Chọn ngân hàng</span>}
-                                    </span>
-                                </div>
-                                <span className="text-text-subtle text-xs pl-2">▼</span>
-                            </div>
-                        </div>
-                    )}
+                    <AccountProviderSelector
+                        provider={formData.provider}
+                        bankCode={formData.bankCode}
+                        bankName={formData.bankName || ""}
+                        bankLogo={selectedBankLogo}
+                        onProviderChange={(p) => setFormData({ ...formData, provider: p as AccountProvider })}
+                        onBankSelect={handleSelectBank}
+                        layout="vertical"
+                    />
 
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-medium text-text-secondary">Tên chủ tài khoản</label>
@@ -245,11 +218,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
                 confirmText={account ? "Cập nhật" : "Thêm mới"}
             />
 
-            <BankSelectionModal 
-                isOpen={isBankModalOpen} 
-                onClose={() => setIsBankModalOpen(false)} 
-                onSelectBank={handleSelectBank} 
-            />
+
         </div>
     );
 };

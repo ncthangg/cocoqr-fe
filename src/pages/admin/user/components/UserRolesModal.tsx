@@ -7,13 +7,13 @@ import { X, Shield, Plus, Trash2 } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 
-interface UserModalProps {
+interface UserRolesModalProps {
     isOpen: boolean;
     onClose: () => void;
     user: GetUserBaseRes | null;
 }
 
-const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
+const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }) => {
     const [userRoles, setUserRoles] = useState<any[]>([]);
     const [allRoles, setAllRoles] = useState<any[]>([]);
 
@@ -228,4 +228,4 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) => {
     );
 };
 
-export default UserModal;
+export default UserRolesModal;

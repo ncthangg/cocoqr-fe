@@ -6,7 +6,9 @@ import { toast } from "react-toastify";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
-import UserModal from "./components/UserModal";
+import UserRolesModal from "./components/UserRolesModal";
+import UserAccountsModal from "./components/UserAccountsModal";
+import { formatDate } from "@/utils/dateTimeUtils";
 
 const UserPage: React.FC = () => {
     const [users, setUsers] = useState<GetUserBaseRes[]>([]);
@@ -20,6 +22,7 @@ const UserPage: React.FC = () => {
     });
 
     const [isViewRolesModalOpen, setIsViewRolesModalOpen] = useState(false);
+    const [isViewAccountsModalOpen, setIsViewAccountsModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<GetUserBaseRes | null>(null);
 
     // Filter states
@@ -82,6 +85,11 @@ const UserPage: React.FC = () => {
     const handleOpenViewRolesModal = (user: GetUserBaseRes) => {
         setSelectedUser(user);
         setIsViewRolesModalOpen(true);
+    };
+
+    const handleOpenViewAccountsModal = (user: GetUserBaseRes) => {
+        setSelectedUser(user);
+        setIsViewAccountsModalOpen(true);
     };
 
     return (
@@ -152,7 +160,7 @@ const UserPage: React.FC = () => {
                                 type: "string",
                                 sortable: true,
                                 filterable: false,
-                                cell: (user) => <span className="font-medium">{user.createdAt}</span>
+                                cell: (user) => <span className="font-medium">{formatDate(user.createdAt)}</span>
                             },
                             {
                                 header: "Status",
@@ -171,6 +179,12 @@ const UserPage: React.FC = () => {
                                 accessor: (user) => user.userId,
                                 cell: (user) => (
                                     <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => handleOpenViewAccountsModal(user)}
+                                            className="text-primary hover:text-primary/80 transition-colors font-medium text-sm"
+                                        >
+                                            View Accounts
+                                        </button>
                                         <button
                                             onClick={() => handleOpenViewRolesModal(user)}
                                             className="text-primary hover:text-primary/80 transition-colors font-medium text-sm"
@@ -199,9 +213,15 @@ const UserPage: React.FC = () => {
                 </div>
             </div>
 
-            <UserModal
+            <UserRolesModal
                 isOpen={isViewRolesModalOpen}
                 onClose={() => setIsViewRolesModalOpen(false)}
+                user={selectedUser}
+            />
+
+            <UserAccountsModal
+                isOpen={isViewAccountsModalOpen}
+                onClose={() => setIsViewAccountsModalOpen(false)}
                 user={selectedUser}
             />
         </div>

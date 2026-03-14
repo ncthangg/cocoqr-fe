@@ -11,6 +11,7 @@ import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { useAuthContext } from "@/auth/AuthContext";
 import { AccountProvider } from "@/models/enum";
 import { getProviderLabel } from "@/utils/providerUtils";
+import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 
 const AccountsPage: React.FC = () => {
     const { user } = useAuthContext();
@@ -58,12 +59,12 @@ const AccountsPage: React.FC = () => {
             const res = await accountApi.getAll(
                 page,
                 size,
-                currentUserId,
                 sortField ?? null,
                 sortDir ?? null,
+                currentUserId,
                 provider ?? null,
-                isActive ?? null,
-                search ?? null
+                search ?? null,
+                isActive ?? null
             );
             if (res) {
                 setAccounts(res.list || []);
@@ -158,7 +159,7 @@ const AccountsPage: React.FC = () => {
                 isActive: selectedAccount.isActive,
             };
             await accountApi.put(selectedAccount.id, req);
-            toast.success(isCurrentlyPinned ? "Bỏ ghim tài khoản thành công!" : "Ghim tài khoản thành công!");
+            //toast.success(isCurrentlyPinned ? "Bỏ ghim tài khoản thành công!" : "Ghim tài khoản thành công!");
             handleModalSuccess();
             setIsPinModalOpen(false);
         } catch (error) {
@@ -195,7 +196,7 @@ const AccountsPage: React.FC = () => {
                             value: String(value)
                         }))}
                         filterPlaceholder="Chọn loại tài khoản..."
-                        onFilterChange={(val) => setProviderFilter(val === undefined ? undefined : Number(val) as AccountProvider)}
+                        onFilterChange={(val) => setProviderFilter(val === undefined ? undefined : String(val) as AccountProvider)}
                     />
                 </div>
 
@@ -253,8 +254,14 @@ const AccountsPage: React.FC = () => {
                                 sortable: true,
                                 filterable: false,
                                 cell: (acc) => (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {acc.bankCode} {acc.bankName && acc.bankName !== acc.bankCode ? `- ${acc.bankName}` : ''}
+                                    <span className="inline-flex items-center gap-2">
+                                        {acc.logoUrl ? (
+                                            <img src={resolveAvatarPreview(acc.logoUrl ?? null)} alt={acc.shortName} className="w-10 h-10 object-contain rounded bg-white p-1 border border-border" />
+                                        ) : (
+                                            <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-text-secondary">
+                                                {acc.bankCode}
+                                            </div>
+                                        )} {acc.bankName && acc.bankName !== acc.bankCode ? acc.bankName : ''}
                                     </span>
                                 )
                             },
@@ -361,7 +368,7 @@ const AccountsPage: React.FC = () => {
                 loading={loading}
                 confirmText={selectedAccount?.isPinned ? "Bỏ ghim" : "Ghim"}
             />
-        </div>
+        </div >
     );
 };
 

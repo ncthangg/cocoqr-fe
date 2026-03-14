@@ -52,6 +52,9 @@ export default {
                 'modal-md': '600px',
                 'modal-lg': '800px',
                 'modal-xl': '1000px',
+                'modal-2xl': '1200px',
+                'modal-3xl': '1400px',
+                'modal-4xl': '1600px',
             }
         },
     },

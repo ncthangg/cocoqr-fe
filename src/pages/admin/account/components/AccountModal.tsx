@@ -144,7 +144,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
                         <select
                             className="input cursor-pointer"
                             value={formData.provider}
-                            onChange={(e) => setFormData({ ...formData, provider: Number(e.target.value) as AccountProvider })}
+                            onChange={(e) => setFormData({ ...formData, provider: String(e.target.value) as AccountProvider })}
                         >
                             <option value={AccountProvider.BANK}>Ngân hàng</option>
                             <option value={AccountProvider.MOMO}>Ví MoMo</option>
