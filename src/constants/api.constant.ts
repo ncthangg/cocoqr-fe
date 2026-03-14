@@ -36,7 +36,7 @@ export const ApiConstant = {
         REMOVE_USER_FROM_ROLE: "/userroles",
     },
     QR: {
-        CREATE: "/qrs",
+        POST: "/qr",
     },
 
 };

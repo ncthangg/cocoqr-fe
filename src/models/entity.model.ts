@@ -15,6 +15,10 @@ export interface BaseRes {
     updatedBy?: string;
     deletedBy?: string;
 
+    createdByName?: string;
+    updatedByName?: string;
+    deletedByName?: string;
+
     createdAt?: string;
     updatedAt?: string;
     deletedAt?: string;
@@ -71,11 +75,42 @@ export interface AccountRes extends BaseRes {
     userId: string;
     accountNumber?: string;
     accountHolder?: string;
+
     bankCode: string;
-    bankName: string;
+    napasCode?: string;
+    swiftCode?: string;
+    bankName?: string;
+    shortName?: string;
+    logoUrl?: string;
+
     provider: AccountProvider;
     balance?: number;
     isPinned?: boolean;
     isActive: boolean;
 }
 
+export interface PostQrRes {
+    id: number;
+
+    qrData: string;
+    qrImageUrl: string;
+    transactionRef: string;
+}
+
+export interface QrRes extends BaseRes {
+    userId: string;
+    accountNumber?: string;
+    accountHolder?: string;
+
+    bankCode: string;
+    napasCode?: string;
+    swiftCode?: string;
+    bankName?: string;
+    shortName?: string;
+    logoUrl?: string;
+
+    provider: AccountProvider;
+    balance?: number;
+    isPinned?: boolean;
+    isActive: boolean;
+}

@@ -3,7 +3,7 @@ export const UserRole = {
     USER: "USER",
 } as const;
 
-export type UserRole = typeof UserRole[keyof typeof UserRole];
+export type UserRole = keyof typeof UserRole;
 ///=====================================================================
 export const PaymentStatus = {
     PENDING: "PENDING",
@@ -11,25 +11,23 @@ export const PaymentStatus = {
     FAILED: "FAILED",
 } as const;
 
-export type PaymentStatus =
-    typeof PaymentStatus[keyof typeof PaymentStatus];
+export type PaymentStatus = keyof typeof PaymentStatus;
 ///=====================================================================
 export const AccountProvider = {
-    BANK: 0,
-    MOMO: 1,
-    VNPAY: 2,
-    ZALOPAY: 3,
+    BANK: "BANK",
+    MOMO: "MOMO",
+    VNPAY: "VNPAY",
+    ZALOPAY: "ZALOPAY",
 } as const;
 
-export type AccountProvider = typeof AccountProvider[keyof typeof AccountProvider];
+export type AccountProvider = keyof typeof AccountProvider;
 ///=====================================================================
 export const QRReceiverType = {
     PERSONAL: "PERSONAL",
     GUEST: "GUEST",
 } as const;
 
-export type QRReceiverType =
-    typeof QRReceiverType[keyof typeof QRReceiverType];
+export type QRReceiverType = keyof typeof QRReceiverType;
 ///=====================================================================
 export const BankCode = {
     VIB: "VIB",
@@ -46,5 +44,4 @@ export const BankCode = {
     SHB: "SHB",
 } as const;
 
-export type BankCode =
-    typeof BankCode[keyof typeof BankCode];
+export type BankCode = keyof typeof BankCode;

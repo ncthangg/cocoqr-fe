@@ -15,40 +15,53 @@ export interface PostPutUserRoleReq {
 
 export interface PostBankInfoReq {
     bankCode: string;
-    napasCode?: string;
-    swiftCode?: string;
+    napasCode: string | null;
+    swiftCode: string | null;
     bankName: string;
     shortName: string;
-    logoUrl?: File;
+    logoUrl: File | null;
     isActive: boolean;
 }
 
 export interface PutBankInfoReq {
     bankCode: string;
-    napasCode?: string;
-    swiftCode?: string;
+    napasCode: string | null;
+    swiftCode: string | null;
     bankName: string;
     shortName: string;
-    logoUrl?: File;
+    logoUrl: File | null;
     isActive: boolean;
-    isDeleteFile?: boolean;
+    isDeleteFile: boolean | null;
 }
 
 export interface PostAccountReq {
     accountNumber: string;
     accountHolder: string;
     bankCode: string;
-    bankName?: string;
+    bankName: string | null;
     provider: AccountProvider;
-    isActive?: boolean;
+    isActive: boolean | null;
 }
 
 export interface PutAccountReq {
     accountNumber: string;
     accountHolder: string;
     bankCode: string;
-    bankName?: string;
+    bankName: string | null;
     provider: AccountProvider;
-    isPinned?: boolean;
-    isActive?: boolean;
+    isPinned: boolean | null;
+    isActive: boolean | null;
+}
+
+export interface PostQrReq {
+    accountId: string | null;
+
+    accountNumber: string;
+    bankCode: string | null;
+
+    amount: number | null;
+    description: string | null;
+
+    provider: AccountProvider;
+    isFixedAmount: boolean;
 }

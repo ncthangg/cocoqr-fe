@@ -36,7 +36,7 @@ const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
                     <select
                         className="input cursor-pointer appearance-none pr-10"
                         value={provider}
-                        onChange={(e) => onProviderChange(e.target.value === "" ? "" : Number(e.target.value) as AccountProvider)}
+                        onChange={(e) => onProviderChange(e.target.value === "" ? "" : String(e.target.value) as AccountProvider)}
                     >
                         <option value="">Chọn loại tài khoản</option>
                         <option value={AccountProvider.BANK}>Ngân hàng</option>
@@ -51,8 +51,8 @@ const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
             {provider === AccountProvider.BANK && (
                 <div className={`flex flex-col gap-2 relative`}>
                     <label className="text-sm font-medium text-text-secondary">Ngân hàng</label>
-                    <div 
-                        className="input cursor-pointer flex items-center justify-between min-h-[42px] pr-3" 
+                    <div
+                        className="input cursor-pointer flex items-center justify-between min-h-[42px] pr-3"
                         onClick={() => setIsBankModalOpen(true)}
                     >
                         <div className="flex items-center gap-2 overflow-hidden w-full">
@@ -73,16 +73,16 @@ const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
             )}
 
             {isHorizontal && provider !== AccountProvider.BANK && (
-                 <div className="invisible" aria-hidden="true" />
+                <div className="invisible" aria-hidden="true" />
             )}
 
-            <BankSelectionModal 
-                isOpen={isBankModalOpen} 
-                onClose={() => setIsBankModalOpen(false)} 
+            <BankSelectionModal
+                isOpen={isBankModalOpen}
+                onClose={() => setIsBankModalOpen(false)}
                 onSelectBank={(code, name, logo) => {
                     onBankSelect(code, name, logo);
                     setIsBankModalOpen(false);
-                }} 
+                }}
             />
         </div>
     );

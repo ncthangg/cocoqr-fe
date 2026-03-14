@@ -6,22 +6,50 @@ import type { AccountProvider } from "@/models/enum";
 
 export const accountApi = {
     getAll: async (pageNumber: number, pageSize: number,
-        userId: string | null,
         sortField: string | null, sortDirection: "asc" | "desc" | null,
+        userId: string | null,
         provider: AccountProvider | null,
-        isActive: boolean | null,
-        searchValue: string | null): Promise<PagingVM<AccountRes>> => {
+        searchValue: string | null,
+        isActive: boolean | null
+    ): Promise<PagingVM<AccountRes>> => {
         const response = await axiosPrivate.get(ApiConstant.ACCOUNT.GET_ALL,
             {
                 params: {
                     pageNumber: pageNumber,
                     pageSize: pageSize,
-                    userId: userId,
                     sortField: sortField,
                     sortDirection: sortDirection,
+                    userId: userId,
                     provider: provider,
-                    isActive: isActive,
                     searchValue: searchValue,
+                    isActive: isActive,
+                }
+            }
+        );
+        return response.data;
+    },
+    getAllByAdmin: async (pageNumber: number, pageSize: number,
+        sortField: string | null, sortDirection: "asc" | "desc" | null,
+        userId: string | null,
+        provider: AccountProvider | null,
+        searchValue: string | null,
+        isActive: boolean | null,
+        isDeleted: boolean | null,
+        status: boolean | null
+    ): Promise<PagingVM<AccountRes>> => {
+        const response = await axiosPrivate.get(ApiConstant.ACCOUNT.GET_ALL_BY_ADMIN,
+            {
+                params: {
+                    pageNumber: pageNumber,
+                    pageSize: pageSize,
+                    sortField: sortField,
+                    sortDirection: sortDirection,
+                    userId: userId,
+                    provider: provider,
+                    searchValue: searchValue,
+                    isActive: isActive,
+                    isDeleted: isDeleted,
+                    status: status,
                 }
             }
         );
