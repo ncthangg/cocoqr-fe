@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { X, Upload } from "lucide-react";
+import { X, Upload, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import Button from "../../../../components/UICustoms/Button";
 import { bankApi } from "../../../../services/bank-api.service";
@@ -28,7 +28,6 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
     const [file, setFile] = useState<File | undefined>(undefined);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
     useEffect(() => {
@@ -74,6 +73,15 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
             const selectedFile = e.target.files[0];
             setFile(selectedFile);
             setPreviewUrl(URL.createObjectURL(selectedFile));
+        }
+    };
+
+    const handleClearImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setFile(undefined);
+        setPreviewUrl(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
         }
     };
 
@@ -126,7 +134,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
 
     return (
         <div
-            className="modal-overlay bg-black/60 px-4 py-6"
+            className="modal-overlay px-4 py-6"
         >
             <div
                 className="modal-content max-w-modal-lg relative flex flex-col overflow-hidden rounded-2xl p-6 md:p-8 text-center shadow-2xl"
@@ -144,14 +152,24 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                 <form onSubmit={handleFormSubmit} className="p-6 overflow-y-auto max-h-[80vh]">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Logo Upload */}
-                        <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
+                        <div className="col-span-1 md:col-span-2 relative flex flex-col items-center justify-center p-4 border-2 border-dashed border-border rounded-lg bg-muted/20">
                             {previewUrl ? (
-                                <div className="relative group">
-                                    <img src={previewUrl} alt="Logo preview" className="w-24 h-24 object-contain rounded bg-white p-2 border border-border" />
-                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                                        <Upload className="w-6 h-6 text-white" />
+                                <>
+                                    <div className="relative group">
+                                        <img src={previewUrl} alt="Logo preview" className="w-24 h-24 object-contain rounded bg-white p-2 border border-border" />
+                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                                            <Upload className="w-6 h-6 text-white" />
+                                        </div>
                                     </div>
-                                </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleClearImage}
+                                        className="absolute top-2 right-2 p-1.5 bg-red-500/10 text-red-500 rounded-md hover:bg-red-500 hover:text-white transition-all shadow-sm border border-red-500/20"
+                                        title="Delete image"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </>
                             ) : (
                                 <div
                                     className="w-24 h-24 flex flex-col items-center justify-center bg-muted rounded border border-border cursor-pointer hover:bg-muted/80 transition-colors"
@@ -215,7 +233,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                             <input
                                 type="text"
                                 name="napasCode"
-                                value={formData.napasCode}
+                                value={formData.napasCode || ""}
                                 onChange={handleInputChange}
                                 className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                 placeholder="e.g. 970436"
@@ -227,7 +245,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                             <input
                                 type="text"
                                 name="swiftCode"
-                                value={formData.swiftCode}
+                                value={formData.swiftCode || ""}
                                 onChange={handleInputChange}
                                 className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                 placeholder="e.g. BFTV VNVX"

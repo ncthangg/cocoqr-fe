@@ -110,9 +110,6 @@ const transformUserRes = (pascalUser: any): UserRes => {
     email: pascalUser.email || pascalUser.Email,
     fullName: pascalUser.fullName || pascalUser.FullName,
     pictureUrl: pascalUser.pictureUrl || pascalUser.avatarUrl || pascalUser.PictureUrl,
-    salt: pascalUser.salt || pascalUser.Salt,
-    encryptedUserKeyWithUMK: pascalUser.encryptedUserKeyWithUMK || pascalUser.EncryptedUserKeyWithUMK,
-    isNewUser: pascalUser.isNewUser !== undefined ? pascalUser.isNewUser : pascalUser.IsNewUser
   };
 };
 

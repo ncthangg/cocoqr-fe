@@ -1,5 +1,3 @@
-import type { AccountProvider } from "@/models/enum";
-
 export interface PagingVM<T> {
     list?: T[];
     pageSize: number;
@@ -63,30 +61,45 @@ export interface RoleRes extends BaseRes {
 
 export interface BankRes extends BaseRes {
     bankCode: string;
-    napasCode?: string;
-    swiftCode?: string;
     bankName: string;
     shortName: string;
+    napasCode?: string;
+    swiftCode?: string;
     logoUrl?: string;
     isActive: boolean;
 }
 
 export interface AccountRes extends BaseRes {
     userId: string;
-    accountNumber?: string;
-    accountHolder?: string;
+    accountNumber: string | null;
+    accountHolder: string | null;
 
-    bankCode: string;
+    bankCode?: string;
+    bankName?: string;
+    bankShortName?: string;
     napasCode?: string;
     swiftCode?: string;
-    bankName?: string;
-    shortName?: string;
-    logoUrl?: string;
+    bankLogoUrl?: string;
+    bankIsActive?: boolean;
+    bankStatus?: boolean;
 
-    provider: AccountProvider;
+    providerId: string;
+    providerCode?: string;
+    providerName?: string;
+    providerLogoUrl?: string;
+    providerIsActive?: boolean;
+    providerStatus?: boolean;
+
     balance?: number;
     isPinned?: boolean;
     isActive: boolean;
+}
+
+export interface ProviderRes extends BaseRes {
+    code: string;
+    name: string;
+    isActive: boolean;
+    logoUrl?: string;
 }
 
 export interface PostQrRes {
@@ -102,14 +115,14 @@ export interface QrRes extends BaseRes {
     accountNumber?: string;
     accountHolder?: string;
 
-    bankCode: string;
+    bankCode?: string;
+    bankName?: string;
+    bankShortName?: string;
     napasCode?: string;
     swiftCode?: string;
-    bankName?: string;
-    shortName?: string;
-    logoUrl?: string;
+    bankogoUrl?: string;
 
-    provider: AccountProvider;
+    providerId: string;
     balance?: number;
     isPinned?: boolean;
     isActive: boolean;

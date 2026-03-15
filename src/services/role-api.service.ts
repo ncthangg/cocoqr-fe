@@ -8,10 +8,6 @@ export const roleApi = {
         const response = await axiosPublic.get(ApiConstant.ROLE.GET_ALL);
         return response.data;
     },
-    getById: async (id: string): Promise<RoleRes> => {
-        const response = await axiosPrivate.get(ApiConstant.ROLE.GET_BY_ID(id));
-        return response.data;
-    },
     post: async (req: PostRoleReq): Promise<string> => {
         const response = await axiosPrivate.post(ApiConstant.ROLE.POST, req);
         return response.data;

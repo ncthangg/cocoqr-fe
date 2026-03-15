@@ -23,10 +23,6 @@ export const bankApi = {
         );
         return response.data;
     },
-    getById: async (id: string): Promise<BankRes> => {
-        const response = await axiosPrivate.get(ApiConstant.BANKINFO.GET_BY_ID(id));
-        return response.data;
-    },
     post: async (req: PostBankInfoReq | FormData): Promise<string> => {
         const response = await axiosPrivate.post(ApiConstant.BANKINFO.POST, req, {
             headers: req instanceof FormData ? { "Content-Type": "multipart/form-data" } : undefined

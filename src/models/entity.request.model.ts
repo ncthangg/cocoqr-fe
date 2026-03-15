@@ -1,4 +1,4 @@
-import type { AccountProvider } from "./enum";
+
 
 export interface PostRoleReq {
     name: string;
@@ -19,7 +19,7 @@ export interface PostBankInfoReq {
     swiftCode: string | null;
     bankName: string;
     shortName: string;
-    logoUrl: File | null;
+    logoUrl?: File;
     isActive: boolean;
 }
 
@@ -29,27 +29,27 @@ export interface PutBankInfoReq {
     swiftCode: string | null;
     bankName: string;
     shortName: string;
-    logoUrl: File | null;
+    logoUrl?: File;
     isActive: boolean;
-    isDeleteFile: boolean | null;
+    isDeleteFile?: boolean;
 }
 
 export interface PostAccountReq {
     accountNumber: string;
     accountHolder: string;
-    bankCode: string;
+    bankCode: string | null;
     bankName: string | null;
-    provider: AccountProvider;
+    providerId: string;
     isActive: boolean | null;
 }
 
 export interface PutAccountReq {
     accountNumber: string;
     accountHolder: string;
-    bankCode: string;
+    bankCode: string | null;
     bankName: string | null;
-    provider: AccountProvider;
-    isPinned: boolean | null;
+    providerId: string;
+    isPinned?: boolean;
     isActive: boolean | null;
 }
 
@@ -62,6 +62,21 @@ export interface PostQrReq {
     amount: number | null;
     description: string | null;
 
-    provider: AccountProvider;
+    providerId: string;
     isFixedAmount: boolean;
+}
+
+export interface PostProviderReq {
+    code: string;
+    name: string;
+    isActive: boolean;
+    logoUrl?: File;
+}
+
+export interface PutProviderReq {
+    code: string;
+    name: string;
+    isActive: boolean;
+    logoUrl?: File;
+    isDeleteFile?: boolean;
 }

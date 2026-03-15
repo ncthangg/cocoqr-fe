@@ -15,14 +15,12 @@ export const ApiConstant = {
     },
     BANKINFO: {
         GET_ALL: "/bankinfos",
-        GET_BY_ID: (id: string) => `/bankinfos/${id}`,
         POST: "/bankinfos",
         PUT: (id: string) => `/bankinfos/${id}`,
         DELETE: (id: string) => `/bankinfos/${id}`,
     },
     ROLE: {
         GET_ALL: "/roles",
-        GET_BY_ID: (id: string) => `/roles/${id}`,
         POST: "/roles",
         PUT: (id: string) => `/roles/${id}`,
         DELETE: (id: string) => `/roles/${id}`,
@@ -38,5 +36,10 @@ export const ApiConstant = {
     QR: {
         POST: "/qr",
     },
-
+    PROVIDER: {
+        GET_ALL: "/providers",
+        POST: "/providers",
+        PUT: (id: string) => `/providers/${id}`,
+        DELETE: (id: string) => `/providers/${id}`,
+    },
 };

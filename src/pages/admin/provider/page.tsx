@@ -1,72 +1,74 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { roleApi } from "../../../services/role-api.service";
-import type { RoleRes } from "../../../models/entity.model";
+import { providerApi } from "../../../services/provider-api.service";
+import type { ProviderRes } from "../../../models/entity.model";
 import { Edit, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
-import RoleModal from "./components/RoleModal";
+import ProviderModal from "./components/ProviderModal";
 import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 
-const RolePage: React.FC = () => {
-    const [allRoles, setAllRoles] = useState<RoleRes[]>([]);
+import { resolveAvatarPreview } from "../../../utils/imageConvertUtils";
+
+const ProviderPage: React.FC = () => {
+    const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     // Modal state
-    const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+    const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [selectedRole, setSelectedRole] = useState<RoleRes | null>(null);
+    const [selectedProvider, setSelectedProvider] = useState<ProviderRes | null>(null);
 
-    const fetchRoles = useCallback(async () => {
+    const fetchProviders = useCallback(async () => {
         try {
             setLoading(true);
-            const res = await roleApi.getAll();
+            const res = await providerApi.getAll();
             if (res) {
-                setAllRoles(res || []);
+                setAllProviders(res || []);
             }
         } catch (error) {
-            console.error("Error fetching roles:", error);
-            toast.error("Failed to fetch role data.");
+            console.error("Error fetching providers:", error);
+            toast.error("Failed to fetch provider data.");
         } finally {
             setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchRoles();
-    }, [fetchRoles]);
+        fetchProviders();
+    }, [fetchProviders]);
 
     const handleOpenCreateModal = () => {
-        setSelectedRole(null);
-        setIsRoleModalOpen(true);
+        setSelectedProvider(null);
+        setIsProviderModalOpen(true);
     };
 
-    const handleOpenEditModal = (role: RoleRes) => {
-        setSelectedRole(role);
-        setIsRoleModalOpen(true);
+    const handleOpenEditModal = (provider: ProviderRes) => {
+        setSelectedProvider(provider);
+        setIsProviderModalOpen(true);
     };
 
-    const handleOpenDeleteModal = (role: RoleRes) => {
-        setSelectedRole(role);
+    const handleOpenDeleteModal = (provider: ProviderRes) => {
+        setSelectedProvider(provider);
         setIsDeleteModalOpen(true);
     };
 
     const handleModalSuccess = () => {
-        fetchRoles();
+        fetchProviders();
     };
 
-    const handleDeleteRole = async () => {
-        if (!selectedRole) return;
+    const handleDeleteProvider = async () => {
+        if (!selectedProvider) return;
         try {
             setLoading(true);
-            await roleApi.delete(selectedRole.id);
-            toast.success("Role deleted successfully!");
+            await providerApi.delete(selectedProvider.id);
+            toast.success("Provider deleted successfully!");
             handleModalSuccess();
             setIsDeleteModalOpen(false);
         } catch (error) {
-            console.error("Error deleting role:", error);
-            toast.error("Failed to delete role.");
+            console.error("Error deleting provider:", error);
+            toast.error("Failed to delete provider.");
         } finally {
             setLoading(false);
         }
@@ -75,7 +77,7 @@ const RolePage: React.FC = () => {
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex justify-between items-center shrink-0">
-                <h1 className="text-2xl font-bold text-foreground">Role Management</h1>
+                <h1 className="text-2xl font-bold text-foreground">Provider Management</h1>
             </div>
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
@@ -83,7 +85,7 @@ const RolePage: React.FC = () => {
                     <TableToolbar
                         value={null}
                         onChange={null}
-                        placeholder="Search roles..."
+                        placeholder="Search providers..."
                         handleOpenCreateModal={handleOpenCreateModal}
                     />
                 </div>
@@ -91,51 +93,62 @@ const RolePage: React.FC = () => {
                 <div className="min-h-0 flex-1 overflow-hidden">
                     <DataTable
                         loading={loading}
-                        data={allRoles}
+                        data={allProviders}
                         sortState={null}
                         onSortChange={() => { }}
                         onFilterChange={() => { }}
                         showIndex
                         columns={[
                             {
-                                header: "Role Code",
-                                accessor: (role) => role.nameUpperCase,
-                                type: "string",
-                                cell: (role) => <span className="text-muted-foreground">{role.nameUpperCase}</span>
+                                header: "Logo",
+                                accessor: (provider) => provider.logoUrl,
+                                cell: (provider) => provider.logoUrl ? (
+                                    <img src={resolveAvatarPreview(provider.logoUrl ?? null)} alt={provider.name} className="w-10 h-10 object-contain rounded bg-white p-1 border border-border" />
+                                ) : (
+                                    <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-text-secondary">
+                                        {provider.code}
+                                    </div>
+                                )
                             },
                             {
-                                header: "Role Name",
-                                accessor: (role) => role.name,
+                                header: "Provider Code",
+                                accessor: (provider) => provider.code,
                                 type: "string",
-                                cell: (role) => <span className="font-medium">{role.name}</span>
+                                cell: (provider) => <span className="text-muted-foreground">{provider.code}</span>
                             },
                             {
-                                header: "Status",
-                                accessor: (role) => role.status,
+                                header: "Provider Name",
+                                accessor: (provider) => provider.name,
+                                type: "string",
+                                cell: (provider) => <span className="font-medium">{provider.name}</span>
+                            },
+                            {
+                                header: "Trạng thái",
+                                accessor: (provider) => provider.isActive,
                                 type: "boolean",
-                                cell: (role) =>
+                                cell: (provider) =>
                                     <StatusBadge
-                                        status={role.status}
-                                        activeText="ACTIVE"
-                                        inactiveText="INACTIVE"
+                                        status={provider.isActive}
+                                        activeText="ĐANG HOẠT ĐỘNG"
+                                        inactiveText="BẢO TRÌ"
                                         activeColor="green"
                                         inactiveColor="red"
                                     />
                             },
                             {
                                 header: "Actions",
-                                accessor: (role) => role.id,
-                                cell: (role) => (
+                                accessor: (provider) => provider.id,
+                                cell: (provider) => (
                                     <div className="flex items-center gap-3">
                                         <button
-                                            onClick={() => handleOpenEditModal(role)}
+                                            onClick={() => handleOpenEditModal(provider)}
                                             className="text-blue-600 hover:text-blue-800 transition-colors"
                                             title="Edit"
                                         >
                                             <Edit className="w-4 h-4" />
                                         </button>
                                         <button
-                                            onClick={() => handleOpenDeleteModal(role)}
+                                            onClick={() => handleOpenDeleteModal(provider)}
                                             className="text-red-600 hover:text-red-800 transition-colors"
                                             title="Delete"
                                         >
@@ -149,22 +162,22 @@ const RolePage: React.FC = () => {
                 </div>
             </div>
 
-            <RoleModal
-                isOpen={isRoleModalOpen}
-                onClose={() => setIsRoleModalOpen(false)}
+            <ProviderModal
+                isOpen={isProviderModalOpen}
+                onClose={() => setIsProviderModalOpen(false)}
                 onSuccess={handleModalSuccess}
-                role={selectedRole}
+                provider={selectedProvider}
             />
 
             <DeleteConfirmModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
-                onConfirm={handleDeleteRole}
-                itemName={selectedRole?.name || ""}
+                onConfirm={handleDeleteProvider}
+                itemName={selectedProvider?.name || ""}
                 loading={loading}
             />
         </div>
     );
 };
 
-export default RolePage;
+export default ProviderPage;

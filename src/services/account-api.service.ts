@@ -2,13 +2,13 @@ import { ApiConstant } from "../constants/api.constant";
 import type { AccountRes, PagingVM } from "../models/entity.model";
 import { axiosPrivate } from "../api/axios.instance";
 import type { PostAccountReq, PutAccountReq } from "@/models/entity.request.model";
-import type { AccountProvider } from "@/models/enum";
+
 
 export const accountApi = {
     getAll: async (pageNumber: number, pageSize: number,
         sortField: string | null, sortDirection: "asc" | "desc" | null,
         userId: string | null,
-        provider: AccountProvider | null,
+        providerId: string | null,
         searchValue: string | null,
         isActive: boolean | null
     ): Promise<PagingVM<AccountRes>> => {
@@ -20,7 +20,7 @@ export const accountApi = {
                     sortField: sortField,
                     sortDirection: sortDirection,
                     userId: userId,
-                    provider: provider,
+                    providerId: providerId,
                     searchValue: searchValue,
                     isActive: isActive,
                 }
@@ -31,7 +31,7 @@ export const accountApi = {
     getAllByAdmin: async (pageNumber: number, pageSize: number,
         sortField: string | null, sortDirection: "asc" | "desc" | null,
         userId: string | null,
-        provider: AccountProvider | null,
+        providerId: string | null,
         searchValue: string | null,
         isActive: boolean | null,
         isDeleted: boolean | null,
@@ -45,7 +45,7 @@ export const accountApi = {
                     sortField: sortField,
                     sortDirection: sortDirection,
                     userId: userId,
-                    provider: provider,
+                    providerId: providerId,
                     searchValue: searchValue,
                     isActive: isActive,
                     isDeleted: isDeleted,

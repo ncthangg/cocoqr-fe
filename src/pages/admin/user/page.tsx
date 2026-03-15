@@ -9,6 +9,7 @@ import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import UserRolesModal from "./components/UserRolesModal";
 import UserAccountsModal from "./components/UserAccountsModal";
 import { formatDate } from "@/utils/dateTimeUtils";
+import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 
 const UserPage: React.FC = () => {
     const [users, setUsers] = useState<GetUserBaseRes[]>([]);
@@ -37,7 +38,7 @@ const UserPage: React.FC = () => {
     useEffect(() => {
         roleApi.getAll().then((res: any) => {
             const mappedRoles = (res || []).map((r: any) => ({
-                label: r.name,
+                label: r.nameUpperCase,
                 value: r.id
             }));
             setRoles(mappedRoles);
@@ -169,9 +170,13 @@ const UserPage: React.FC = () => {
                                 sortable: false,
                                 filterable: true,
                                 cell: (user) => (
-                                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${user.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                                        {user.status ? "Active" : "Inactive"}
-                                    </span>
+                                    <StatusBadge
+                                        status={user.status}
+                                        activeText="ACTIVE"
+                                        inactiveText="INACTIVE"
+                                        activeColor="green"
+                                        inactiveColor="red"
+                                    />
                                 )
                             },
                             {

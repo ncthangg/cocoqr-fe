@@ -8,6 +8,7 @@ export const RouteConstant = {
     ADMIN_ROLES: "roles",
     ADMIN_ACCOUNTS: "accounts",
     ADMIN_HISTORY: "history",
+    ADMIN_PROVIDERS: "providers",
 
     CREATE_QR: "create-qr",
     ACCOUNTS: "accounts",

@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { X } from "lucide-react";
 import { toast } from "react-toastify";
 import Button from "@/components/UICustoms/Button";
 import { accountApi } from "@/services/account-api.service";
-import type { AccountRes } from "@/models/entity.model";
-import type { PutAccountReq } from "@/models/entity.request.model";
-import { AccountProvider } from "@/models/enum";
+import { providerApi } from "@/services/provider-api.service";
+import type { AccountRes, ProviderRes } from "@/models/entity.model";
+import type { PostAccountReq, PutAccountReq } from "@/models/entity.request.model";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import AccountProviderSelector from "@/components/UICustoms/Form/AccountProviderSelector";
 
@@ -13,122 +13,128 @@ interface AccountModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
-    account?: AccountRes | null;
+    account: AccountRes | null;
 }
 
 const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess, account }) => {
-    const [loading, setLoading] = useState(false);
-    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [formData, setFormData] = useState<PutAccountReq>({
-        provider: AccountProvider.BANK,
+        providerId: "",
         bankCode: "",
         bankName: "",
         accountHolder: "",
         accountNumber: "",
         isActive: true,
     });
-    const [selectedBankLogo, setSelectedBankLogo] = useState<string | null>(null);
+
+    const [loading, setLoading] = useState(false);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [isBankInactive, setIsBankInactive] = useState(false);
+
+    const fetchProviders = useCallback(async () => {
+        try {
+            const res = await providerApi.getAll();
+            if (res) {
+                setAllProviders(res || []);
+            }
+        } catch (error) {
+            console.error("Error fetching providers:", error);
+        }
+    }, []);
 
     useEffect(() => {
         if (isOpen) {
-            if (account) {
-                setFormData({
-                    provider: account.provider ?? AccountProvider.BANK,
-                    bankCode: account.bankCode || "",
-                    bankName: account.bankName || "",
-                    accountHolder: account.accountHolder || "",
-                    accountNumber: account.accountNumber || "",
-                    isActive: account.isActive ?? true,
-                });
-            } else {
-                setFormData({
-                    provider: AccountProvider.BANK,
-                    bankCode: "",
-                    bankName: "",
-                    accountHolder: "",
-                    accountNumber: "",
-                    isActive: true,
-                });
-            }
-            setIsConfirmOpen(false);
+            fetchProviders();
         }
-    }, [isOpen, account]);
-
-    const handleSelectBank = (code: string, name: string, logoUrl?: string) => {
-        setFormData(prev => ({ ...prev, bankCode: code, bankName: name }));
-        if (logoUrl) {
-            setSelectedBankLogo(logoUrl);
-        } else {
-            setSelectedBankLogo(null);
-        }
-    };
+    }, [isOpen, fetchProviders]);
 
     useEffect(() => {
-        if (formData.provider === AccountProvider.MOMO) {
-            setFormData(prev => ({ ...prev, bankCode: "MOMO", bankName: "Ví MoMo" }));
-        } else if (formData.provider === AccountProvider.VNPAY) {
-            setFormData(prev => ({ ...prev, bankCode: "VNPAY", bankName: "Ví VNPay" }));
-        } else if (formData.provider === AccountProvider.ZALOPAY) {
-            setFormData(prev => ({ ...prev, bankCode: "ZALOPAY", bankName: "Ví ZaloPay" }));
+        if (account) {
+            setFormData({
+                providerId: account.providerId,
+                bankCode: account.bankCode ?? "",
+                bankName: account.bankName ?? "",
+                accountHolder: account.accountHolder ?? "",
+                accountNumber: account.accountNumber ?? "",
+                isActive: account.isActive,
+            });
+            setIsBankInactive(account.bankStatus === false);
         } else {
-            // Clear if switched from wallet to bank, unless we are editing an existing bank account
-            if ([AccountProvider.MOMO, AccountProvider.VNPAY, AccountProvider.ZALOPAY].toString().includes(formData.provider.toString())) {
-                setFormData(prev => ({ ...prev, bankCode: "", bankName: "" }));
+            setFormData({
+                providerId: "",
+                bankCode: "",
+                bankName: "",
+                accountHolder: "",
+                accountNumber: "",
+                isActive: true,
+            });
+            setIsBankInactive(false);
+        }
+    }, [account, isOpen]);
+
+    // Tự động điền cho Wallet
+    useEffect(() => {
+        if (formData.providerId) {
+            const p = allProviders.find(x => x.id === formData.providerId);
+            if (p && p.code !== "BANK") {
+                setFormData(prev => ({
+                    ...prev,
+                    bankCode: p.code,
+                    bankName: p.name,
+                }));
             }
         }
-    }, [formData.provider]);
-
-    if (!isOpen) return null;
+    }, [formData.providerId, allProviders]);
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        const selectedProvider = allProviders.find(p => p.id === formData.providerId);
+        const isBank = selectedProvider?.code === "BANK";
 
-        if (!formData.accountNumber || !formData.accountHolder || !formData.bankCode) {
-            toast.error("Vui lòng điền đầy đủ thông tin!");
+        if (!formData.providerId || !formData.bankCode || !formData.accountHolder || (!formData.accountNumber && isBank)) {
+            toast.warning("Vui lòng điền đầy đủ các trường bắt buộc.");
             return;
         }
-
         setIsConfirmOpen(true);
     };
 
     const executeSave = async () => {
         try {
             setLoading(true);
-
-            // Ensure bankName matches bankCode if empty
-            const payload = {
-                ...formData,
-                bankName: formData.bankName || formData.bankCode
-            };
-
-            if (account && account.id) {
-                await accountApi.put(account.id, payload as PutAccountReq);
+            if (account) {
+                await accountApi.put(account.id, formData);
                 toast.success("Cập nhật tài khoản thành công!");
             } else {
-                await accountApi.post(payload);
-                toast.success("Thêm tài khoản thành công!");
+                await accountApi.post(formData as PostAccountReq);
+                toast.success("Thêm tài khoản mới thành công!");
             }
-
-            setIsConfirmOpen(false);
             onSuccess();
             onClose();
         } catch (error) {
             console.error("Error saving account:", error);
-            toast.error("Có lỗi xảy ra khi lưu tài khoản.");
+            toast.error("Không thể lưu thông tin tài khoản.");
         } finally {
             setLoading(false);
+            setIsConfirmOpen(false);
         }
     };
 
+    const handleSelectBank = (code: string, name: string, _logoUrl: string | null) => {
+        setFormData(prev => ({
+            ...prev,
+            bankCode: code,
+            bankName: name
+        }));
+        setIsBankInactive(false);
+    };
+
+    if (!isOpen) return null;
+
     return (
-        <div
-            className="modal-overlay bg-black/60 px-4 py-6"
-        >
-            <div
-                className="modal-content max-w-modal-lg relative flex flex-col overflow-hidden rounded-2xl p-6 md:p-8 text-center shadow-2xl"
-                onClick={e => e.stopPropagation()}
-            >
+        <div className="modal-overlay px-4 flex items-center justify-center z-50">
+            <div className="modal-content max-w-modal-lg bg-surface-base rounded-xl shadow-2xl p-6 relative fade-in">
                 <button
+                    type="button"
                     onClick={onClose}
                     className="absolute right-4 top-4 text-text-subtle hover:text-text-primary"
                     disabled={loading}
@@ -136,73 +142,77 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
                     <X className="w-5 h-5" />
                 </button>
 
-                <h2 className="text-xl font-bold text-text-primary mb-6">
+                <h2 className="text-xl font-bold text-text-primary mb-6 text-center">
                     {account ? "Sửa tài khoản" : "Thêm tài khoản mới"}
                 </h2>
 
                 <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
                     <AccountProviderSelector
-                        provider={formData.provider}
-                        bankCode={formData.bankCode}
-                        bankName={formData.bankName || ""}
-                        bankLogo={selectedBankLogo}
-                        onProviderChange={(p) => setFormData({ ...formData, provider: p as AccountProvider })}
+                        providerId={formData.providerId}
+                        bankCode={formData.bankCode ?? ""}
+                        bankName={formData.bankName ?? ""}
+                        bankLogo={account?.bankLogoUrl}
+                        onProviderChange={(id) => setFormData(prev => ({ ...prev, providerId: id, bankCode: "", bankName: "" }))}
                         onBankSelect={handleSelectBank}
+                        isBankInactive={isBankInactive}
                         layout="vertical"
                     />
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-text-secondary">Tên chủ tài khoản</label>
+                        <label className="text-sm font-medium text-text-secondary">Chủ tài khoản (viết hoa không dấu)</label>
                         <input
                             type="text"
                             className="input uppercase"
-                            placeholder="NGUYEN VAN A"
                             value={formData.accountHolder}
-                            onChange={(e) => setFormData({ ...formData, accountHolder: e.target.value.toUpperCase() })}
+                            onChange={(e) => setFormData({ ...formData, accountHolder: e.target.value })}
+                            placeholder="NGUYEN VAN A"
                         />
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-text-secondary">Số tài khoản / Số điện thoại</label>
+                        <label className="text-sm font-medium text-text-secondary">
+                            {allProviders.find(p => p.id === formData.providerId)?.code === "BANK" ? "Số tài khoản" : "Số điện thoại ví"}
+                        </label>
                         <input
                             type="text"
                             className="input"
-                            placeholder="Nhập số tài khoản"
                             value={formData.accountNumber}
                             onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
+                            placeholder={allProviders.find(p => p.id === formData.providerId)?.code === "BANK" ? "0123456789" : "09xxxxxxxx"}
                         />
                     </div>
 
-                    <div className="flex flex-col gap-2 mt-2">
-                        <label className="flex items-center gap-2 text-sm font-medium text-text-secondary cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={formData.isActive}
-                                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                className="w-4 h-4 text-primary rounded"
-                            />
-                            Kích hoạt (Cho phép tạo QR)
+                    <div className="flex items-center gap-2 py-2">
+                        <input
+                            type="checkbox"
+                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                            checked={!!formData.isActive}
+                            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                            id="isActive"
+                        />
+                        <label htmlFor="isActive" className="text-sm font-medium text-text-secondary cursor-pointer">
+                            Đang hoạt động (Cho phép tạo QR)
                         </label>
                     </div>
 
-                    <div className="flex gap-3 justify-end mt-4">
+                    <div className="flex gap-4 mt-4">
                         <Button
-                            type="button"
                             bgColor="bg-transparent"
                             textColor="text-text-secondary"
                             hoverColor="hover:bg-surface-muted"
-                            className="border border-border"
+                            className="flex-1 border border-border"
                             onClick={onClose}
                             disabled={loading}
+                            type="button"
                         >
                             Hủy
                         </Button>
                         <Button
+                            className="flex-1 btn-primary"
                             type="submit"
-                            className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2"
-                            disabled={loading || isConfirmOpen}
+                            disabled={loading}
                         >
-                            {loading ? "Đang lưu..." : "Lưu tài khoản"}
+                            {loading ? "Đang xử lý..." : account ? "Cập nhật" : "Lưu"}
                         </Button>
                     </div>
                 </form>
@@ -212,13 +222,10 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
                 isOpen={isConfirmOpen}
                 onClose={() => setIsConfirmOpen(false)}
                 onConfirm={executeSave}
-                title={account ? "Xác nhận cập nhật tài khoản" : "Xác nhận thêm tài khoản"}
-                description={`Bạn có chắc chắn muốn ${account ? "cập nhật" : "tạo mới"} tài khoản này không?`}
+                title="Xác nhận lưu"
+                description={`Bạn có chắc chắn muốn ${account ? "cập nhật" : "thêm"} thông tin tài khoản này không?`}
                 loading={loading}
-                confirmText={account ? "Cập nhật" : "Thêm mới"}
             />
-
-
         </div>
     );
 };

@@ -13,15 +13,6 @@ export const PaymentStatus = {
 
 export type PaymentStatus = keyof typeof PaymentStatus;
 ///=====================================================================
-export const AccountProvider = {
-    BANK: "BANK",
-    MOMO: "MOMO",
-    VNPAY: "VNPAY",
-    ZALOPAY: "ZALOPAY",
-} as const;
-
-export type AccountProvider = keyof typeof AccountProvider;
-///=====================================================================
 export const QRReceiverType = {
     PERSONAL: "PERSONAL",
     GUEST: "GUEST",

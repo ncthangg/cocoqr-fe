@@ -9,6 +9,7 @@ import { resolveAvatarPreview } from "../../../utils/imageConvertUtils";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
+import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 
 const BankPage: React.FC = () => {
     const [banks, setBanks] = useState<BankRes[]>([]);
@@ -176,18 +177,22 @@ const BankPage: React.FC = () => {
                                 type: "string",
                                 sortable: true,
                                 filterable: false,
-                                cell: (bank) => <div className="max-w-xs truncate" title={bank.bankName}>{bank.bankName}</div>
+                                cell: (bank) => bank.bankName
                             },
                             {
-                                header: "TRẠNG THÁI",
+                                header: "Trạng thái",
                                 accessor: (bank) => bank.isActive,
                                 type: "boolean",
                                 sortable: false,
                                 filterable: true,
                                 cell: (bank) => (
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${bank.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                        {bank.isActive ? 'Public' : 'Private'}
-                                    </span>
+                                    <StatusBadge
+                                        status={bank.isActive}
+                                        activeText="ĐANG HOẠT ĐỘNG"
+                                        inactiveText="BẢO TRÌ"
+                                        activeColor="green"
+                                        inactiveColor="red"
+                                    />
                                 )
                             },
                             {
