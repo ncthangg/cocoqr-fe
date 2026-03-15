@@ -65,7 +65,7 @@ export function TableToolbar({
                         {filterPlaceholder && (
                             <option value="" disabled hidden>{filterPlaceholder}</option>
                         )}
-                        <option value="">Tất cả</option>
+                        <option value="">ALL</option>
                         {filterOptions.map((opt, i) => (
                             <option key={i} value={String(opt.value)}>
                                 {opt.label}

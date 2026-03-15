@@ -62,15 +62,15 @@ export function DataTableColumnHeader<T>({
                             }
                         }}
                     >
-                        <option value="all">Tất cả</option>
+                        <option value="all">ALL</option>
                         {column.filterOptions ? (
                             column.filterOptions.map((opt, i) => (
                                 <option key={i} value={String(opt.value)}>{opt.label}</option>
                             ))
                         ) : column.type === "boolean" ? (
                             <>
-                                <option value="true">True (Có/Bật)</option>
-                                <option value="false">False (Không/Tắt)</option>
+                                <option value="true">TRUE (Có/Bật)</option>
+                                <option value="false">FALSE (Không/Tắt)</option>
                             </>
                         ) : null}
                     </select>

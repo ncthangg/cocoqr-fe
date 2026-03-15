@@ -6,11 +6,12 @@ import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { bankApi } from "@/services/bank-api.service";
 import type { BankRes } from "@/models/entity.model";
 import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
+import Button from "@/components/UICustoms/Button";
 
 interface BankSelectionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSelectBank: (bankCode: string, bankName: string, logoUrl?: string) => void;
+    onSelectBank: (bankCode: string, bankName: string, logoUrl: string | null) => void;
 }
 
 const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose, onSelectBank }) => {
@@ -33,7 +34,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                 paging.pageSize,
                 sortField,
                 sortDir,
-                true, // Only active banks
+                null, // Fetch all banks to show maintenance status
                 searchValue || null
             );
 
@@ -86,7 +87,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
             >
                 <div className="p-5 border-b border-border flex justify-between items-center shrink-0">
                     <h3 className="font-bold text-xl text-text-primary">Chọn ngân hàng</h3>
-                    <button onClick={onClose} className="text-text-subtle hover:text-text-primary transition-colors">
+                    <button type="button" onClick={onClose} className="text-text-subtle hover:text-text-primary transition-colors">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
@@ -164,12 +165,14 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                                         header: "Thao tác",
                                         accessor: (bank) => bank.id,
                                         cell: (bank) => (
-                                            <button
-                                                onClick={() => onSelectBank(bank.bankCode, bank.bankName, bank.logoUrl)}
-                                                className="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary-dark transition-colors rounded-lg font-medium text-sm whitespace-nowrap"
-                                            >
-                                                Chọn
-                                            </button>
+                                            <Button
+                                                value={bank.isActive ? "Chọn" : "Chọn (Bảo trì)"}
+                                                onClick={() => onSelectBank(bank.bankCode, bank.bankName, bank.logoUrl || null)}
+                                                type="button"
+                                                size="medium"
+                                                width="w-full"
+                                                className={bank.isActive ? "btn-primary" : "bg-amber-500 hover:bg-amber-600 text-white border-none"}
+                                            />
                                         )
                                     }
                                 ]}
