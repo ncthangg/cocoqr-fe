@@ -1,23 +1,42 @@
 import React from "react";
+import { Users, QrCode, Landmark, Layers } from "lucide-react";
+import { StatCard } from "@/components/UICustoms/StatCard";
 
 const AdminDashboardPage: React.FC = () => {
     return (
-        <div>
-            <h1>Admin Dashboard</h1>
-            <p>Welcome to the administration panel. Here you can manage the application settings and users.</p>
-            <div className="grid grid-cols-3 gap-4 mt-8">
-                <div className="p-6 border border-border rounded-lg bg-surface">
-                    <h3>Total Users</h3>
-                    <p className="text-2xl font-bold">1,234</p>
+        <div className="flex flex-col gap-xl">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-foreground">Tổng quan hệ thống</h1>
+                    <p className="text-sm text-foreground-muted mt-xs">Chào mừng trở lại với bảng điều khiển quản trị.</p>
                 </div>
-                <div className="p-6 border border-border rounded-lg bg-surface">
-                    <h3>Active QRs</h3>
-                    <p className="text-2xl font-bold">567</p>
-                </div>
-                <div className="p-6 border border-border rounded-lg bg-surface">
-                    <h3>Revenue</h3>
-                    <p className="text-2xl font-bold">$12,345</p>
-                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+                <StatCard
+                    label="Người dùng"
+                    value="1,234"
+                    icon={<Users className="w-5 h-5" />}
+                    color="blue"
+                />
+                <StatCard
+                    label="QR đang hoạt động"
+                    value="567"
+                    icon={<QrCode className="w-5 h-5" />}
+                    color="green"
+                />
+                <StatCard
+                    label="Ngân hàng"
+                    value="48"
+                    icon={<Landmark className="w-5 h-5" />}
+                    color="amber"
+                />
+                <StatCard
+                    label="Provider"
+                    value="12"
+                    icon={<Layers className="w-5 h-5" />}
+                    color="purple"
+                />
             </div>
         </div>
     );

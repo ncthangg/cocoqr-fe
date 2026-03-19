@@ -105,8 +105,6 @@ const transformRoleRes = (roles: any[]): RoleRes[] => {
 const transformUserRes = (pascalUser: any): UserRes => {
   if (!pascalUser) return {} as UserRes;
   return {
-    userId: pascalUser.userId || pascalUser.UserId,
-    googleId: pascalUser.googleId || pascalUser.GoogleId,
     email: pascalUser.email || pascalUser.Email,
     fullName: pascalUser.fullName || pascalUser.FullName,
     pictureUrl: pascalUser.pictureUrl || pascalUser.avatarUrl || pascalUser.PictureUrl,

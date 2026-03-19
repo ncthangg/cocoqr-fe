@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Pin, QrCode, Eraser } from "lucide-react";
 import Button from "../../../components/UICustoms/Button";
-import { useAuth } from "@/auth/useAuth";
 import { accountApi } from "@/services/account-api.service";
-import { bankApi } from "@/services/bank-api.service";
 import { providerApi } from "@/services/provider-api.service";
 import { qrApi } from "@/services/qr-api.service";
-import type { AccountRes, PagingVM, BankRes, PostQrRes, ProviderRes } from "@/models/entity.model";
+import type { AccountRes, PagingVM, PostQrRes, ProviderRes } from "@/models/entity.model";
 import type { PostQrReq, PutAccountReq } from "@/models/entity.request.model";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
@@ -16,14 +14,15 @@ import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal"
 import QRDisplay from "@/components/UICustoms/QRDisplay";
 import AccountProviderSelector from "@/components/UICustoms/Form/AccountProviderSelector";
 import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
+import { ProviderCode } from "@/models/enum";
+import ActionButton from "@/components/UICustoms/ActionButton";
+import { cn } from "@/lib/utils";
 
 const CreatePaymentPage: React.FC = () => {
-    const { user } = useAuth();
-    const userId = user?.userId;
-
     // API State
     const [accounts, setAccounts] = useState<AccountRes[]>([]);
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
+    const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
     const [loading, setLoading] = useState(false);
     const [paging, setPaging] = useState<PagingVM<AccountRes>>({
         list: [],
@@ -34,7 +33,8 @@ const CreatePaymentPage: React.FC = () => {
     });
     const [searchValue, setSearchValue] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [banks, setBanks] = useState<BankRes[]>([]);
+    const [isProviderMaintenance, setIsProviderMaintenance] = useState(false);
+    const [isBankMaintenance, setIsBankMaintenance] = useState(false);
 
     const [isPinModalOpen, setIsPinModalOpen] = useState(false);
     const [qrResult, setQrResult] = useState<PostQrRes | null>(null);
@@ -53,9 +53,23 @@ const CreatePaymentPage: React.FC = () => {
     const [providerFilter, setProviderFilter] = useState<string | undefined>(undefined);
 
     const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
-    const [formData, setFormData] = useState<{ providerId: string, bank: string, bankName: string, bankLogo: string | null, number: string, amount: string, note: string }>({
+    const [formData, setFormData] = useState<{
+        providerId: string,
+        providerCode?: string,
+        providerName?: string,
+        napasBin: string,
+        bankCode: string,
+        bankName: string,
+        bankLogo: string | null,
+        number: string,
+        amount: string,
+        note: string
+    }>({
         providerId: "",
-        bank: "",
+        providerCode: undefined,
+        providerName: undefined,
+        napasBin: "",
+        bankCode: "",
         bankName: "",
         bankLogo: null,
         number: "",
@@ -64,45 +78,36 @@ const CreatePaymentPage: React.FC = () => {
     });
 
     const fetchProviders = useCallback(async () => {
+        if (hasFetchedProviders) return;
         try {
             const res = await providerApi.getAll();
             if (res) {
                 setAllProviders(res || []);
+                setHasFetchedProviders(true);
             }
         } catch (error) {
             console.error("Error fetching providers:", error);
         }
-    }, []);
+    }, [hasFetchedProviders]);
 
-    useEffect(() => {
-        fetchProviders();
-    }, [fetchProviders]);
 
-    useEffect(() => {
-        const fetchAllBanks = async () => {
-            const provider = allProviders.find(p => p.id === formData.providerId);
-            if (!provider || provider.code !== "BANK" || banks.length > 0) return;
-            try {
-                const res = await bankApi.getAll(1, 100, null, null, null, null);
-                setBanks(res?.list || []);
-            } catch (error) {
-                console.error("Failed to fetch banks", error);
-            }
-        };
-        fetchAllBanks();
-    }, [formData.providerId, banks.length, allProviders]);
 
-    const [rightWidth, setRightWidth] = useState<number>(600);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [leftPercent, setLeftPercent] = useState<number>(50);
 
     const startResizing = useCallback((mouseDownEvent: React.MouseEvent) => {
+        if (!containerRef.current) return;
         mouseDownEvent.preventDefault();
+        const containerWidth = containerRef.current.offsetWidth;
         const startX = mouseDownEvent.clientX;
-        const startWidth = rightWidth;
+        const startPercent = leftPercent;
 
         const onMouseMove = (mouseMoveEvent: MouseEvent) => {
-            const delta = startX - mouseMoveEvent.clientX;
-            const newWidth = Math.max(320, Math.min(800, startWidth + delta));
-            setRightWidth(newWidth);
+            const delta = mouseMoveEvent.clientX - startX;
+            const deltaPct = (delta / containerWidth) * 100;
+            // Left col: min 20%, max 70% → right col always has 30-80%
+            const newPct = Math.max(30, Math.min(70, startPercent + deltaPct));
+            setLeftPercent(newPct);
         };
 
         const onMouseUp = () => {
@@ -116,7 +121,7 @@ const CreatePaymentPage: React.FC = () => {
         document.addEventListener("mouseup", onMouseUp);
         document.body.style.cursor = 'col-resize';
         document.body.style.userSelect = 'none';
-    }, [rightWidth]);
+    }, [leftPercent]);
 
     const fetchAccounts = useCallback(async (
         page: number,
@@ -124,11 +129,10 @@ const CreatePaymentPage: React.FC = () => {
         search?: string,
         providerId?: string
     ) => {
-        if (!userId) return;
         try {
             setLoading(true);
             const res = await accountApi.getAll(
-                page, size, null, null, userId, providerId ?? null, search ?? null, true
+                page, size, null, null, providerId ?? null, search ?? null, true
             );
             if (res) {
                 setAccounts(res.list || []);
@@ -140,7 +144,7 @@ const CreatePaymentPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [userId]);
+    }, []);
 
     useEffect(() => {
         fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter);
@@ -200,9 +204,9 @@ const CreatePaymentPage: React.FC = () => {
         fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter);
     };
 
-    const isProviderInactive = allProviders.find(p => p.id === formData.providerId)?.isActive === false;
-
-    const isBankInactive = isProviderInactive && banks.find(b => b.bankCode === formData.bank)?.isActive === false;
+    const prov = allProviders.find(p => p.id === formData.providerId);
+    const isProviderInactive = prov ? !prov.isActive : (formData.providerId ? isProviderMaintenance : false);
+    const isBankInactive = isBankMaintenance;
 
     const handleCreateQR = async () => {
         if (!formData.providerId) {
@@ -214,8 +218,8 @@ const CreatePaymentPage: React.FC = () => {
             return;
         }
         const selectedProvider = allProviders.find(p => p.id === formData.providerId);
-        const isBank = selectedProvider?.code === "BANK";
-        if (isBank && !formData.bank) {
+        const isBank = selectedProvider?.code === ProviderCode.BANK;
+        if (isBank && !formData.bankCode) {
             toast.warning("Vui lòng chọn ngân hàng.");
             return;
         }
@@ -226,12 +230,15 @@ const CreatePaymentPage: React.FC = () => {
         try {
             setQrLoading(true);
             const req: PostQrReq = {
+                providerId: formData.providerId,
+
                 accountId: selectedAccount?.id ?? null,
                 accountNumber: formData.number,
-                bankCode: isBank ? formData.bank : null,
+
+                bankCode: isBank ? formData.bankCode : null,
                 amount: formData.amount ? Number(formData.amount) : null,
                 description: formData.note || null,
-                providerId: formData.providerId,
+
                 isFixedAmount: !!formData.amount,
             };
             const res = await qrApi.post(req);
@@ -247,15 +254,18 @@ const CreatePaymentPage: React.FC = () => {
 
     return (
         <div
-            className="h-full w-full flex flex-col lg:flex-row gap-6 bg-bg flex-1 overflow-hidden"
-            style={{ '--right-col-width': `${rightWidth}px` } as React.CSSProperties}
+            ref={containerRef}
+            className="h-full w-full flex flex-col lg:flex-row bg-bg flex-1 overflow-hidden gap-0"
         >
             {/* Left Column: Saved Accounts */}
-            <div className="flex-1 flex flex-col gap-4 h-full min-h-0 relative">
-                <h2 className="text-xl font-bold text-text-primary shrink-0">Danh sách tài khoản hiện đang hoạt động</h2>
+            <div
+                className="flex flex-col gap-4 h-full min-h-0 relative hidden lg:flex"
+                style={{ width: `${leftPercent}%`, flexShrink: 0, flexGrow: 0 }}
+            >
+                <h2 className="text-3xl font-extrabold text-foreground shrink-0">Tạo nhanh với danh sách tài khoản của bạn</h2>
 
-                <div className="bg-surface-base border border-border rounded-lg shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
-                    <div className="shrink-0 border-b border-border">
+                <div className="bg-surface-elevated border border-border/60 rounded-[2rem] shadow-xl shadow-black/5 flex flex-col min-h-0 overflow-hidden border-b-0">
+                    <div className="shrink-0 p-4 border-b border-border/40 bg-surface-muted/10">
                         <TableToolbar
                             value={searchValue}
                             onChange={setSearchValue}
@@ -263,11 +273,12 @@ const CreatePaymentPage: React.FC = () => {
                             onResetPage={() => handlePageChange(1)}
                             filterValue={providerFilter !== undefined ? String(providerFilter) : ""}
                             filterOptions={allProviders.map(p => ({
-                                label: p.code,
+                                label: p.name,
                                 value: p.id
                             }))}
-                            filterPlaceholder="Chọn loại..."
+                            filterPlaceholder="Chọn loại tài khoản..."
                             onFilterChange={(val) => setProviderFilter(val === undefined ? undefined : String(val))}
+                            onFetchOptions={fetchProviders}
                         />
                     </div>
 
@@ -279,13 +290,18 @@ const CreatePaymentPage: React.FC = () => {
                                 setSelectedAccount(acc);
                                 setFormData({
                                     providerId: acc.providerId,
-                                    bank: acc.bankCode || "",
+                                    providerCode: acc.providerCode,
+                                    providerName: acc.providerName,
+                                    napasBin: acc.napasBin || "",
+                                    bankCode: acc.bankCode || "",
                                     bankName: acc.bankName || "",
                                     bankLogo: acc.bankLogoUrl || "",
                                     number: acc.accountNumber ?? "",
                                     amount: "",
                                     note: ""
                                 });
+                                setIsProviderMaintenance(acc.providerIsActive === false);
+                                setIsBankMaintenance(acc.bankIsActive === false);
                                 setQrResult(null);
                             }}
                             selectedRowPredicate={(acc) => selectedAccount?.id === acc.id}
@@ -294,25 +310,43 @@ const CreatePaymentPage: React.FC = () => {
                                     header: "TÊN TÀI KHOẢN",
                                     accessor: (acc) => acc.accountHolder,
                                     type: "string",
-                                    cell: (acc) => acc.accountHolder
+                                    maxWidth: "320px",
+                                    truncate: true,
+                                    cell: (acc) => <span className="font-semibold uppercase">{acc.accountHolder}</span>
                                 },
                                 {
-                                    header: "NGÂN HÀNG/VÍ",
+                                    header: "NGÂN HÀNG / VÍ",
                                     accessor: (acc) => acc.bankCode,
                                     type: "string",
                                     cell: (acc) => (
-                                        <span className="inline-flex items-center gap-2">
-                                            {acc.bankLogoUrl ? (
-                                                <img src={resolveAvatarPreview(acc.bankLogoUrl ?? acc.providerLogoUrl)} alt={acc.bankShortName || acc.providerCode} className="w-10 h-10 object-contain rounded bg-white p-1 border border-border" />
-                                            ) : (
-                                                <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-text-secondary">
-                                                    {acc.bankCode ?? acc.providerCode}
+                                        <div className="flex items-center gap-3">
+                                            {(acc.bankLogoUrl || acc.providerLogoUrl) ? (
+                                                <div className="w-10 h-10 bg-white rounded-xl border border-border flex items-center justify-center p-1.5 shadow-sm">
+                                                    <img
+                                                        src={resolveAvatarPreview(acc.bankLogoUrl ?? acc.providerLogoUrl ?? null)}
+                                                        alt={acc.bankShortName || acc.providerName}
+                                                        className="w-full h-full object-contain"
+                                                    />
                                                 </div>
-                                            )} {acc.bankName && acc.bankName !== acc.bankCode ? acc.bankName : acc.providerName}
-                                            {/* {(acc.bankStatus === false || acc.providerStatus === false) && (
-                                                <span className="text-[10px] bg-red-100 text-red-600 px-1 rounded font-bold ml-1">BẢO TRÌ</span>
-                                            )} */}
-                                        </span>
+                                            ) : (
+                                                <div className="w-10 h-10 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center text-[10px] font-black text-primary uppercase">
+                                                    {acc.bankCode?.substring(0, 3) || acc.providerCode?.substring(0, 3)}
+                                                </div>
+                                            )}
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-foreground text-sm leading-tight">
+                                                    {(acc.bankCode && acc.bankName) ? acc.bankName : acc.providerName}
+                                                </span>
+                                                <span className="text-[10px] text-foreground-muted font-bold uppercase tracking-widest mt-0.5">
+                                                    {acc.bankCode || acc.providerCode}
+                                                </span>
+                                            </div>
+                                            {(acc.bankIsActive === false || acc.providerIsActive === false) && (
+                                                <span className="px-1.5 py-0.5 bg-danger/10 text-danger font-bold text-[9px] uppercase rounded-md animate-pulse ml-1 border border-danger/20">
+                                                    Bảo trì
+                                                </span>
+                                            )}
+                                        </div>
                                     )
                                 },
                                 {
@@ -322,23 +356,16 @@ const CreatePaymentPage: React.FC = () => {
                                     cell: (acc) => <span className="whitespace-nowrap">{acc.accountNumber}</span>
                                 },
                                 {
-                                    header: "SỐ DƯ",
-                                    accessor: (acc) => acc.balance,
-                                    type: "number",
-                                    cell: (acc) => <span className="whitespace-nowrap">{acc.balance}</span>
-                                },
-                                {
                                     header: "PIN",
                                     accessor: (acc) => acc.isPinned,
                                     type: "boolean",
                                     cell: (acc) =>
-                                        <button
+                                        <ActionButton
+                                            icon={<Pin className={cn("w-3.5 h-3.5", acc.isPinned && "fill-amber-500")} />}
                                             onClick={() => handleOpenPin(acc)}
-                                            className={`${acc.isPinned ? 'text-amber-500 hover:text-amber-700' : 'text-foreground-muted hover:text-amber-500'} transition-colors`}
-                                            title={acc.isPinned ? "Bỏ ghim tài khoản" : "Ghim tài khoản"}
-                                        >
-                                            <Pin className={`w-4 h-4 ${acc.isPinned ? 'fill-amber-500' : ''}`} />
-                                        </button>
+                                            color={acc.isPinned ? "amber" : "gray"}
+                                            title={acc.isPinned ? "Bỏ ghim" : "Ghim"}
+                                        />
                                 }
                             ]}
                         />
@@ -363,21 +390,34 @@ const CreatePaymentPage: React.FC = () => {
 
             {/* Splitter */}
             <div
-                className="hidden lg:flex w-2 cursor-col-resize items-center justify-center hover:bg-border bg-transparent group -mx-3 z-10 transition-colors"
+                className="hidden lg:flex w-3 cursor-col-resize items-center justify-center hover:bg-border/50 bg-transparent group z-10 transition-colors mx-1 shrink-0"
                 onMouseDown={startResizing}
             >
                 <div className="h-10 w-1 rounded-full bg-border group-hover:bg-primary transition-colors" />
             </div>
 
             {/* Right Column: Create QR Form & Result */}
-            <div className="w-full lg:w-[var(--right-col-width,450px)] shrink-0 flex flex-col gap-4 h-full min-h-0">
+            <div
+                className="flex flex-col gap-4 h-full min-h-0 flex-1 min-w-0"
+            >
 
                 <div className="flex items-center justify-between shrink-0">
-                    <h2 className="text-xl font-bold text-text-primary">Thông tin tạo mã QR</h2>
+                    <h2 className="text-xl font-bold text-foreground">Thông tin tạo mã QR</h2>
                     <button
-                        className="p-1.5 text-text-secondary hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                        className="p-1.5 text-foreground-secondary hover:text-danger hover:bg-red-50 rounded-md transition-colors"
                         onClick={() => {
-                            setFormData({ providerId: "", bank: "", bankName: "", bankLogo: "", number: "", amount: "", note: "" });
+                            setFormData({
+                                providerId: "",
+                                providerCode: undefined,
+                                providerName: undefined,
+                                napasBin: "",
+                                bankCode: "",
+                                bankName: "",
+                                bankLogo: "",
+                                number: "",
+                                amount: "",
+                                note: ""
+                            });
                             setSelectedAccount(null);
                             setQrResult(null);
                         }}
@@ -391,23 +431,42 @@ const CreatePaymentPage: React.FC = () => {
                 <div className="card p-6 flex flex-col gap-5 shrink-0">
                     <AccountProviderSelector
                         providerId={formData.providerId}
-                        bankCode={formData.bank}
+                        providerCode={formData.providerCode}
+                        providerName={formData.providerName}
+                        bankCode={formData.bankCode}
                         bankName={formData.bankName}
                         bankLogo={formData.bankLogo}
+                        allProviders={allProviders}
+                        onFetchProviders={fetchProviders}
                         onProviderChange={(id) => {
                             if (selectedAccount && id !== selectedAccount.providerId) setSelectedAccount(null);
-                            setFormData({ ...formData, providerId: id, bank: "", bankName: "", bankLogo: "" });
+                            const p = allProviders.find(item => item.id === id);
+                            setFormData({
+                                ...formData,
+                                providerId: id,
+                                providerCode: p?.code,
+                                providerName: p?.name,
+                                napasBin: "",
+                                bankCode: "",
+                                bankName: "",
+                                bankLogo: ""
+                            });
+                            setIsProviderMaintenance(p ? !p.isActive : false);
+                            setIsBankMaintenance(false);
                         }}
-                        onBankSelect={(code, name, logo) => {
+                        onBankSelect={(code, name, logo, isActive) => {
                             if (selectedAccount && code !== selectedAccount.bankCode) setSelectedAccount(null);
-                            setFormData({ ...formData, bank: code, bankName: name, bankLogo: logo });
+                            setFormData({ ...formData, napasBin: "", bankCode: code, bankName: name, bankLogo: logo });
+                            setIsBankMaintenance(!isActive);
                         }}
+                        isProviderInactive={isProviderInactive || false}
                         isBankInactive={isBankInactive || false}
-                        layout="horizontal"
+                        allowInactiveSelection={false}
+                        layout={leftPercent > 60 ? "vertical" : "horizontal"}
                     />
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-text-secondary">Số tài khoản / Số điện thoại</label>
+                        <label className="text-sm font-medium text-foreground-secondary">Số tài khoản / Số điện thoại</label>
                         <input
                             type="text"
                             className="input"
@@ -421,7 +480,7 @@ const CreatePaymentPage: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-text-secondary">Số tiền (VNĐ)</label>
+                        <label className="text-sm font-medium text-foreground-secondary">Số tiền (VNĐ)</label>
                         <input
                             type="number"
                             className="input"
@@ -432,7 +491,7 @@ const CreatePaymentPage: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium text-text-secondary">Ghi chú (Tùy chọn)</label>
+                        <label className="text-sm font-medium text-foreground-secondary">Ghi chú (Tùy chọn)</label>
                         <input
                             type="text"
                             className="input"

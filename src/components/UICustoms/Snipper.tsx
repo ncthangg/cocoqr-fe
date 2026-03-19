@@ -7,7 +7,7 @@ export default function Spinner({ size = "md" }: SpinnerProps) {
 
     return (
         <div
-            className={`${sizes[size]} border-4 border-t-current border-gray-400 rounded-full animate-spin text-current`}
+            className={`${sizes[size]} border-4 border-surface-muted border-t-primary rounded-full animate-spin`}
         ></div>
     );
 }

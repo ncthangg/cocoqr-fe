@@ -71,7 +71,7 @@ export default function KeyText({
     const paddingRight = hasValue && readOnly ? "pr-20" : "";
 
     // Styles chung cho input và textarea
-    const baseInputStyles = `w-full rounded-md border border-border-subtle px-3 py-2 font-mono text-sm resize-y bg-surface-muted focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 ${paddingRight} ${className}`;
+    const baseInputStyles = `w-full rounded-md border border-border px-md py-sm font-mono text-sm resize-y bg-surface-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary ${paddingRight} ${className}`;
 
     // Khi không readOnly, luôn hiển thị giá trị thực (không mask)
     const displayValueForEdit = !readOnly ? safeValue : (isRealContent ? safeValue : (hasValue ? getMaskedText(safeValue) : safeValue));
@@ -141,7 +141,7 @@ export default function KeyText({
             )}
 
             {hasValue && readOnly && (
-                <div className={`absolute right-2 flex items-center gap-1 ${multiline ? 'top-2' : 'top-1/2 transform -translate-y-1/2'}`}>
+                <div className={`absolute right-2 flex items-center gap-xs ${multiline ? 'top-2' : 'top-1/2 transform -translate-y-1/2'}`}>
                     {/* Toggle hide/show - chỉ hiển thị khi readOnly */}
                     <Button
                         type="button"

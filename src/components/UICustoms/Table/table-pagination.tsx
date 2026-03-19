@@ -25,18 +25,18 @@ export function TablePagination({
     const to = Math.min(pageNumber * pageSize, totalItems)
 
     return (
-        <div className="p-4 border-t border-border flex items-center justify-between">
-            <div className="flex items-center gap-4 hidden sm:flex">
-                <div className="text-sm text-muted-foreground whitespace-nowrap">
+        <div className="p-md border-t border-border flex items-center justify-between">
+            <div className="flex items-center gap-md hidden sm:flex">
+                <div className="text-sm text-foreground-muted whitespace-nowrap">
                     Showing <span className="font-medium">{from}</span> to{" "}
                     <span className="font-medium">{to}</span> of{" "}
                     <span className="font-medium">{totalItems}</span> entries
                 </div>
 
                 {onPageSizeChange && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-sm">
                         <select
-                            className="h-8 px-2 text-xs rounded-md border border-input bg-surface text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="h-8 px-sm text-xs rounded-md border border-border-strong bg-surface text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 disabled:opacity-50 disabled:cursor-not-allowed"
                             value={pageSize}
                             onChange={(e) => onPageSizeChange(Number(e.target.value))}
                             disabled={loading || (pageSizeOptions.length > 0 && totalItems <= pageSizeOptions[0])}
@@ -56,12 +56,12 @@ export function TablePagination({
                 )}
             </div>
 
-            <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                <div className="flex items-center gap-2 text-sm text-foreground">
+            <div className="flex items-center gap-md w-full sm:w-auto justify-between sm:justify-end">
+                <div className="flex items-center gap-sm text-sm text-foreground">
                     <span className="whitespace-nowrap">Trang {pageNumber} / {totalPages || 1}</span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-sm">
                     <Button
                         type="button"
                         variant="outline"
@@ -72,7 +72,7 @@ export function TablePagination({
                         Trước
                     </Button>
 
-                    <div className="flex items-center gap-1 hidden md:flex">
+                    <div className="flex items-center gap-xs hidden md:flex">
                         {Array.from({ length: totalPages }).map((_, idx) => {
                             const page = idx + 1;
                             // Logic to truncate pages if there are too many (Show first, last, current, and adjacent)
@@ -83,7 +83,7 @@ export function TablePagination({
                                 Math.abs(page - pageNumber) > 1
                             ) {
                                 if (page === 2 || page === totalPages - 1) {
-                                    return <span key={page} className="px-1 text-muted-foreground">...</span>;
+                                    return <span key={page} className="px-1 text-foreground-muted">...</span>;
                                 }
                                 return null;
                             }

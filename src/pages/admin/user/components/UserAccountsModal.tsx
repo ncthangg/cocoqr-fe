@@ -3,13 +3,15 @@ import { accountApi } from "../../../../services/account-api.service";
 import { providerApi } from "../../../../services/provider-api.service";
 import type { AccountRes, GetUserBaseRes, PagingVM, ProviderRes } from "../../../../models/entity.model";
 import { toast } from "react-toastify";
-import { X, Wallet } from "lucide-react";
+import { X, Wallet, Eye } from "lucide-react";
 import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { formatDate } from "@/utils/dateTimeUtils";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
+import ActionButton from "@/components/UICustoms/ActionButton";
+import AccountModal from "@/pages/admin/account/components/AccountModal";
 
 interface UserAccountsModalProps {
     isOpen: boolean;
@@ -20,6 +22,7 @@ interface UserAccountsModalProps {
 const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, user }) => {
     const [accounts, setAccounts] = useState<AccountRes[]>([]);
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
+    const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [paging, setPaging] = useState<PagingVM<AccountRes>>({
         list: [],
@@ -36,6 +39,10 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
     const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
     const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
 
+    // Modal state
+    const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+    const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
+
     // Debounce search input
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -45,21 +52,17 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
     }, [searchValue]);
 
     const fetchProviders = useCallback(async () => {
+        if (hasFetchedProviders) return;
         try {
             const res = await providerApi.getAll();
             if (res) {
                 setAllProviders(res || []);
+                setHasFetchedProviders(true);
             }
         } catch (error) {
             console.error("Error fetching providers:", error);
         }
-    }, []);
-
-    useEffect(() => {
-        if (isOpen) {
-            fetchProviders();
-        }
-    }, [isOpen, fetchProviders]);
+    }, [hasFetchedProviders]);
 
     const fetchUserAccounts = useCallback(async (
         userId: string,
@@ -100,7 +103,7 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
 
     useEffect(() => {
         if (isOpen && user) {
-            fetchUserAccounts(user.userId, paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter, statusFilter);
+            fetchUserAccounts(user.id, paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter, statusFilter);
         } else {
             setAccounts([]);
             setSearchValue("");
@@ -118,11 +121,24 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
         }
     };
 
+    const handleOpenView = (acc: AccountRes) => {
+        setSelectedAccount(acc);
+        setIsAccountModalOpen(true);
+    };
+
+    const handleAccountStatusChanged = (id: string, newStatus: boolean) => {
+        setAccounts(prev =>
+            prev.map(acc => acc.id === id ? { ...acc, status: newStatus } : acc)
+        );
+    };
 
     if (!isOpen || !user) return null;
 
     return (
-        <div className="modal-overlay bg-black/60 px-4 py-6">
+        <div
+            className="modal-overlay"
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
             <div
                 className="modal-content max-w-modal-4xl relative flex flex-col overflow-hidden rounded-2xl bg-bg shadow-2xl h-[80vh]"
                 onClick={e => e.stopPropagation()}
@@ -135,7 +151,7 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        className="p-1 rounded-md text-foreground-muted hover:text-foreground hover:bg-surface-muted transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -151,14 +167,12 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                         onResetPage={() => handlePageChange(1)}
                         filterValue={providerFilter !== undefined ? String(providerFilter) : ""}
                         filterOptions={allProviders.map(p => ({
-                            label: p.name,
+                            label: p.code,
                             value: p.id
                         }))}
-                        filterPlaceholder="Tất cả loại"
-                        onFilterChange={(val) => {
-                            setProviderFilter(val === undefined ? undefined : String(val));
-                            handlePageChange(1);
-                        }}
+                        filterPlaceholder="Chọn loại tài khoản..."
+                        onFilterChange={(val) => setProviderFilter(val === undefined ? undefined : String(val))}
+                        onFetchOptions={fetchProviders}
                     />
                 </div>
 
@@ -173,8 +187,8 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                             dir: sortState.dir
                         } : null}
                         filterState={{
-                            ...(activeFilter !== undefined ? { 5: activeFilter } : {}),
-                            ...(statusFilter !== undefined ? { 6: statusFilter } : {}),
+                            ...(activeFilter !== undefined ? { 4: activeFilter } : {}),
+                            ...(statusFilter !== undefined ? { 5: statusFilter } : {}),
                         }}
                         onSortChange={(index, dir) => {
                             const columns = ["accountHolder", "providerId", "bankCode", "accountNumber", "createdAt", "isActive", "status"];
@@ -183,8 +197,8 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                             else setSortState({ field, dir });
                         }}
                         onFilterChange={(index, value) => {
-                            if (index === 5) setActiveFilter(value as boolean | undefined);
-                            if (index === 6) setStatusFilter(value as boolean | undefined);
+                            if (index === 4) setActiveFilter(value as boolean | undefined);
+                            if (index === 5) setStatusFilter(value as boolean | undefined);
                             handlePageChange(1);
                         }}
                         onResetPage={() => handlePageChange(1)}
@@ -196,6 +210,8 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                 header: "TÊN TÀI KHOẢN",
                                 accessor: (acc) => acc.accountHolder,
                                 sortable: true,
+                                maxWidth: "280px",
+                                truncate: true,
                                 cell: (acc) => <span className="font-semibold uppercase text-xs">{acc.accountHolder}</span>
                             },
                             {
@@ -203,15 +219,26 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                 accessor: (acc) => acc.bankCode,
                                 sortable: true,
                                 cell: (acc) => (
-                                    <div className="flex items-center gap-2">
-                                        {acc.bankLogoUrl ? (
-                                            <img src={resolveAvatarPreview(acc.bankLogoUrl ?? null)} alt={acc.bankShortName || ""} className="w-8 h-8 object-contain rounded bg-white p-0.5 border border-border" />
-                                        ) : (
-                                            <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-text-secondary">
-                                                {acc.bankCode}
-                                            </div>
-                                        )}
-                                        {acc.bankName && acc.providerName && acc.bankName !== acc.providerName ? acc.bankName : acc.providerName}
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center gap-2">
+                                            {(acc.bankLogoUrl || acc.providerLogoUrl) ? (
+                                                <img
+                                                    src={resolveAvatarPreview(acc.bankLogoUrl ?? acc.providerLogoUrl ?? null)}
+                                                    alt={acc.bankShortName || acc.providerName}
+                                                    className="w-10 h-10 object-contain rounded bg-white p-1 border border-border"
+                                                />
+                                            ) : (
+                                                <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-foreground-secondary">
+                                                    {acc.bankCode}
+                                                </div>
+                                            )}
+                                            {(acc.bankCode && acc.bankName) ? acc.bankName : acc.providerName}
+                                            {(acc.bankIsActive === false || acc.providerIsActive === false) && (
+                                                <span className="text-red-500 font-bold text-xs animate-pulse">
+                                                    (Đang bảo trì)
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 )
                             },
@@ -235,8 +262,8 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                 cell: (acc) => (
                                     <StatusBadge
                                         status={acc.isActive}
-                                        activeText="Đang hoạt động"
-                                        inactiveText="Đã khóa"
+                                        activeText="ĐANG HOẠT ĐỘNG"
+                                        inactiveText="KHÔNG HOẠT ĐỘNG"
                                         activeColor="green"
                                         inactiveColor="red"
                                     />
@@ -250,11 +277,25 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                 cell: (acc) => (
                                     <StatusBadge
                                         status={acc.status}
-                                        activeText="Đang hoạt động"
-                                        inactiveText="Đã khóa"
+                                        activeText="ACTIVE"
+                                        inactiveText="INACTIVE"
                                         activeColor="green"
                                         inactiveColor="red"
                                     />
+                                )
+                            },
+                            {
+                                header: "Thao tác",
+                                accessor: (acc) => acc.id,
+                                cell: (acc) => (
+                                    <div className="flex items-center gap-3">
+                                        <ActionButton
+                                            icon={<Eye className="w-4 h-4" />}
+                                            onClick={() => handleOpenView(acc)}
+                                            color="blue"
+                                            title="Xem chi tiết"
+                                        />
+                                    </div>
                                 )
                             }
                         ]}
@@ -276,6 +317,13 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                     />
                 </div>
             </div>
+
+            <AccountModal
+                isOpen={isAccountModalOpen}
+                onClose={() => setIsAccountModalOpen(false)}
+                accountId={selectedAccount?.id || null}
+                onStatusChanged={handleAccountStatusChanged}
+            />
         </div>
     );
 };

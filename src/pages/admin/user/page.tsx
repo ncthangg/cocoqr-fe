@@ -8,8 +8,13 @@ import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import UserRolesModal from "./components/UserRolesModal";
 import UserAccountsModal from "./components/UserAccountsModal";
+import UserModal from "./components/UserModal";
+import ActionButton from "@/components/UICustoms/ActionButton";
+import { Eye } from "lucide-react";
 import { formatDate } from "@/utils/dateTimeUtils";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
+import { StatCard } from "@/components/UICustoms/StatCard";
+import { Wallet } from "lucide-react";
 
 const UserPage: React.FC = () => {
     const [users, setUsers] = useState<GetUserBaseRes[]>([]);
@@ -24,6 +29,7 @@ const UserPage: React.FC = () => {
 
     const [isViewRolesModalOpen, setIsViewRolesModalOpen] = useState(false);
     const [isViewAccountsModalOpen, setIsViewAccountsModalOpen] = useState(false);
+    const [isUserModalOpen, setIsUserModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<GetUserBaseRes | null>(null);
 
     // Filter states
@@ -34,16 +40,26 @@ const UserPage: React.FC = () => {
     const [roleIdFilter, setRoleIdFilter] = useState<string | undefined>(undefined);
 
     const [roles, setRoles] = useState<{ label: string, value: string }[]>([]);
+    const [allRolesRaw, setAllRolesRaw] = useState<any[]>([]);
+    const [hasFetchedRoles, setHasFetchedRoles] = useState<boolean>(false);
 
-    useEffect(() => {
-        roleApi.getAll().then((res: any) => {
-            const mappedRoles = (res || []).map((r: any) => ({
-                label: r.nameUpperCase,
-                value: r.id
-            }));
-            setRoles(mappedRoles);
-        }).catch((err) => console.error("Error fetching roles", err));
-    }, []);
+    const fetchRoles = useCallback(async () => {
+        if (hasFetchedRoles) return;
+        try {
+            const res = await roleApi.getAll();
+            if (res) {
+                const mappedRoles = (res || []).map((r: any) => ({
+                    label: r.nameUpperCase,
+                    value: r.id
+                }));
+                setRoles(mappedRoles);
+                setAllRolesRaw(res || []);
+                setHasFetchedRoles(true);
+            }
+        } catch (error) {
+            console.error("Error fetching roles", error);
+        }
+    }, [hasFetchedRoles]);
 
     // Debounce search input
     useEffect(() => {
@@ -67,7 +83,7 @@ const UserPage: React.FC = () => {
             }
         } catch (error) {
             console.error("Error fetching users:", error);
-            toast.error("Failed to fetch users data.");
+            toast.error("Kh�ng th? t?i users data.");
         } finally {
             setLoading(false);
         }
@@ -83,7 +99,13 @@ const UserPage: React.FC = () => {
         }
     };
 
+    const handleOpenUserModal = (user: GetUserBaseRes) => {
+        setSelectedUser(user);
+        setIsUserModalOpen(true);
+    };
+
     const handleOpenViewRolesModal = (user: GetUserBaseRes) => {
+        fetchRoles();
         setSelectedUser(user);
         setIsViewRolesModalOpen(true);
     };
@@ -93,10 +115,29 @@ const UserPage: React.FC = () => {
         setIsViewAccountsModalOpen(true);
     };
 
+    const handleUserStatusChanged = (userId: string, newStatus: boolean) => {
+        setUsers(prev =>
+            prev.map(u => u.id === userId ? { ...u, status: newStatus } : u)
+        );
+    };
+
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
-            <div className="flex justify-between items-center shrink-0">
-                <h1 className="text-2xl font-bold text-foreground">User Management</h1>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">User Management</h1>
+                    <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý thông tin các ngân hàng, ví điện tử của bạn.</p>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 gap-6 shrink-0">
+                    <StatCard
+                        label="Tổng role"
+                        value={paging.totalItems}
+                        icon={<Wallet className="w-5 h-5 text-primary" />}
+                        color="blue"
+                    />
+                </div>
             </div>
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
@@ -113,6 +154,7 @@ const UserPage: React.FC = () => {
                             setRoleIdFilter(v ? v : undefined);
                             setPaging(prev => ({ ...prev, pageNumber: 1 }));
                         }}
+                        onFetchOptions={fetchRoles}
                     />
                 </div>
 
@@ -121,18 +163,18 @@ const UserPage: React.FC = () => {
                         loading={loading}
                         data={users}
                         sortState={sortState ? {
-                            index: ["fullName", "email", "createdAt", "status"].indexOf(sortState.field),
+                            index: ["fullName", "email", "roles", "createdAt", "status"].indexOf(sortState.field),
                             dir: sortState.dir
                         } : null}
-                        filterState={statusFilter !== undefined ? { 3: statusFilter } : {}}
+                        filterState={statusFilter !== undefined ? { 4: statusFilter } : {}}
                         onSortChange={(index, dir) => {
-                            const columns = ["fullName", "email", "createdAt", "status", "actions"];
+                            const columns = ["fullName", "email", "roles", "createdAt", "status", "Thao t�c"];
                             const field = columns[index];
                             if (!dir) setSortState(null);
                             else setSortState({ field, dir });
                         }}
                         onFilterChange={(index, value) => {
-                            if (index === 3) setStatusFilter(value);
+                            if (index === 4) setStatusFilter(value);
                         }}
                         onResetPage={() => handlePageChange(1)}
                         showIndex
@@ -145,7 +187,7 @@ const UserPage: React.FC = () => {
                                 type: "string",
                                 sortable: true,
                                 filterable: false,
-                                cell: (user) => <span className="font-medium">{user.fullName}</span>
+                                cell: (user) => <span className="font-semibold uppercase">{user.fullName}</span>
                             },
                             {
                                 header: "Email",
@@ -153,7 +195,30 @@ const UserPage: React.FC = () => {
                                 type: "string",
                                 sortable: true,
                                 filterable: false,
-                                cell: (user) => <span className="font-medium">{user.email}</span>
+                                cell: (user) => <span className="font-semibold">{user.email}</span>
+                            },
+                            {
+                                header: "Roles",
+                                accessor: (user) => user.roles?.map(r => r.name).join(", ") || "",
+                                type: "string",
+                                sortable: true,
+                                filterable: false,
+                                cell: (user) => (
+                                    <div className="flex flex-wrap gap-1">
+                                        {user.roles && user.roles.length > 0 ? (
+                                            user.roles.map((role, idx) => (
+                                                <span
+                                                    key={idx}
+                                                    className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 uppercase"
+                                                >
+                                                    {role.name}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span className="text-xs text-foreground-muted">No roles</span>
+                                        )}
+                                    </div>
+                                )
                             },
                             {
                                 header: "CreatedAt",
@@ -180,21 +245,27 @@ const UserPage: React.FC = () => {
                                 )
                             },
                             {
-                                header: "Actions",
-                                accessor: (user) => user.userId,
+                                header: "Thao tác",
+                                accessor: (user) => user.id,
                                 cell: (user) => (
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2">
+                                        <ActionButton
+                                            icon={<Eye className="w-4 h-4" />}
+                                            onClick={() => handleOpenUserModal(user)}
+                                            color="blue"
+                                            title="Chi tiết & Khóa/Mở"
+                                        />
                                         <button
                                             onClick={() => handleOpenViewAccountsModal(user)}
                                             className="text-primary hover:text-primary/80 transition-colors font-medium text-sm"
                                         >
-                                            View Accounts
+                                            Accounts
                                         </button>
                                         <button
                                             onClick={() => handleOpenViewRolesModal(user)}
                                             className="text-primary hover:text-primary/80 transition-colors font-medium text-sm"
                                         >
-                                            View Roles
+                                            Roles
                                         </button>
                                     </div>
                                 )
@@ -218,10 +289,24 @@ const UserPage: React.FC = () => {
                 </div>
             </div>
 
+            <UserModal
+                isOpen={isUserModalOpen}
+                onClose={() => setIsUserModalOpen(false)}
+                user={selectedUser}
+                onStatusChanged={handleUserStatusChanged}
+            />
+
             <UserRolesModal
                 isOpen={isViewRolesModalOpen}
                 onClose={() => setIsViewRolesModalOpen(false)}
                 user={selectedUser}
+                allRoles={allRolesRaw}
+                onRolesUpdate={(userId, newRoles) => {
+                    setUsers(prev => prev.map(u => u.id === userId ? { ...u, roles: newRoles } : u));
+                    if (selectedUser?.id === userId) {
+                        setSelectedUser(prev => prev ? ({ ...prev, roles: newRoles }) : null);
+                    }
+                }}
             />
 
             <UserAccountsModal

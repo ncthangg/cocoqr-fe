@@ -4,12 +4,13 @@ import { RouteConstant } from "../constants/route.constant";
 import { useAuthContext } from "../auth/AuthContext";
 import { Bell, ChevronDown, LogOut, QrCode, UserIcon } from "lucide-react";
 import Button from "../components/UICustoms/Button";
-import { toast } from "react-toastify";
 import { authApi } from "../services/auth-api.service";
+import ProfileModal from "../components/UICustoms/Modal/ProfileModal";
 
 const UserLayout: React.FC = () => {
-    const { logout, user } = useAuthContext();
+    const { logout, user, roles } = useAuthContext();
     const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const profileMenuRef = useRef<HTMLDivElement>(null);
 
     const initials = useMemo(() => {
@@ -41,10 +42,8 @@ const UserLayout: React.FC = () => {
     };
 
     const handleViewProfile = () => {
-        if (user) {
-            toast.info(`Email: ${user.email}`, { toastId: "user-profile-info" });
-        }
         setProfileMenuOpen(false);
+        setIsProfileModalOpen(true);
     };
 
     const handleLogout = async () => {
@@ -59,6 +58,7 @@ const UserLayout: React.FC = () => {
     };
 
     return (
+        <>
         <div className="h-screen flex flex-col overflow-hidden bg-background">
             <div className="shrink-0 z-50">
                 <header className="p-4 border-b border-border bg-surface flex justify-between items-center">
@@ -147,6 +147,14 @@ const UserLayout: React.FC = () => {
                 <p>&copy; 2026 MyWallet - User Panel</p>
             </footer>
         </div >
+
+        <ProfileModal
+            isOpen={isProfileModalOpen}
+            onClose={() => setIsProfileModalOpen(false)}
+            user={user}
+            roles={roles}
+        />
+        </>
     );
 };
 

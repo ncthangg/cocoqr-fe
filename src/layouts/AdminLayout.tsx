@@ -4,12 +4,13 @@ import { RouteConstant } from "../constants/route.constant";
 import { useAuthContext } from "../auth/AuthContext";
 import { Bell, ChevronDown, LogOut, QrCode, UserIcon } from "lucide-react";
 import Button from "../components/UICustoms/Button";
-import { toast } from "react-toastify";
 import { authApi } from "../services/auth-api.service";
+import ProfileModal from "../components/UICustoms/Modal/ProfileModal";
 
 const AdminLayout: React.FC = () => {
-    const { logout, user } = useAuthContext();
+    const { logout, user, roles } = useAuthContext();
     const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const profileMenuRef = useRef<HTMLDivElement>(null);
 
     const initials = useMemo(() => {
@@ -41,10 +42,8 @@ const AdminLayout: React.FC = () => {
     };
 
     const handleViewProfile = () => {
-        if (user) {
-            toast.info(`Email: ${user.email}`, { toastId: "admin-profile-info" });
-        }
         setProfileMenuOpen(false);
+        setIsProfileModalOpen(true);
     };
 
     const handleLogout = async () => {
@@ -59,6 +58,7 @@ const AdminLayout: React.FC = () => {
     };
 
     return (
+        <>
         <div className="h-screen flex flex-col overflow-hidden bg-background">
             <div className="shrink-0 z-50">
                 <header className="p-4 border-b border-border bg-[#343a40] text-white flex justify-between items-center">
@@ -71,23 +71,23 @@ const AdminLayout: React.FC = () => {
                         </Link>
 
                         <nav className="hidden items-center gap-6 md:flex">
-                            <Link to={RouteConstant.ADMIN_BANKS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
-                                Bank
-                            </Link>
                             <Link to={RouteConstant.ADMIN_USERS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
                                 User
                             </Link>
                             <Link to={RouteConstant.ADMIN_ROLES} className="text-sm font-bold text-white transition-colors hover:text-foreground">
                                 Role
                             </Link>
+                            <Link to={RouteConstant.ADMIN_PROVIDERS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                Provider
+                            </Link>
+                            <Link to={RouteConstant.ADMIN_BANKS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                Bank
+                            </Link>
                             <Link to={RouteConstant.ADMIN_ACCOUNTS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
                                 Account
                             </Link>
                             <Link to={RouteConstant.ADMIN_HISTORY} className="text-sm font-bold text-white transition-colors hover:text-foreground">
                                 History
-                            </Link>
-                            <Link to={RouteConstant.ADMIN_PROVIDERS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
-                                Provider
                             </Link>
                         </nav>
                     </div>
@@ -160,6 +160,14 @@ const AdminLayout: React.FC = () => {
                 <p>&copy; 2026 MyWallet - Administration</p>
             </footer>
         </div>
+
+        <ProfileModal
+            isOpen={isProfileModalOpen}
+            onClose={() => setIsProfileModalOpen(false)}
+            user={user}
+            roles={roles}
+        />
+        </>
     );
 };
 

@@ -7,7 +7,6 @@ import type { PostAccountReq, PutAccountReq } from "@/models/entity.request.mode
 export const accountApi = {
     getAll: async (pageNumber: number, pageSize: number,
         sortField: string | null, sortDirection: "asc" | "desc" | null,
-        userId: string | null,
         providerId: string | null,
         searchValue: string | null,
         isActive: boolean | null
@@ -19,7 +18,6 @@ export const accountApi = {
                     pageSize: pageSize,
                     sortField: sortField,
                     sortDirection: sortDirection,
-                    userId: userId,
                     providerId: providerId,
                     searchValue: searchValue,
                     isActive: isActive,
@@ -65,6 +63,10 @@ export const accountApi = {
     },
     put: async (id: string, req: PutAccountReq): Promise<string> => {
         const response = await axiosPrivate.put(ApiConstant.ACCOUNT.PUT(id), req);
+        return response.data;
+    },
+    updateStatus: async (id: string, status: boolean): Promise<string> => {
+        const response = await axiosPrivate.put(ApiConstant.ACCOUNT.PUT_STATUS(id), { status });
         return response.data;
     },
     delete: async (id: string): Promise<string> => {

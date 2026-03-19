@@ -17,21 +17,37 @@ export function DataTableColumnHeader<T>({
     onSortToggle
 }: DataTableColumnHeaderProps<T>) {
 
-    // If neither sortable nor filterable, just display the header normally
+    // If neither sortable nor filterable, just display the header label
     if (!column.sortable && !column.filterable) {
-        return <div className={`text-sm font-bold text-foreground-muted py-1 flex items-center h-full ${column.header === "STT" ? "justify-center" : ""}`}>{column.header}</div>
+        return (
+            <div className={`
+                text-sm font-bold text-foreground-muted py-xs flex items-center h-full gap-xs
+                ${column.header === "STT" ? "justify-center" : ""}
+                ${column.truncate || column.maxWidth ? "min-w-0 truncate" : ""}
+            `}>
+                {column.header}
+            </div>
+        )
     }
 
     return (
-        <div className="flex items-center justify-between gap-2 w-full py-1">
+        <div className="flex items-center justify-between gap-xs w-full py-xs min-w-0">
+            {/* Sort trigger — shrinks to give room to the filter select */}
             <div
-                className={`flex items-center gap-1 text-sm font-bold text-foreground-muted flex-1 ${column.sortable ? "cursor-pointer select-none hover:text-foreground transition-colors" : ""}`}
+                className={`
+                    flex items-center gap-xs text-sm font-bold text-foreground-muted
+                    min-w-0 flex-1
+                    ${column.sortable ? "cursor-pointer select-none hover:text-foreground transition-colors" : ""}
+                    ${column.truncate || column.maxWidth ? "overflow-hidden" : ""}
+                `}
                 onClick={() => { if (column.sortable) onSortToggle() }}
                 title={column.sortable ? "Nhấn để sắp xếp" : undefined}
             >
-                {column.header}
+                <span className={column.truncate || column.maxWidth ? "truncate" : ""}>
+                    {column.header}
+                </span>
                 {column.sortable && (
-                    <div className="w-4 h-4 ml-1 flex items-center justify-center">
+                    <span className="w-4 h-4 shrink-0 flex items-center justify-center">
                         {sortDirection === "asc" ? (
                             <ArrowUp className="w-3 h-3 text-foreground" />
                         ) : sortDirection === "desc" ? (
@@ -39,14 +55,15 @@ export function DataTableColumnHeader<T>({
                         ) : (
                             <ChevronsUpDown className="w-3 h-3 opacity-50" />
                         )}
-                    </div>
+                    </span>
                 )}
             </div>
 
+            {/* Filter select — fixed shrink-0 so it doesn't crowd the header */}
             {column.filterable && (
                 <div onClick={e => e.stopPropagation()} className="font-normal shrink-0">
                     <select
-                        className="h-8 max-w-[150px] px-2 text-xs rounded-md border border-input bg-surface text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        className="h-7 w-[110px] px-xs text-xs rounded-md border border-border-strong bg-surface text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40"
                         value={filterValue === undefined ? "all" : String(filterValue)}
                         onChange={(e) => {
                             const val = e.target.value;
@@ -54,23 +71,22 @@ export function DataTableColumnHeader<T>({
                                 onFilterChange(undefined);
                                 return;
                             }
-                            // Convert type based on column type
                             if (column.type === "boolean") {
                                 onFilterChange(val === "true");
                             } else {
-                                onFilterChange(val); // By default, pass as string/any
+                                onFilterChange(val);
                             }
                         }}
                     >
-                        <option value="all">ALL</option>
+                        <option value="all">Tất cả</option>
                         {column.filterOptions ? (
                             column.filterOptions.map((opt, i) => (
                                 <option key={i} value={String(opt.value)}>{opt.label}</option>
                             ))
                         ) : column.type === "boolean" ? (
                             <>
-                                <option value="true">TRUE (Có/Bật)</option>
-                                <option value="false">FALSE (Không/Tắt)</option>
+                                <option value="true">Có / Bật</option>
+                                <option value="false">Không / Tắt</option>
                             </>
                         ) : null}
                     </select>

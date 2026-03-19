@@ -12,6 +12,7 @@ type TableToolbarProps = {
     filterValue?: string | null
     onFilterChange?: ((value: string) => void) | null
     filterPlaceholder?: string | null
+    onFetchOptions?: (() => void) | null
 }
 
 export function TableToolbar({
@@ -23,12 +24,13 @@ export function TableToolbar({
     filterOptions,
     filterValue,
     onFilterChange,
-    filterPlaceholder
+    filterPlaceholder,
+    onFetchOptions
 }: TableToolbarProps) {
     const showSearch = value !== undefined && value !== null && !!onChange;
 
     return (
-        <div className="p-4 border-b border-border flex items-center justify-between gap-4">
+        <div className="p-md border-b border-border flex items-center justify-between gap-md">
             {showSearch ? (
                 <div className="relative w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground-muted" />
@@ -50,8 +52,9 @@ export function TableToolbar({
             {filterOptions && onFilterChange && (
                 <div className="shrink-0 flex items-center gap-2">
                     <select
-                        className="h-12 w-[180px] px-3 text-base rounded-md border border-input bg-surface text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                        className="h-12 w-[180px] px-sm text-base rounded-md border border-border-strong bg-surface text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 cursor-pointer"
                         value={filterValue ?? ""}
+                        onMouseDown={() => onFetchOptions?.()}
                         onChange={(e) => {
                             const val = e.target.value;
                             if (val === "") {
@@ -65,7 +68,7 @@ export function TableToolbar({
                         {filterPlaceholder && (
                             <option value="" disabled hidden>{filterPlaceholder}</option>
                         )}
-                        <option value="">ALL</option>
+                        <option value="">TẤT CẢ</option>
                         {filterOptions.map((opt, i) => (
                             <option key={i} value={String(opt.value)}>
                                 {opt.label}

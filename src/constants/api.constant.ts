@@ -11,6 +11,7 @@ export const ApiConstant = {
         GET_BY_ID: (id: string) => `/accounts/${id}`,
         POST: "/accounts",
         PUT: (id: string) => `/accounts/${id}`,
+        PUT_STATUS: (id: string) => `/accounts/${id}/status`,
         DELETE: (id: string) => `/accounts/${id}`,
     },
     BANKINFO: {
@@ -27,6 +28,8 @@ export const ApiConstant = {
     },
     USER: {
         GET_ALL: "/users",
+        GET_BY_ID: (id: string) => `/users/${id}`,
+        PUT_STATUS: (id: string) => `/users/${id}/status`,
     },
     USER_ROLE: {
         GET_ROLES_BY_USER_ID: (userId: string) => `/userroles/${userId}/roles`,
@@ -35,6 +38,9 @@ export const ApiConstant = {
     },
     QR: {
         POST: "/qr",
+        GET_ALL: "/qr",
+        GET_ALL_BY_ADMIN: "/qr/by-admin",
+        GET_BY_ID: (id: string) => `/qr/${id}`,
     },
     PROVIDER: {
         GET_ALL: "/providers",

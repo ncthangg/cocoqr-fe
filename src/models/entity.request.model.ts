@@ -40,7 +40,7 @@ export interface PostAccountReq {
     bankCode: string | null;
     bankName: string | null;
     providerId: string;
-    isActive: boolean | null;
+    isActive: boolean;
 }
 
 export interface PutAccountReq {
@@ -50,19 +50,19 @@ export interface PutAccountReq {
     bankName: string | null;
     providerId: string;
     isPinned?: boolean;
-    isActive: boolean | null;
+    isActive: boolean;
 }
 
 export interface PostQrReq {
+    providerId: string;
+
     accountId: string | null;
-
     accountNumber: string;
-    bankCode: string | null;
 
+    bankCode: string | null;
     amount: number | null;
     description: string | null;
 
-    providerId: string;
     isFixedAmount: boolean;
 }
 

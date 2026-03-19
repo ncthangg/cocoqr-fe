@@ -36,3 +36,12 @@ export const BankCode = {
 } as const;
 
 export type BankCode = keyof typeof BankCode;
+///=====================================================================
+export const ProviderCode = {
+    BANK: "BANK",
+    VNPAY: "VNPAY",
+    MOMO: "MOMO",
+    ZALOPAY: "ZALOPAY",
+} as const;
+
+export type ProviderCode = keyof typeof ProviderCode;

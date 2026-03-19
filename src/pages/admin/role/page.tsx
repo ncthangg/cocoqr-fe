@@ -1,13 +1,15 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { roleApi } from "../../../services/role-api.service";
 import type { RoleRes } from "../../../models/entity.model";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
 import RoleModal from "./components/RoleModal";
 import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
+import ActionButton from "@/components/UICustoms/ActionButton";
+import { StatCard } from "@/components/UICustoms/StatCard";
 
 const RolePage: React.FC = () => {
     const [allRoles, setAllRoles] = useState<RoleRes[]>([]);
@@ -27,7 +29,7 @@ const RolePage: React.FC = () => {
             }
         } catch (error) {
             console.error("Error fetching roles:", error);
-            toast.error("Failed to fetch role data.");
+            toast.error("Kh�ng th? t?i d? li?u role.");
         } finally {
             setLoading(false);
         }
@@ -37,10 +39,10 @@ const RolePage: React.FC = () => {
         fetchRoles();
     }, [fetchRoles]);
 
-    const handleOpenCreateModal = () => {
-        setSelectedRole(null);
-        setIsRoleModalOpen(true);
-    };
+    // const handleOpenCreateModal = () => {
+    //     setSelectedRole(null);
+    //     setIsRoleModalOpen(true);
+    // };
 
     const handleOpenEditModal = (role: RoleRes) => {
         setSelectedRole(role);
@@ -52,8 +54,14 @@ const RolePage: React.FC = () => {
         setIsDeleteModalOpen(true);
     };
 
-    const handleModalSuccess = () => {
-        fetchRoles();
+    const handleModalSuccess = (updatedRole?: RoleRes) => {
+        if (updatedRole) {
+            setAllRoles(prev =>
+                prev.map(r => r.id === updatedRole.id ? updatedRole : r)
+            );
+        } else {
+            fetchRoles();
+        }
     };
 
     const handleDeleteRole = async () => {
@@ -74,8 +82,21 @@ const RolePage: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
-            <div className="flex justify-between items-center shrink-0">
-                <h1 className="text-2xl font-bold text-foreground">Role Management</h1>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Role Management</h1>
+                    <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý thông tin các ngân hàng, ví điện tử của bạn.</p>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 gap-6 shrink-0">
+                    <StatCard
+                        label="Tổng role"
+                        value={allRoles.length}
+                        icon={<Wallet className="w-5 h-5 text-primary" />}
+                        color="blue"
+                    />
+                </div>
             </div>
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
@@ -84,7 +105,6 @@ const RolePage: React.FC = () => {
                         value={null}
                         onChange={null}
                         placeholder="Search roles..."
-                        handleOpenCreateModal={handleOpenCreateModal}
                     />
                 </div>
 
@@ -101,7 +121,7 @@ const RolePage: React.FC = () => {
                                 header: "Role Code",
                                 accessor: (role) => role.nameUpperCase,
                                 type: "string",
-                                cell: (role) => <span className="text-muted-foreground">{role.nameUpperCase}</span>
+                                cell: (role) => <span className="font-semibold uppercase">{role.nameUpperCase}</span>
                             },
                             {
                                 header: "Role Name",
@@ -123,24 +143,22 @@ const RolePage: React.FC = () => {
                                     />
                             },
                             {
-                                header: "Actions",
+                                header: "Thao tác",
                                 accessor: (role) => role.id,
                                 cell: (role) => (
-                                    <div className="flex items-center gap-3">
-                                        <button
+                                    <div className="flex items-center gap-sm">
+                                        <ActionButton
+                                            icon={<Edit className="w-4 h-4" />}
                                             onClick={() => handleOpenEditModal(role)}
-                                            className="text-blue-600 hover:text-blue-800 transition-colors"
-                                            title="Edit"
-                                        >
-                                            <Edit className="w-4 h-4" />
-                                        </button>
-                                        <button
+                                            color="blue"
+                                            title="Chỉnh sửa"
+                                        />
+                                        <ActionButton
+                                            icon={<Trash2 className="w-4 h-4" />}
                                             onClick={() => handleOpenDeleteModal(role)}
-                                            className="text-red-600 hover:text-red-800 transition-colors"
-                                            title="Delete"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                            color="red"
+                                            title="Xóa"
+                                        />
                                     </div>
                                 )
                             }

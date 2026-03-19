@@ -29,39 +29,38 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
 
     return (
         <div
-            className="modal-overlay bg-black/60 px-4 py-6"
-            onClick={onClose}
+            className="modal-overlay"
         >
             <div
-                className="modal-content max-w-modal-lg relative flex flex-col overflow-hidden rounded-2xl p-6 md:p-8 shadow-2xl bg-surface"
+                className="modal-content max-w-modal-lg relative flex flex-col overflow-hidden rounded-2xl p-lg md:p-xl shadow-lg bg-surface"
                 onClick={e => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center pb-4 border-b border-border">
-                    <div className="flex items-center gap-2 text-red-600">
+                <div className="flex justify-between items-center pb-md border-b border-border">
+                    <div className="flex items-center gap-sm text-danger">
                         <AlertTriangle className="w-5 h-5" />
                         <h2 className="text-lg font-bold">{title}</h2>
                     </div>
-                    <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors" disabled={loading}>
+                    <button onClick={onClose} className="text-foreground-muted hover:text-foreground transition-colors" disabled={loading}>
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                <div className="p-6">
+                <div className="p-lg">
                     <p className="text-foreground">
                         Bạn có chắc chắn muốn xóa <strong>{itemName}</strong>?
                     </p>
                     {description && (
-                        <p className="text-sm text-muted-foreground mt-2">
+                        <p className="text-sm text-foreground-muted mt-sm">
                             {description}
                         </p>
                     )}
                 </div>
 
-                <div className="p-5 border-t border-border flex justify-end gap-3 bg-muted/20">
+                <div className="p-md border-t border-border flex justify-end gap-sm bg-surface-muted/20">
                     <Button
                         type="button"
                         onClick={onClose}
-                        className="bg-background border border-border text-foreground hover:bg-muted px-4 py-2"
+                        className="bg-bg border border-border text-foreground hover:bg-surface-muted px-md py-sm"
                         disabled={loading}
                     >
                         {cancelText}
@@ -69,7 +68,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
                     <Button
                         type="button"
                         onClick={onConfirm}
-                        className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 border-transparent"
+                        className="bg-danger text-white hover:bg-danger/90 px-md py-sm border-transparent"
                         disabled={loading}
                     >
                         {loading ? "Đang xử lý..." : confirmText}

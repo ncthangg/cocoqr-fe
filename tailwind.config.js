@@ -9,39 +9,55 @@ export default {
             colors: {
                 bg: "var(--color-bg)",
                 surface: "var(--color-surface)",
+                "surface-muted": "var(--color-surface-muted)",
+                "surface-elevated": "var(--color-surface-elevated)",
+
                 border: "var(--color-border)",
+                "border-strong": "var(--color-border-strong)",
+                "border-subtle": "var(--color-border-subtle)",
+
+                primary: "var(--color-primary)",
+                "primary-foreground": "var(--color-primary-foreground)",
 
                 foreground: "var(--color-text-primary)",
-                "foreground-muted": "var(--color-text-secondary)",
+                "foreground-secondary": "var(--color-text-secondary)",
+                "foreground-muted": "var(--color-text-subtle)",
 
                 success: "var(--color-success)",
                 warning: "var(--color-warning)",
                 danger: "var(--color-danger)",
 
-                "btn-primary-bg": "var(--color-btn-primary-bg)",
-                "btn-primary-text": "var(--color-btn-primary-text)",
-
-                "btn-secondary-bg": "var(--color-btn-secondary-bg)",
-                "btn-secondary-text": "var(--color-btn-secondary-text)",
-
-                "btn-outline-border": "var(--color-btn-outline-border)",
-                "btn-outline-text": "var(--color-btn-outline-text)",
+                btn: {
+                    primary: {
+                        bg: "var(--color-btn-primary-bg)",
+                        text: "var(--color-btn-primary-text)",
+                    },
+                    secondary: {
+                        bg: "var(--color-btn-secondary-bg)",
+                        text: "var(--color-btn-secondary-text)",
+                        border: "var(--color-btn-secondary-border)",
+                    }
+                }
             },
             borderRadius: {
                 sm: "var(--radius-sm)",
                 md: "var(--radius-md)",
                 lg: "var(--radius-lg)",
-                DEFAULT: "var(--radius-md)"
+                xl: "var(--radius-xl)",
+                "2xl": "var(--radius-2xl)",
+                "3xl": "var(--radius-3xl)",
             },
             boxShadow: {
                 sm: "var(--shadow-sm)",
                 md: "var(--shadow-md)",
+                lg: "var(--shadow-lg)",
             },
             fontFamily: {
-                primary: ["Inter", "sans-serif"],
+                primary: ["GeistVariable", "Inter", "sans-serif"],
                 secondary: ["Roboto", "sans-serif"],
             },
             fontSize: {
+                xs: ["10px", "14px"],
                 sm: ["12px", "18px"],
                 base: ["14px", "22px"],
                 lg: ["16px", "24px"],
@@ -50,11 +66,13 @@ export default {
                 "3xl": ["30px", "36px"],
             },
             spacing: {
+                "2xs": "2px",
                 xs: "4px",
                 sm: "8px",
                 md: "16px",
                 lg: "24px",
-                xl: "32px"
+                xl: "32px",
+                "2xl": "48px",
             },
             maxWidth: {
                 'modal-sm': '400px',

@@ -1,25 +1,26 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { X, Landmark, User, CreditCard, Hash, Calendar, Wallet, ShieldCheck, ShieldOff, BookmarkCheck, LayoutDashboard, Lock, LockOpen } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import {
+    X, User, Mail, Calendar, Shield, ShieldCheck, ShieldOff,
+    Lock, LockOpen, UserCircle2, BadgeCheck,
+} from "lucide-react";
 import { toast } from "react-toastify";
-import { accountApi } from "@/services/account-api.service";
-import type { AccountRes } from "@/models/entity.model";
+import { userApi } from "@/services/user-api.service";
+import type { GetUserBaseRes } from "@/models/entity.model";
 import ModalLoading from "@/components/UICustoms/Modal/ModalLoading";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import Button from "@/components/UICustoms/Button";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
-import { formatDateTime } from "@/utils/dateTimeUtils";
-import { cn } from "@/lib/utils";
 import ActionButton from "@/components/UICustoms/ActionButton";
+import { formatDate } from "@/utils/dateTimeUtils";
+import { cn } from "@/lib/utils";
 
-interface AccountModalProps {
+interface UserModalProps {
     isOpen: boolean;
     onClose: () => void;
-    accountId: string | null;
+    user: GetUserBaseRes | null;
     onStatusChanged?: (id: string, newStatus: boolean) => void;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 interface ReadOnlyRowProps {
     icon?: React.ReactNode;
     label: string;
@@ -30,7 +31,10 @@ interface ReadOnlyRowProps {
 
 function ReadOnlyRow({ icon, label, value, mono, fullWidth }: ReadOnlyRowProps) {
     return (
-        <div className={cn("flex flex-col gap-xs p-sm rounded-xl bg-surface-muted/10 border border-border", fullWidth ? "col-span-2" : "")}>
+        <div className={cn(
+            "flex flex-col gap-xs p-sm rounded-xl bg-surface-muted/10 border border-border",
+            fullWidth ? "col-span-2" : ""
+        )}>
             <span className="inline-flex items-center gap-xs text-xs text-foreground-muted font-bold uppercase tracking-widest">
                 {icon}
                 {label}
@@ -42,51 +46,39 @@ function ReadOnlyRow({ icon, label, value, mono, fullWidth }: ReadOnlyRowProps) 
     );
 }
 
-const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId, onStatusChanged }) => {
-    const [detail, setDetail] = useState<AccountRes | null>(null);
-    const [loading, setLoading] = useState(false);
+const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, onStatusChanged }) => {
+    const [detail, setDetail] = useState<GetUserBaseRes | null>(null);
+    const [loading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-    const fetchDetail = useCallback(async (id: string) => {
-        try {
-            setLoading(true);
-            const res = await accountApi.getById(id);
-            if (res) setDetail(res);
-        } catch (error) {
-            console.error("Error fetching account detail:", error);
-            toast.error("Không thể tải thông tin chi tiết tài khoản.");
-            onClose();
-        } finally {
-            setLoading(false);
-        }
-    }, [onClose]);
-
     useEffect(() => {
-        if (isOpen && accountId) {
-            fetchDetail(accountId);
-        } else if (!isOpen) {
+        if (isOpen) {
+            setDetail(user ?? null);
+            setIsConfirmOpen(false);
+        } else {
             setDetail(null);
+            setIsConfirmOpen(false);
         }
-    }, [isOpen, accountId, fetchDetail]);
-
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-        if (isOpen) window.addEventListener("keydown", handler);
-        return () => window.removeEventListener("keydown", handler);
-    }, [isOpen, onClose]);
+        // chỉ sync khi modal mở/đóng, không phụ thuộc vào `user` để tránh ghi đè status sau khi update
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     const handleToggleStatus = async () => {
-        if (!detail || !accountId) return;
+        if (!detail || !user) return;
         try {
             setActionLoading(true);
             const newStatus = !detail.status;
-            await accountApi.updateStatus(accountId, newStatus);
-            toast.success(newStatus ? "Đã mở khóa tài khoản thành công." : "Đã khóa tài khoản thành công.");
+            await userApi.updateStatus(user.id, newStatus);
+            toast.success(
+                newStatus
+                    ? "Đã mở khóa tài khoản người dùng thành công."
+                    : "Đã khóa tài khoản người dùng thành công."
+            );
             setDetail(prev => prev ? { ...prev, status: newStatus } : prev);
-            onStatusChanged?.(accountId, newStatus);
+            onStatusChanged?.(user.id, newStatus);
         } catch (error) {
-            console.error("Error toggling account status:", error);
+            console.error("Error toggling user status:", error);
             toast.error("Không thể thực hiện thao tác. Vui lòng thử lại.");
         } finally {
             setActionLoading(false);
@@ -96,7 +88,6 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
 
     if (!isOpen) return null;
 
-    const isBank = !!detail?.bankCode;
     const isLocked = detail?.status === false;
 
     return (
@@ -109,7 +100,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                     className="modal-content max-w-modal-xl flex flex-col overflow-hidden"
                     role="dialog"
                     aria-modal="true"
-                    aria-label="Chi tiết tài khoản (Admin Only)"
+                    aria-label="Chi tiết người dùng (Admin Only)"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <ModalLoading loading={loading} />
@@ -117,8 +108,8 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                     {/* Header */}
                     <div className="flex items-center justify-between px-lg py-md border-b border-border bg-surface-muted/30 shrink-0">
                         <h2 className="text-lg font-bold text-foreground flex items-center gap-sm">
-                            <LayoutDashboard className="w-5 h-5 text-primary" />
-                            Chi tiết tài khoản
+                            <UserCircle2 className="w-5 h-5 text-primary" />
+                            Chi tiết người dùng
                         </h2>
                         <button
                             type="button"
@@ -135,106 +126,110 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                         {detail && (
                             <div className="grid grid-cols-1 md:grid-cols-5 gap-xl">
 
-                                {/* LEFT: Data (3/5) */}
+                                {/* LEFT: Info (3/5) */}
                                 <div className="md:col-span-3 flex flex-col gap-lg">
                                     <div className="grid grid-cols-2 gap-md">
                                         <ReadOnlyRow
-                                            icon={<Landmark className="w-3.5 h-3.5" />}
-                                            label="Loại tài khoản"
-                                            value={detail.providerName}
-                                        />
-                                        {isBank ? (
-                                            <ReadOnlyRow
-                                                icon={<Hash className="w-3.5 h-3.5" />}
-                                                label="Napas Bin"
-                                                value={detail.napasBin}
-                                                mono
-                                            />
-                                        ) : (
-                                            <ReadOnlyRow
-                                                icon={<Wallet className="w-3.5 h-3.5" />}
-                                                label="Số dư hiện tại"
-                                                value={detail.balance != null
-                                                    ? new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(detail.balance)
-                                                    : undefined
-                                                }
-                                            />
-                                        )}
-                                        <ReadOnlyRow
                                             icon={<User className="w-3.5 h-3.5" />}
-                                            label="Tên tài khoản"
-                                            value={detail.accountHolder}
+                                            label="Họ và tên"
+                                            value={detail.fullName}
                                             fullWidth
                                         />
                                         <ReadOnlyRow
-                                            icon={<CreditCard className="w-3.5 h-3.5" />}
-                                            label={isBank ? "Số tài khoản" : "Số điện thoại ví"}
-                                            value={detail.accountNumber}
+                                            icon={<Mail className="w-3.5 h-3.5" />}
+                                            label="Email"
+                                            value={detail.email}
                                             fullWidth
+                                            mono
                                         />
+                                    </div>
+
+                                    {/* Roles */}
+                                    <div className="flex flex-col gap-sm p-md bg-surface-muted/30 rounded-2xl border border-border">
+                                        <span className="text-xs text-foreground-muted font-bold uppercase tracking-widest flex items-center gap-xs">
+                                            <Shield className="w-3.5 h-3.5" />
+                                            Vai trò (Roles)
+                                        </span>
+                                        {detail.roles && detail.roles.length > 0 ? (
+                                            <div className="flex flex-wrap gap-sm">
+                                                {detail.roles.map((role, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        className="flex items-center gap-xs px-sm py-xs bg-primary/10 rounded-full border border-primary/20 text-primary"
+                                                    >
+                                                        <BadgeCheck className="w-3.5 h-3.5" />
+                                                        <span className="text-xs font-bold uppercase">{role.name}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="text-sm text-foreground-muted italic">Chưa được gán role nào</span>
+                                        )}
                                     </div>
 
                                     {/* Status Card */}
                                     <div className="flex flex-col gap-sm p-md bg-surface-muted/30 rounded-2xl border border-border">
                                         <span className="text-xs text-foreground-muted font-bold uppercase tracking-widest">Trạng thái tài khoản</span>
                                         <div className="flex flex-wrap items-center gap-sm">
-                                            <StatusBadge status={detail.isActive} activeText="Đang hoạt động" inactiveText="Ngưng hoạt động" />
+                                            <StatusBadge
+                                                status={detail.status !== false}
+                                                activeText="Đang hoạt động"
+                                                inactiveText="Đã bị khóa"
+                                                activeColor="green"
+                                                inactiveColor="red"
+                                            />
                                         </div>
                                     </div>
 
-                                    {/* Time Information */}
+                                    {/* Timestamps */}
                                     <div className="grid grid-cols-2 gap-md p-md bg-surface-elevated rounded-2xl border border-border shadow-sm">
                                         <div className="flex flex-col gap-xs">
                                             <span className="text-xs text-foreground-muted font-bold uppercase tracking-widest flex items-center gap-xs">
                                                 <Calendar className="w-3 h-3" /> Ngày tạo
                                             </span>
-                                            <p className="text-xs font-semibold text-foreground">{formatDateTime(detail.createdAt)}</p>
+                                            <p className="text-xs font-semibold text-foreground">{formatDate(detail.createdAt)}</p>
                                         </div>
                                         {detail.updatedAt && (
                                             <div className="flex flex-col gap-xs">
                                                 <span className="text-xs text-foreground-muted font-bold uppercase tracking-widest flex items-center gap-xs">
                                                     <Calendar className="w-3 h-3" /> Lần cuối cập nhật
                                                 </span>
-                                                <p className="text-xs font-semibold text-foreground">{formatDateTime(detail.updatedAt)}</p>
+                                                <p className="text-xs font-semibold text-foreground">{formatDate(detail.updatedAt)}</p>
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* RIGHT: Logo Box + System Control (2/5) */}
+                                {/* RIGHT: Avatar + System Status Control (2/5) */}
                                 <div className="md:col-span-2 flex flex-col items-center gap-md">
 
-                                    {/* Logo Box */}
-                                    <div className={cn(
-                                        "relative w-full aspect-square max-w-[240px] rounded-3xl border-2 border-dashed flex flex-col items-center justify-center p-lg transition-all duration-300",
-                                        detail?.bankLogoUrl || detail?.providerLogoUrl
-                                            ? "bg-surface-muted/20 border-border"
-                                            : "bg-surface-muted/10 border-border/50"
-                                    )}>
-                                        {detail?.bankLogoUrl || detail?.providerLogoUrl ? (
-                                            <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300 w-full">
-                                                <div className="w-32 h-32 bg-white rounded-2xl shadow-md p-md border border-border flex items-center justify-center">
-                                                    <img
-                                                        src={resolveAvatarPreview(detail?.bankLogoUrl || detail?.providerLogoUrl || "")}
-                                                        alt="Logo"
-                                                        className="w-full h-full object-contain"
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col gap-xs">
-                                                    <p className="font-bold text-foreground text-lg">
-                                                        {isBank ? detail.bankCode : detail.providerCode}
-                                                    </p>
-                                                    <p className="text-xs text-foreground-secondary line-clamp-2 px-sm leading-relaxed">
-                                                        {isBank ? (detail.bankName || detail.bankShortName) : detail.providerName}
-                                                    </p>
-                                                </div>
+                                    {/* Avatar Box */}
+                                    <div className="relative w-full aspect-square max-w-[240px] rounded-3xl border-2 border-dashed bg-surface-muted/10 border-border/50 flex flex-col items-center justify-center p-lg transition-all duration-300">
+                                        {/* <div className="flex flex-col items-center gap-md text-center text-foreground-muted">
+                                            <div className="w-32 h-32 rounded-full bg-surface-muted border-2 border-border flex items-center justify-center">
+                                                <User className="w-16 h-16 opacity-20" />
+                                            </div>
+                                            <div className="flex flex-col gap-xs">
+                                                <p className="font-bold text-foreground text-base">{detail.fullName}</p>
+                                                <p className="text-xs text-foreground-muted font-mono">{detail.email}</p>
+                                            </div>
+                                        </div> */}
+                                        {detail.pictureUrl ? (
+                                            <div className="w-24 h-24 rounded-full overflow-hidden shadow-md border-2 border-primary/30 ring-4 ring-primary/10">
+                                                <img
+                                                    src={detail.pictureUrl}
+                                                    alt={detail.fullName}
+                                                    className="w-full h-full object-cover"
+                                                />
                                             </div>
                                         ) : (
                                             <div className="flex flex-col items-center gap-md text-center text-foreground-muted">
-                                                <Landmark className="w-16 h-16 opacity-10" />
+                                                <div className="w-32 h-32 rounded-full bg-surface-muted border-2 border-border flex items-center justify-center">
+                                                    <User className="w-16 h-16 opacity-20" />
+                                                </div>
                                                 <div className="flex flex-col gap-xs">
-                                                    <p className="font-bold">Chưa có Logo</p>
-                                                    <p className="text-xs px-md uppercase tracking-widest opacity-80">No Logo Data</p>
+                                                    <p className="font-bold text-foreground text-base">{detail.fullName}</p>
+                                                    <p className="text-xs text-foreground-muted font-mono">{detail.email}</p>
                                                 </div>
                                             </div>
                                         )}
@@ -244,10 +239,10 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                                         </div>
                                     </div>
 
-                                    {/* System Status Control */}
+                                    {/* System Status Control — same pattern as AccountModal */}
                                     {detail.status !== undefined && (
                                         <div className="w-full max-w-[240px] p-md bg-surface-elevated rounded-2xl border border-border shadow-sm flex flex-col gap-md">
-                                            {/* Title + status badge */}
+                                            {/* Title + badge + action button */}
                                             <div className="flex items-center justify-between gap-sm">
                                                 <span className="text-xs text-foreground-muted font-bold uppercase tracking-widest flex items-center gap-xs">
                                                     <StatusBadge
@@ -272,7 +267,6 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                                                     Tài khoản đang bị vô hiệu khóa
                                                 </p>
                                             )}
-
                                         </div>
                                     )}
                                 </div>
@@ -297,11 +291,11 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                 onClose={() => setIsConfirmOpen(false)}
                 onConfirm={handleToggleStatus}
                 loading={actionLoading}
-                title={isLocked ? "Xác nhận mở khóa tài khoản" : "Xác nhận khóa tài khoản"}
+                title={isLocked ? "Xác nhận mở khóa người dùng" : "Xác nhận khóa người dùng"}
                 description={
                     isLocked
-                        ? `Bạn có chắc chắn muốn mở khóa tài khoản "${detail?.accountHolder ?? ""}"? Tài khoản sẽ hoạt động trở lại bình thường.`
-                        : `Bạn có chắc chắn muốn khóa tài khoản "${detail?.accountHolder ?? ""}"? Tài khoản sẽ bị tạm dừng hoạt động bởi hệ thống.`
+                        ? `Bạn có chắc chắn muốn mở khóa tài khoản "${detail?.fullName ?? ""}"? Người dùng sẽ truy cập lại hệ thống bình thường.`
+                        : `Bạn có chắc chắn muốn khóa tài khoản "${detail?.fullName ?? ""}"? Người dùng sẽ không thể đăng nhập vào hệ thống.`
                 }
                 confirmText={isLocked ? "Mở khóa" : "Xác nhận khóa"}
             />
@@ -309,4 +303,4 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
     );
 };
 
-export default AccountModal;
+export default UserModal;

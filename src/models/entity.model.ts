@@ -33,20 +33,16 @@ export interface SignInGoogleRes {
 }
 
 export interface UserRes {
-    userId: string;
-    googleId: string;
-    fullName: string;
     email: string;
+    fullName: string;
     pictureUrl?: string;
-    roles?: RoleRes[];
 }
 
 export interface GetUserBaseRes extends BaseRes {
-    userId: string;
-    fullName: string;
     email: string;
+    fullName: string;
     pictureUrl?: string;
-    getRolesRes?: RoleRes[];
+    roles?: RoleRes[];
 }
 
 export interface TokenRes {
@@ -63,7 +59,7 @@ export interface BankRes extends BaseRes {
     bankCode: string;
     bankName: string;
     shortName: string;
-    napasCode?: string;
+    napasBin: string;
     swiftCode?: string;
     logoUrl?: string;
     isActive: boolean;
@@ -77,7 +73,7 @@ export interface AccountRes extends BaseRes {
     bankCode?: string;
     bankName?: string;
     bankShortName?: string;
-    napasCode?: string;
+    napasBin?: string;
     swiftCode?: string;
     bankLogoUrl?: string;
     bankIsActive?: boolean;
@@ -110,20 +106,43 @@ export interface PostQrRes {
     transactionRef: string;
 }
 
-export interface QrRes extends BaseRes {
-    userId: string;
-    accountNumber?: string;
-    accountHolder?: string;
+export interface QrRes {
+    id: number;
+    userId?: string;
+    email?: string;
+    accountId?: string;
 
-    bankCode?: string;
-    bankName?: string;
+    accountNumberSnapshot?: string;
+    accountHolderSnapshot?: string;
+
+    bankCodeSnapshot?: string;
+    bankNameSnapshot?: string;
+    napasBinSnapshot?: string;
+
     bankShortName?: string;
-    napasCode?: string;
-    swiftCode?: string;
-    bankogoUrl?: string;
+    bankLogoUrl?: string;
+
+    amount?: number;
+    currency: string;
+    description?: string;
+
+    qrData?: string;
+    qrImageUrl?: string;
+    transactionRef?: string;
 
     providerId: string;
-    balance?: number;
-    isPinned?: boolean;
-    isActive: boolean;
+    providerCode?: string;
+    providerName?: string;
+    providerLogoUrl?: string;
+
+    receiverType: string;
+
+    isFixedAmount: boolean;
+    qrMode: string;
+    qrStatus: string;
+
+    createdAt: string;
+    expiredAt?: string;
+    paidAt?: string;
+    deletedAt?: string;
 }

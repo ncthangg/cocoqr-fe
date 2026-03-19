@@ -21,6 +21,15 @@ export type Column<T> = {
     sortable?: boolean
     filterable?: boolean
     filterOptions?: { label: string, value: any }[]
+
+    /** CSS width value, e.g. "80px", "10%" — applied to both th and td */
+    width?: string
+    /** CSS max-width value, e.g. "200px" — clips content; use with truncate */
+    maxWidth?: string
+    /** CSS min-width value, e.g. "60px" — prevents column from collapsing */
+    minWidth?: string
+    /** Truncate overflowing text with ellipsis (requires maxWidth or width) */
+    truncate?: boolean
 }
 
 type DataTableProps<T> = {
@@ -45,9 +54,18 @@ type DataTableProps<T> = {
 
     // Click handler for rows
     onRowClick?: (row: T) => void
-    
+
     // Predicate to determine if row is currently selected
     selectedRowPredicate?: (row: T) => boolean
+}
+
+/** Build inline style for a column's size constraints */
+function colStyle(col: Pick<Column<unknown>, "width" | "maxWidth" | "minWidth">): React.CSSProperties {
+    return {
+        width: col.width,
+        maxWidth: col.maxWidth,
+        minWidth: col.minWidth,
+    }
 }
 
 export function DataTable<T>({
@@ -86,10 +104,13 @@ export function DataTable<T>({
     return (
         <div className="relative h-full flex flex-col w-full min-h-[150px] [&>div]:flex-1 [&>div]:overflow-auto">
             <Table>
-                <TableHeader className="sticky top-0 z-10 bg-surface shadow-sm outline outline-1 outline-border">
-                    <TableRow className="bg-surface hover:bg-surface border-none">
+                <TableHeader className="sticky top-0 z-20 bg-surface border-b-2 border-border-strong">
+                    <TableRow className="bg-surface hover:bg-surface border-none divide-x divide-border">
                         {showIndex && (
-                            <TableHead className="px-6 py-2 align-top h-auto border-b-0 w-[60px] text-center">
+                            <TableHead
+                                className="px-lg py-sm align-top h-auto border-b-0 text-center"
+                                style={{ width: "60px", minWidth: "60px", maxWidth: "60px" }}
+                            >
                                 <DataTableColumnHeader
                                     column={{ header: "STT", accessor: () => "" }}
                                     filterValue={undefined}
@@ -102,7 +123,8 @@ export function DataTable<T>({
                         {columns.map((col, index) => (
                             <TableHead
                                 key={index}
-                                className="px-6 py-2 align-top h-auto border-b-0"
+                                className="px-lg py-sm align-top h-auto border-b-0"
+                                style={colStyle(col)}
                             >
                                 <DataTableColumnHeader
                                     column={col}
@@ -123,11 +145,11 @@ export function DataTable<T>({
                                 colSpan={columns.length + (showIndex ? 1 : 0)}
                                 className="h-32 text-center text-foreground-muted"
                             >
-                                <div className="flex flex-col items-center justify-center space-y-3">
+                                <div className="flex flex-col items-center justify-center gap-sm">
                                     <div className="w-16 h-16 rounded-full bg-surface-muted flex items-center justify-center">
-                                        <Loader className="w-8 h-8 text-text-disabled" />
+                                        <Loader className="w-8 h-8 text-foreground-muted" />
                                     </div>
-                                    <p> Đang tải dữ liệu...</p>
+                                    <p>Đang tải dữ liệu...</p>
                                 </div>
                             </TableCell>
                         </TableRow>
@@ -137,33 +159,91 @@ export function DataTable<T>({
                                 colSpan={columns.length + (showIndex ? 1 : 0)}
                                 className="h-32 text-center text-foreground-muted"
                             >
-                                <div className="flex flex-col items-center justify-center space-y-3">
+                                <div className="flex flex-col items-center justify-center gap-sm">
                                     <div className="w-16 h-16 rounded-full bg-surface-muted flex items-center justify-center">
-                                        <Search className="w-8 h-8 text-text-disabled" />
+                                        <Search className="w-8 h-8 text-foreground-muted" />
                                     </div>
                                     <p>Chưa có dữ liệu.</p>
                                 </div>
                             </TableCell>
                         </TableRow>
                     ) : (
-                        data.map((row, i) => (
-                            <TableRow 
-                                key={i} 
-                                className={`hover:bg-surface/50 border-border transition-colors ${onRowClick ? 'cursor-pointer' : ''} ${selectedRowPredicate?.(row) ? 'bg-blue-50/50 outline outline-[1.5px] outline-blue-500 outline-offset-[-1px] font-medium' : ''}`}
-                                onClick={() => onRowClick?.(row)}
-                            >
-                                {showIndex && (
-                                    <TableCell className="h-16 px-6 py-3 text-base text-center font-medium">
-                                        {(pageNumber - 1) * pageSize + i + 1}
-                                    </TableCell>
-                                )}
-                                {columns.map((col, j) => (
-                                    <TableCell key={j} className="h-16 px-6 py-3 text-base">
-                                        {col.cell ? col.cell(row) : (col.accessor(row) as React.ReactNode)}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))
+                        data.map((row, i) => {
+                            const isSelected = selectedRowPredicate?.(row);
+                            return (
+                                <TableRow
+                                    key={i}
+                                    className={`
+                                        group transition-all duration-300 border-b border-border relative
+                                        ${onRowClick ? 'cursor-pointer' : ''}
+                                        ${isSelected
+                                            ? 'bg-primary/[0.12] border-primary z-10'
+                                            : 'hover:bg-surface-muted/50'
+                                        }
+                                    `}
+                                    onClick={() => onRowClick?.(row)}
+                                >
+                                    {showIndex && (
+                                        <TableCell
+                                            className={`
+                                                px-lg py-md text-base text-center font-medium transition-all duration-300
+                                                ${isSelected ? 'text-primary' : 'text-foreground-secondary'}
+                                            `}
+                                            style={{ width: "60px", minWidth: "60px", maxWidth: "60px" }}
+                                        >
+                                            {(pageNumber - 1) * pageSize + i + 1}
+                                            {isSelected && (
+                                                <>
+                                                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-primary z-20" />
+                                                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary z-20" />
+                                                    <div className="absolute top-0 left-0 bottom-0 w-[2px] bg-primary z-20" />
+                                                </>
+                                            )}
+                                        </TableCell>
+                                    )}
+                                    {columns.map((col, j) => {
+                                        const content = col.cell ? col.cell(row) : (col.accessor(row) as React.ReactNode)
+                                        const rawValue = col.accessor(row)
+                                        const titleText = col.truncate && typeof rawValue === "string" ? rawValue : undefined
+
+                                        return (
+                                            <TableCell
+                                                key={j}
+                                                className={`
+                                                    px-lg py-md text-base transition-all duration-300 relative
+                                                    ${isSelected ? 'font-bold text-primary' : ''}
+                                                    ${col.maxWidth || col.width ? 'overflow-hidden' : ''}
+                                                `}
+                                                style={colStyle(col)}
+                                            >
+                                                {col.truncate ? (
+                                                    <div
+                                                        className="truncate"
+                                                        title={titleText}
+                                                    >
+                                                        {content}
+                                                    </div>
+                                                ) : (
+                                                    content
+                                                )}
+                                                {isSelected && (
+                                                    <>
+                                                        <div className="absolute top-0 left-0 right-0 h-[2px] bg-primary z-20" />
+                                                        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary z-20" />
+                                                        {j === 0 && !showIndex && (
+                                                            <div className="absolute top-0 left-0 bottom-0 w-[2px] bg-primary z-20" />
+                                                        )}
+                                                        {j === columns.length - 1 && (
+                                                            <div className="absolute top-0 right-0 bottom-0 w-[2px] bg-primary z-20" />
+                                                        )}
+                                                    </>
+                                                )}
+                                            </TableCell>
+                                        )
+                                    })}
+                                </TableRow>
+                            );
+                        })
                     )}
                 </TableBody>
             </Table>

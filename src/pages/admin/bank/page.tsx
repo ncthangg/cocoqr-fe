@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { bankApi } from "../../../services/bank-api.service";
 import type { BankRes, PagingVM } from "../../../models/entity.model";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
+import ActionButton from "@/components/UICustoms/ActionButton";
 import BankModal from "./components/BankModal";
 import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
 import { resolveAvatarPreview } from "../../../utils/imageConvertUtils";
@@ -10,6 +11,7 @@ import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
+import { StatCard } from "@/components/UICustoms/StatCard";
 
 const BankPage: React.FC = () => {
     const [banks, setBanks] = useState<BankRes[]>([]);
@@ -53,7 +55,7 @@ const BankPage: React.FC = () => {
             }
         } catch (error) {
             console.error("Error fetching banks:", error);
-            toast.error("Failed to fetch bank data.");
+            toast.error("Kh�ng th? t?i d? li?u ng�n h�ng.");
         } finally {
             setLoading(false);
         }
@@ -84,8 +86,14 @@ const BankPage: React.FC = () => {
         setIsDeleteModalOpen(true);
     };
 
-    const handleModalSuccess = () => {
-        fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch);
+    const handleModalSuccess = (updatedBank?: BankRes) => {
+        if (updatedBank) {
+            setBanks(prev =>
+                prev.map(b => b.id === updatedBank.id ? updatedBank : b)
+            );
+        } else {
+            fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter);
+        }
     };
 
     const handleDeleteBank = async () => {
@@ -93,12 +101,12 @@ const BankPage: React.FC = () => {
         try {
             setLoading(true);
             await bankApi.delete(selectedBank.id);
-            toast.success("Bank deleted successfully!");
+            toast.success("X�a ng�n h�ng th�nh c�ng!");
             handleModalSuccess();
             setIsDeleteModalOpen(false);
         } catch (error) {
             console.error("Error deleting bank:", error);
-            toast.error("Failed to delete bank.");
+            toast.error("Kh�ng th? x�a ng�n h�ng.");
         } finally {
             setLoading(false);
         }
@@ -106,8 +114,21 @@ const BankPage: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
-            <div className="flex justify-between items-center shrink-0">
-                <h1 className="text-2xl font-bold text-foreground">Bank Management</h1>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Quản lý ngân hàng</h1>
+                    <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý thông tin các ngân hàng, ví điện tử của bạn.</p>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 gap-6 shrink-0">
+                    <StatCard
+                        label="Tổng ngân hàng"
+                        value={paging.totalItems}
+                        icon={<Wallet className="w-5 h-5 text-primary" />}
+                        color="blue"
+                    />
+                </div>
             </div>
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
@@ -115,7 +136,7 @@ const BankPage: React.FC = () => {
                     <TableToolbar
                         value={searchValue}
                         onChange={setSearchValue}
-                        placeholder="Search banks..."
+                        placeholder="Tìm kiếm ngân hàng..."
                         handleOpenCreateModal={handleOpenCreateModal}
                         onResetPage={() => handlePageChange(1)}
                     />
@@ -126,12 +147,12 @@ const BankPage: React.FC = () => {
                         loading={loading}
                         data={banks}
                         sortState={sortState ? {
-                            index: ["bankCode", "shortName", "bankName", "isActive"]
+                            index: ["bankCode", "shortName", "bankName", "Tr?ng th�i"]
                                 .indexOf(sortState.field) + 1, dir: sortState.dir
                         } : null}
                         filterState={statusFilter !== undefined ? { 4: statusFilter } : {}}
                         onSortChange={(index, dir) => {
-                            const columns = ["logo", "bankCode", "shortName", "bankName", "isActive", "actions"];
+                            const columns = ["logo", "bankCode", "shortName", "bankName", "Tr?ng th�i", "Thao t�c"];
                             const field = columns[index];
                             if (!dir) setSortState(null);
                             else setSortState({ field, dir });
@@ -150,13 +171,13 @@ const BankPage: React.FC = () => {
                                 cell: (bank) => bank.logoUrl ? (
                                     <img src={resolveAvatarPreview(bank.logoUrl ?? null)} alt={bank.shortName} className="w-10 h-10 object-contain rounded bg-white p-1 border border-border" />
                                 ) : (
-                                    <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-text-secondary">
+                                    <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-foreground-secondary">
                                         {bank.bankCode}
                                     </div>
                                 )
                             },
                             {
-                                header: "Code",
+                                header: "M� NH",
                                 accessor: (bank) => bank.bankCode,
                                 type: "string",
                                 sortable: true,
@@ -164,7 +185,7 @@ const BankPage: React.FC = () => {
                                 cell: (bank) => <span className="font-medium">{bank.bankCode}</span>
                             },
                             {
-                                header: "Short Name",
+                                header: "T�n vi?t t?t",
                                 accessor: (bank) => bank.shortName,
                                 type: "string",
                                 sortable: true,
@@ -172,7 +193,7 @@ const BankPage: React.FC = () => {
                                 cell: (bank) => bank.shortName
                             },
                             {
-                                header: "Bank Name",
+                                header: "T�n ng�n h�ng",
                                 accessor: (bank) => bank.bankName,
                                 type: "string",
                                 sortable: true,
@@ -180,7 +201,7 @@ const BankPage: React.FC = () => {
                                 cell: (bank) => bank.bankName
                             },
                             {
-                                header: "Trạng thái",
+                                header: "Tr?ng th�i",
                                 accessor: (bank) => bank.isActive,
                                 type: "boolean",
                                 sortable: false,
@@ -196,24 +217,22 @@ const BankPage: React.FC = () => {
                                 )
                             },
                             {
-                                header: "Actions",
+                                header: "Thao tác",
                                 accessor: (bank) => bank.id,
                                 cell: (bank) => (
-                                    <div className="flex items-center gap-3">
-                                        <button
+                                    <div className="flex items-center gap-sm">
+                                        <ActionButton
+                                            icon={<Edit className="w-4 h-4" />}
                                             onClick={() => handleOpenEditModal(bank)}
-                                            className="text-blue-600 hover:text-blue-800 transition-colors"
-                                            title="Edit"
-                                        >
-                                            <Edit className="w-4 h-4" />
-                                        </button>
-                                        <button
+                                            color="blue"
+                                            title="Chỉnh sửa"
+                                        />
+                                        <ActionButton
+                                            icon={<Trash2 className="w-4 h-4" />}
                                             onClick={() => handleOpenDeleteModal(bank)}
-                                            className="text-red-600 hover:text-red-800 transition-colors"
-                                            title="Delete"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                            color="red"
+                                            title="Xóa"
+                                        />
                                     </div>
                                 )
                             }

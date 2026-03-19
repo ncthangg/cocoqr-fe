@@ -1,34 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { userRoleApi } from "../../../../services/userRole-api.service";
-import { roleApi } from "../../../../services/role-api.service";
+
 import type { GetUserBaseRes } from "../../../../models/entity.model";
 import { toast } from "react-toastify";
 import { X, Shield, Plus, Trash2 } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
-import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
+import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
+import ActionButton from "@/components/UICustoms/ActionButton";
 
 interface UserRolesModalProps {
     isOpen: boolean;
     onClose: () => void;
     user: GetUserBaseRes | null;
+    allRoles: any[];
+    onRolesUpdate?: (userId: string, roles: any[]) => void;
 }
 
-const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }) => {
-    const [userRoles, setUserRoles] = useState<any[]>([]);
-    const [allRoles, setAllRoles] = useState<any[]>([]);
+const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, allRoles, onRolesUpdate }) => {
+    const [userRoles, setUserRoles] = useState<any[]>(user?.roles || []);
 
     const [loading, setLoading] = useState<boolean>(false);
-    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [selectedRoleToAdd, setSelectedRoleToAdd] = useState<string>("");
 
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
     useEffect(() => {
         if (isOpen && user) {
-            fetchUserRoles();
-            fetchAllRoles();
+            if (user.roles !== undefined && user.roles !== null) {
+                setUserRoles(user.roles);
+            } else {
+                fetchUserRoles();
+            }
         } else {
             setUserRoles([]);
-            setAllRoles([]);
             setSelectedRoleToAdd("");
         }
     }, [isOpen, user]);
@@ -37,23 +42,15 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }
         if (!user) return;
         try {
             setLoading(true);
-            const data = await userRoleApi.getByUserId(user.userId);
-            // Fallback for different variations of payload
-            setUserRoles(data || []);
+            const data = await userRoleApi.getByUserId(user.id);
+            const roles = data || [];
+            setUserRoles(roles);
+            if (onRolesUpdate) onRolesUpdate(user.id, roles);
         } catch (error) {
             console.error("Failed to fetch roles for user", error);
             toast.error(`Không thể tải role cho ${user.fullName}`);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const fetchAllRoles = async () => {
-        try {
-            const data = await roleApi.getAll();
-            setAllRoles(data || []);
-        } catch (error) {
-            console.error("Failed to fetch all roles", error);
         }
     };
 
@@ -67,7 +64,7 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }
             const updatedRoleIds = [...currentIds, selectedRoleToAdd];
 
             await userRoleApi.postPut({
-                userId: user.userId,
+                userId: user.id,
                 roleIds: Array.from(new Set(updatedRoleIds))
             });
 
@@ -86,7 +83,7 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }
 
     const handleRemoveRoleClick = (roleId: string, roleName: string) => {
         setRoleToRemove({ id: roleId, name: roleName });
-        setIsConfirmOpen(true);
+        setIsDeleteModalOpen(true);
     };
 
     const executeRemoveRole = async () => {
@@ -98,13 +95,13 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }
             const updatedRoleIds = currentIds.filter(id => id !== roleToRemove.id);
 
             await userRoleApi.postPut({
-                userId: user.userId,
+                userId: user.id,
                 roleIds: updatedRoleIds
             });
 
             toast.success("Xóa role thành công!");
             fetchUserRoles();
-            setIsConfirmOpen(false);
+            setIsDeleteModalOpen(false);
             setRoleToRemove(null);
         } catch (error) {
             console.error("Failed to remove role", error);
@@ -122,7 +119,8 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }
 
     return (
         <div
-            className="modal-overlay bg-black/60 px-4 py-6"
+            className="modal-overlay"
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
             <div
                 className="modal-content max-w-modal-lg relative flex flex-col overflow-hidden rounded-2xl p-6 md:p-8 text-center shadow-2xl"
@@ -135,7 +133,7 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        className="p-1 rounded-md text-foreground-muted hover:text-foreground hover:bg-surface-muted transition-colors"
                         disabled={isSubmitting}
                     >
                         <X className="w-5 h-5" />
@@ -148,7 +146,7 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }
                         <h3 className="text-sm font-semibold mb-3 text-foreground">Thêm Role Mới</h3>
                         <div className="flex items-center gap-2">
                             <select
-                                className="flex-1 h-10 px-3 text-sm rounded-md border border-input bg-surface text-foreground shadow-sm focus-visible:outline-none focus:ring-1 focus:ring-ring"
+                                className="flex-1 h-10 px-sm text-sm rounded-md border border-border-strong bg-surface text-foreground shadow-sm focus-visible:outline-none focus:ring-1 focus:ring-primary/40"
                                 value={selectedRoleToAdd}
                                 onChange={(e) => setSelectedRoleToAdd(e.target.value)}
                                 disabled={isSubmitting || loading}
@@ -174,7 +172,7 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }
                     <div>
                         <h3 className="text-sm font-semibold mb-3 text-foreground">Roles Hiện Tại</h3>
                         {loading ? (
-                            <div className="flex justify-center p-6 text-muted-foreground text-sm">
+                            <div className="flex justify-center p-6 text-foreground-muted text-sm">
                                 Đang tải roles...
                             </div>
                         ) : userRoles.length > 0 ? (
@@ -187,20 +185,19 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }
                                             <div className="flex flex-col">
                                                 <span className="font-medium text-foreground">{roleName}</span>
                                             </div>
-                                            <button
+
+                                            <ActionButton
+                                                icon={<Trash2 className="w-3.5 h-3.5" />}
                                                 onClick={() => handleRemoveRoleClick(roleId, roleName)}
-                                                disabled={isSubmitting}
-                                                title="Xóa role này"
-                                                className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md transition-colors disabled:opacity-50"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                                color="red"
+                                                title="Xóa"
+                                            />
                                         </div>
                                     );
                                 })}
                             </div>
                         ) : (
-                            <div className="text-center p-6 text-sm text-muted-foreground border border-dashed border-border rounded-md">
+                            <div className="text-center p-6 text-sm text-foreground-muted border border-dashed border-border rounded-md">
                                 Người dùng này chưa được gán role nào.
                             </div>
                         )}
@@ -208,21 +205,21 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user }
                 </div>
 
                 <div className="flex justify-end gap-3 p-4 border-t border-border bg-muted/30 shrink-0">
-                    <Button className="border border-border bg-surface hover:bg-muted text-foreground px-4 py-2" onClick={onClose} disabled={isSubmitting}>
+                    <Button className="border border-border bg-surface hover:bg-surface-muted text-foreground px-4 py-2" onClick={onClose} disabled={isSubmitting}>
                         Đóng
                     </Button>
                 </div>
             </div>
 
-            <ActionConfirmModal
-                isOpen={isConfirmOpen}
-                onClose={() => setIsConfirmOpen(false)}
-                onConfirm={executeRemoveRole}
+            <DeleteConfirmModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={() => executeRemoveRole()}
                 title="Xác nhận xóa Role khỏi User"
-                description={`Bạn có chắc chắn muốn xóa role ${roleToRemove?.name || ''} khỏi người dùng này?`}
-                loading={isSubmitting}
-                confirmText="Xóa"
-                confirmButtonClass="bg-red-600 text-white hover:bg-red-700 px-4 py-2 border-transparent"
+                description={`Bạn có chắc chắn muốn xóa role ${roleToRemove?.name || ""} khỏi người dùng này?`}
+                loading={loading}
+                confirmText="Xóa hoàn toàn"
+                itemName={roleToRemove?.name || ""}
             />
         </div >
     );

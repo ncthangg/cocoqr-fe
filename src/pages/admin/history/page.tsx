@@ -1,26 +1,248 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Eye, Wallet } from "lucide-react";
+import { toast } from "react-toastify";
+import { qrApi } from "@/services/qr-api.service";
+import { providerApi } from "@/services/provider-api.service";
+import type { QrRes, PagingVM, ProviderRes } from "@/models/entity.model";
+import { DataTable } from "@/components/UICustoms/Table/data-table";
+import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
+import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
+import { formatDateTime } from "@/utils/dateTimeUtils";
+import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
+import HistoryDetailModal from "../../user/history/components/HistoryDetailModal";
+import ActionButton from "@/components/UICustoms/ActionButton";
+import { StatCard } from "@/components/UICustoms/StatCard";
 
-const HistoryPage: React.FC = () => {
+const AdminHistoryPage: React.FC = () => {
+    const [records, setRecords] = useState<QrRes[]>([]);
+    const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
+    const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [paging, setPaging] = useState<PagingVM<QrRes>>({
+        list: [],
+        pageSize: 10,
+        pageNumber: 1,
+        totalPages: 1,
+        totalItems: 0,
+    });
+
+    const [searchValue, setSearchValue] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [sortState, setSortState] = useState<{ field: string; dir: "asc" | "desc" } | null>(null);
+    const [providerFilter, setProviderFilter] = useState<string | undefined>(undefined);
+
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [selectedId, setSelectedId] = useState<number | null>(null);
+
+    useEffect(() => {
+        const h = setTimeout(() => setDebouncedSearch(searchValue), 500);
+        return () => clearTimeout(h);
+    }, [searchValue]);
+
+    const fetchProviders = useCallback(async () => {
+        if (hasFetchedProviders) return;
+        try {
+            const res = await providerApi.getAll();
+            if (res) { setAllProviders(res || []); setHasFetchedProviders(true); }
+        } catch (err) { console.error("Error fetching providers:", err); }
+    }, [hasFetchedProviders]);
+
+    const fetchRecords = useCallback(async (
+        page: number, size: number,
+        search?: string, sortField?: string, sortDir?: "asc" | "desc", providerId?: string
+    ) => {
+        try {
+            setLoading(true);
+            const res = await qrApi.getAllByAdmin(page, size, sortField ?? null, sortDir ?? null, null, providerId ?? null, search ?? null);
+            if (res) { setRecords(res.list || []); setPaging(res); }
+        } catch (err) {
+            console.error("Error fetching QR history (admin):", err);
+            toast.error("Không thể tải lịch sử QR.");
+        } finally { setLoading(false); }
+    }, []);
+
+    useEffect(() => {
+        fetchRecords(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, providerFilter);
+    }, [fetchRecords, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, providerFilter]);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= paging.totalPages)
+            setPaging(prev => ({ ...prev, pageNumber: newPage }));
+    };
+
+    const handleViewDetail = (rec: QrRes) => {
+        setSelectedId(rec.id);
+        setIsDetailOpen(true);
+    };
+
     return (
-        <div>
-            <h1>HistoryPage</h1>
-            <p>Welcome to the administration panel. Here you can manage the application settings and users.</p>
-            <div className="grid grid-cols-3 gap-4 mt-8">
-                <div className="p-6 border border-border rounded-lg bg-surface">
-                    <h3>Total Users</h3>
-                    <p className="text-2xl font-bold">1,234</p>
+        <div className="flex flex-col gap-6 flex-1 min-h-0">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Lịch sử QR (Admin)</h1>
+                    <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý thông tin các ngân hàng, ví điện tử của bạn.</p>
                 </div>
-                <div className="p-6 border border-border rounded-lg bg-surface">
-                    <h3>Active QRs</h3>
-                    <p className="text-2xl font-bold">567</p>
-                </div>
-                <div className="p-6 border border-border rounded-lg bg-surface">
-                    <h3>Revenue</h3>
-                    <p className="text-2xl font-bold">$12,345</p>
+
+                {/* Stats Cards */}
+                <div className="grid md:grid-cols-1 gap-6 shrink-0">
+                    <StatCard
+                        label="Tổng tài khoản"
+                        value={paging.totalItems}
+                        icon={<Wallet className="w-5 h-5 text-primary" />}
+                        color="blue"
+                    />
                 </div>
             </div>
+
+            <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
+                <div className="shrink-0 border-b border-border">
+                    <TableToolbar
+                        value={searchValue}
+                        onChange={setSearchValue}
+                        placeholder="Tìm kiếm theo tên, số tài khoản..."
+                        onResetPage={() => handlePageChange(1)}
+                        filterValue={providerFilter !== undefined ? String(providerFilter) : ""}
+                        filterOptions={allProviders.map(p => ({ label: p.name, value: p.id }))}
+                        filterPlaceholder="Chọn loại tài khoản..."
+                        onFilterChange={(val) => setProviderFilter(val === undefined ? undefined : String(val))}
+                        onFetchOptions={fetchProviders}
+                    />
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-hidden">
+                    <DataTable
+                        loading={loading}
+                        data={records}
+                        showIndex
+                        pageNumber={paging.pageNumber}
+                        pageSize={paging.pageSize}
+                        sortState={sortState ? {
+                            index: ["email", "accountHolderSnapshot", "bankCodeSnapshot", "accountNumberSnapshot", "receiverType", "qrMode", "qrStatus", "createdAt"].indexOf(sortState.field),
+                            dir: sortState.dir
+                        } : null}
+                        onSortChange={(index, dir) => {
+                            const cols = ["email", "accountHolderSnapshot", "bankCodeSnapshot", "accountNumberSnapshot", "receiverType", "qrMode", "qrStatus", "createdAt"];
+                            if (!dir) setSortState(null);
+                            else setSortState({ field: cols[index], dir });
+                        }}
+                        onResetPage={() => handlePageChange(1)}
+                        columns={[
+                            {
+                                header: "EMAIL",
+                                accessor: (r) => r.email,
+                                type: "string",
+                                cell: (r) => <span className="font-semibold uppercase">{r.email || "—"}</span>
+                            },
+                            {
+                                header: "TÊN TÀI KHOẢN",
+                                accessor: (r) => r.accountHolderSnapshot,
+                                type: "string",
+                                sortable: true,
+                                cell: (r) => <span className="font-semibold uppercase">{r.accountHolderSnapshot || "—"}</span>
+                            },
+                            {
+                                header: "NGÂN HÀNG / VÍ",
+                                accessor: (r) => r.bankCodeSnapshot || r.providerName,
+                                type: "string",
+                                cell: (r) => {
+                                    const logoUrl = r.bankLogoUrl || r.providerLogoUrl;
+                                    return (
+                                        <div className="flex items-center gap-2">
+                                            {logoUrl ? (
+                                                <img
+                                                    src={resolveAvatarPreview(logoUrl)}
+                                                    alt={r.bankShortName || r.providerName}
+                                                    className="w-8 h-8 object-contain rounded bg-white p-0.5 border border-border"
+                                                />
+                                            ) : (
+                                                <div className="w-8 h-8 bg-surface-muted border border-border rounded flex items-center justify-center text-[10px] font-bold text-foreground-secondary">
+                                                    {r.bankCodeSnapshot || r.providerCode}
+                                                </div>
+                                            )}
+                                            <span className="font-semibold">{(r.bankCodeSnapshot && r.bankNameSnapshot) ? r.bankNameSnapshot : r.providerName}</span>
+                                        </div>
+                                    );
+                                }
+                            },
+                            {
+                                header: "SỐ TÀI KHOẢN",
+                                accessor: (r) => r.accountNumberSnapshot,
+                                type: "string",
+                                cell: (r) => <span className="font-semibold">{r.accountNumberSnapshot || "—"}</span>
+                            },
+                            {
+                                header: "LOẠI GIAO DỊCH",
+                                accessor: (r) => r.receiverType,
+                                type: "string",
+                                cell: (r) =>
+                                    <span className="font-semibold text-primary">
+                                        {r.receiverType}
+                                    </span>
+                            },
+                            {
+                                header: "LOẠI QR",
+                                accessor: (r) => r.qrMode,
+                                type: "string",
+                                cell: (r) =>
+                                    <span className="font-semibold text-primary">
+                                        {r.qrMode}
+                                    </span>
+                            },
+                            {
+                                header: "TRẠNG THÁI",
+                                accessor: (r) => r.qrStatus,
+                                type: "string",
+                                cell: (r) =>
+                                    <span className="font-semibold text-primary">
+                                        {r.qrStatus}
+                                    </span>
+                            },
+                            {
+                                header: "NGÀY TẠO",
+                                accessor: (r) => r.createdAt,
+                                type: "string",
+                                sortable: true,
+                                filterable: false,
+                                cell: (r) => formatDateTime(r.createdAt)
+                            },
+                            {
+                                header: "Chi tiết",
+                                accessor: (r) => r.id,
+                                cell: (r) => (
+                                    <div className="flex items-center gap-3">
+                                        <ActionButton
+                                            icon={<Eye className="w-4 h-4" />}
+                                            onClick={() => handleViewDetail(r)}
+                                            color="blue"
+                                            title="Xem chi tiết"
+                                        />
+                                    </div>
+                                )
+                            }
+                        ]}
+                    />
+                </div>
+
+                <div className="shrink-0">
+                    <TablePagination
+                        pageNumber={paging.pageNumber}
+                        pageSize={paging.pageSize}
+                        totalItems={paging.totalItems}
+                        totalPages={paging.totalPages}
+                        loading={loading}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={(newSize) => setPaging(prev => ({ ...prev, pageSize: newSize, pageNumber: 1 }))}
+                    />
+                </div>
+            </div>
+
+            <HistoryDetailModal
+                isOpen={isDetailOpen}
+                onClose={() => { setIsDetailOpen(false); setSelectedId(null); }}
+                historyId={selectedId}
+            />
         </div>
     );
 };
 
-export default HistoryPage;
+export default AdminHistoryPage;

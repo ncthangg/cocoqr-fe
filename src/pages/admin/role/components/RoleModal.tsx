@@ -1,77 +1,64 @@
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, ShieldCheck } from "lucide-react";
 import { toast } from "react-toastify";
-import Button from "../../../../components/UICustoms/Button";
-import { roleApi } from "../../../../services/role-api.service";
-import type { RoleRes } from "../../../../models/entity.model";
-import type { PostRoleReq, PutRoleReq } from "../../../../models/entity.request.model";
+import Button from "@/components/UICustoms/Button";
+import { roleApi } from "@/services/role-api.service";
+import type { RoleRes } from "@/models/entity.model";
+import type { PostRoleReq, PutRoleReq } from "@/models/entity.request.model";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 
 interface RoleModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: () => void;
+    onSuccess: (updatedRole?: RoleRes) => void;
     role?: RoleRes | null;
 }
 
 const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role }) => {
     const [loading, setLoading] = useState(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-    const [formData, setFormData] = useState<PostRoleReq>({
-        name: "",
-    });
+    const [formData, setFormData] = useState<PostRoleReq>({ name: "" });
 
     useEffect(() => {
         if (isOpen) {
-            if (role) {
-                setFormData({
-                    name: role.name || "",
-                });
-            } else {
-                setFormData({
-                    name: "",
-                });
-            }
+            setFormData({ name: role ? (role.name || "") : "" });
             setIsConfirmOpen(false);
         }
     }, [isOpen, role]);
 
     if (!isOpen) return null;
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    const roleCode = formData.name ? formData.name.toUpperCase().trim().replace(/\s+/g, "_") : "";
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
         if (!formData.name) {
             toast.error("Vui lòng nhập tên role.");
             return;
         }
-
         setIsConfirmOpen(true);
     };
 
     const executeSave = async () => {
         try {
             setLoading(true);
-
-            if (role && role.id) {
+            if (role?.id) {
                 const putReq: PutRoleReq = { name: formData.name };
                 await roleApi.put(role.id, putReq);
                 toast.success("Cập nhật role thành công!");
+                const updatedRole: RoleRes = {
+                    ...role,
+                    name: formData.name,
+                    nameUpperCase: formData.name.toUpperCase().trim().replace(/\s+/g, "_"),
+                };
+                setIsConfirmOpen(false);
+                onSuccess(updatedRole);
             } else {
                 await roleApi.post(formData);
                 toast.success("Tạo mới role thành công!");
+                setIsConfirmOpen(false);
+                onSuccess();
             }
-
-            setIsConfirmOpen(false);
-            onSuccess();
             onClose();
         } catch (error) {
             console.error("Error saving role:", error);
@@ -83,60 +70,77 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
 
     return (
         <div
-            className="modal-overlay bg-black/60 px-4 py-6"
+            className="modal-overlay"
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
             <div
-                className="modal-content max-w-modal-lg relative flex flex-col overflow-hidden rounded-2xl p-6 md:p-8 shadow-2xl bg-surface"
-                onClick={e => e.stopPropagation()}
+                className="modal-content max-w-modal-sm bg-surface-elevated relative flex flex-col overflow-hidden"
+                role="dialog"
+                aria-modal="true"
+                onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center pb-4 border-b border-border">
-                    <h2 className="text-xl font-bold text-foreground">
-                        {role ? "Edit Role" : "Create New Role"}
+                {/* Header */}
+                <div className="flex items-center justify-between px-lg py-md border-b border-border bg-surface-muted/30 shrink-0">
+                    <h2 className="text-lg font-bold text-foreground flex items-center gap-sm">
+                        <ShieldCheck className="w-5 h-5 text-primary" />
+                        {role ? "Chỉnh sửa Role" : "Thêm Role mới"}
                     </h2>
-                    <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        aria-label="Đóng"
+                        className="p-xs rounded-full text-foreground-muted hover:text-foreground hover:bg-surface-muted transition-all"
+                    >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                <form onSubmit={handleFormSubmit} className="pt-6">
-                    <div className="space-y-4">
-                        <div className="space-y-2 text-left">
-                            <label className="text-sm font-medium text-foreground">Role Name <span className="text-red-500">*</span></label>
+                {/* Body */}
+                <form onSubmit={handleFormSubmit} className="flex-1">
+                    <div className="p-lg flex flex-col gap-md">
+                        <div className="flex flex-col gap-sm">
+                            <label htmlFor="roleName" className="text-sm font-semibold text-foreground-secondary flex items-center gap-xs">
+                                <ShieldCheck className="w-4 h-4 text-primary" />
+                                Tên Role <span className="text-danger">*</span>
+                            </label>
                             <input
+                                id="roleName"
                                 type="text"
                                 name="name"
                                 value={formData.name}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                placeholder="e.g. Admin"
+                                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                className="input"
+                                placeholder="VD: Admin"
                                 required
                             />
                         </div>
-                        <div className="space-y-2 text-left">
-                            <label className="text-sm font-medium text-foreground">Role Code (Uppercase)</label>
+
+                        <div className="flex flex-col gap-sm">
+                            <label className="text-sm font-semibold text-foreground-secondary">
+                                Mã Role (tự động)
+                            </label>
                             <input
                                 type="text"
-                                value={formData.name ? formData.name.toUpperCase().trim().replace(/\s+/g, '_') : ""}
+                                value={roleCode}
                                 disabled
-                                className="w-full px-3 py-2 bg-muted text-muted-foreground border border-border rounded-md text-sm cursor-not-allowed"
+                                className="input opacity-60 cursor-not-allowed font-mono tracking-wider"
                             />
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-4 border-t border-border flex justify-end gap-3">
-                        <Button
-                            type="button"
-                            onClick={onClose}
-                            className="bg-background border border-border text-foreground hover:bg-muted px-4 py-2"
-                        >
-                            Cancel
+                    {/* Footer */}
+                    <div className="px-lg py-md border-t border-border flex justify-end gap-sm bg-surface-muted/20 shrink-0">
+                        <Button type="button" variant="ghost" size="medium" onClick={onClose} disabled={loading}>
+                            Hủy
                         </Button>
                         <Button
                             type="submit"
-                            className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 border-transparent"
-                            disabled={loading || !formData.name || isConfirmOpen}
+                            variant="primary"
+                            size="medium"
+                            loading={loading}
+                            disabled={!formData.name || isConfirmOpen}
                         >
-                            {loading ? "Saving..." : "Save Role"}
+                            {role ? "Cập nhật" : "Tạo mới"}
                         </Button>
                     </div>
                 </form>
@@ -146,8 +150,8 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
                 isOpen={isConfirmOpen}
                 onClose={() => setIsConfirmOpen(false)}
                 onConfirm={executeSave}
-                title={role ? "Xác nhận cập nhật Role" : "Xác nhận tạo Role"}
-                description={`Bạn có chắc chắn muốn ${role ? "cập nhật" : "tạo mới"} role ${formData.name}?`}
+                title={role ? "Xác nhận cập nhật Role" : "Xác nhận tạo Role mới"}
+                description={`Bạn có chắc chắn muốn ${role ? "cập nhật" : "tạo mới"} role "${formData.name}"?`}
                 loading={loading}
                 confirmText={role ? "Cập nhật" : "Tạo mới"}
             />

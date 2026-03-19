@@ -3,23 +3,30 @@ import type { ReactNode, ButtonHTMLAttributes } from "react";
 import Spinner from "./Snipper";
 
 type ButtonSize = "small" | "medium" | "large";
+type ButtonVariant = "primary" | "secondary" | "outline" | "danger" | "ghost";
 
 interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "size" | "value" | "onClick" | "type" | "disabled" | "className"> {
     value?: ReactNode;
     children?: ReactNode;
     onClick?: () => void;
     size?: ButtonSize;
-    width?: string;  // ví dụ "w-40"
-    height?: string; // ví dụ "h-12"
-    bgColor?: string; // bg-blue-500
-    textColor?: string; // text-white
-    hoverColor?: string; // hover:bg-blue-600
-    icon?: ReactNode; // icon phía trước
-    className?: string; // thêm class tùy chỉnh
+    width?: string;
+    height?: string;
+    variant?: ButtonVariant;
+    icon?: ReactNode;
+    className?: string;
     disabled?: boolean;
     loading?: boolean;
     type?: "button" | "submit" | "reset";
 }
+
+const variantClasses: Record<ButtonVariant, string> = {
+    primary: "btn-primary",
+    secondary: "btn-secondary",
+    outline: "btn-outline",
+    danger: "btn-danger",
+    ghost: "btn-ghost",
+};
 
 export default function Button({
     value,
@@ -28,9 +35,7 @@ export default function Button({
     size = "medium",
     width,
     height,
-    bgColor,
-    textColor,
-    hoverColor,
+    variant,
     icon,
     className,
     disabled = false,
@@ -39,10 +44,10 @@ export default function Button({
     ...rest
 }: ButtonProps) {
 
-    const sizeClasses = {
-        small: "px-3 py-1 text-sm",
-        medium: "px-4 py-2 text-base",
-        large: "px-6 py-3 text-lg",
+    const sizeClasses: Record<ButtonSize, string> = {
+        small: "px-sm py-xs text-sm",
+        medium: "px-md py-sm text-base",
+        large: "px-lg py-md text-lg",
     };
 
     const handleClick = () => {
@@ -56,14 +61,12 @@ export default function Button({
             disabled={disabled || loading}
             className={clsx(
                 "btn",
+                variant && variantClasses[variant],
                 sizeClasses[size],
-                bgColor && bgColor,
-                textColor && textColor,
-                hoverColor && hoverColor,
                 width,
                 height,
                 className,
-                (disabled || loading) && "opacity-60 cursor-not-allowed"
+                (disabled || loading) && "opacity-50 cursor-not-allowed"
             )}
             {...rest}
         >
