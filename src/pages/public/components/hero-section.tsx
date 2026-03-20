@@ -1,56 +1,66 @@
-import Button from "../../../components/UICustoms/Button"
-import { ArrowRight } from "lucide-react"
-import qrHero from "../../../assets/qr-hero.jpg"
-import { openAuthModal } from "../../../store/slices/auth.slice"
-import { useAppDispatch } from "../../../store/redux.hooks"
+import QRDisplay from "@/components/UICustoms/QRDisplay"
+import { HeroQRForm } from "./hero-qr-form"
+import { useState } from "react"
+import type { PostQrRes } from "@/models/entity.model"
 
 export function HeroSection() {
-    const dispatch = useAppDispatch()
+    const [qrResult, setQrResult] = useState<PostQrRes | null>(null);
+
     return (
-        <section id="hero" className="relative w-full min-h-[calc(100vh-73px)] snap-start snap-always py-12 lg:py-0 flex items-center justify-center overflow-hidden bg-bg">
+        <section
+            id="hero"
+            className="relative w-full min-h-[calc(100vh-var(--header-height,73px))] py-2xl flex flex-col items-center justify-center overflow-y-auto overflow-x-hidden bg-bg snap-start snap-always"
+        >
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--color-surface),transparent_70%)]" />
-            <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-12 px-6 lg:flex-row lg:gap-16">
-                <div className="flex flex-1 flex-col items-center text-center lg:items-start lg:text-left">
-                    <span className="mb-4 inline-block rounded-full bg-primary/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-primary">
+
+            <div className="relative mx-auto flex max-w-6xl w-full flex-col gap-xl px-lg">
+
+                {/* Headline */}
+                <div className="flex flex-col items-center text-center gap-md animate-in fade-in duration-300">
+                    <span className="inline-block rounded-full bg-primary/10 px-md py-xs text-xs font-semibold tracking-wide text-primary">
                         Nhanh - An toàn - Tiện lợi
                     </span>
-                    <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
+                    <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-foreground md:text-3xl">
                         Tạo mã QR thanh toán{" "}
                         <span className="text-primary">nhanh chóng</span>
                     </h1>
-                    <p className="mt-5 max-w-xl text-lg leading-relaxed text-foreground-muted">
+                    <p className="w-full text-base leading-relaxed text-foreground-muted">
                         Chỉ cần vài bước đơn giản, bạn có thể tạo mã QR thanh toán cho mọi ngân hàng tại Việt Nam. Nhận tiền dễ dàng, mọi lúc mọi nơi.
                     </p>
-                    <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                        <Button
-                            size="large"
-                            className="btn-primary text-base w-full sm:w-auto"
-                            onClick={() => {
-                                dispatch(openAuthModal())
-                            }}
-                        >
-                            Tạo QR ngay
-                            <ArrowRight className="h-4 w-4" />
-
-                        </Button>
-                        <Button size="large"
-                            className="btn-outline text-base w-full sm:w-auto"
-                        >
-                            Tìm hiểu thêm
-                        </Button>
-                    </div>
                 </div>
 
-                <div className="flex flex-1 items-center justify-center">
-                    <div className="relative">
-                        <div className="absolute -inset-4 rounded-3xl bg-primary/5 blur-2xl" />
-                        <img
-                            src={qrHero}
-                            alt="Minh hoạ mã QR thanh toán trên điện thoại"
-                            width={480}
-                            height={480}
-                            className="relative rounded-2xl shadow-xl object-cover"
-                        />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-xl w-full animate-in fade-in zoom-in duration-500 items-stretch">
+
+                    {/* Left: QR Form */}
+                    <HeroQRForm
+                        onQrCreated={setQrResult}
+                        onReset={() => setQrResult(null)}
+                    />
+
+                    {/* Right: QR Display */}
+                    <div className="flex flex-col">
+                        <div className="flex items-center shrink-0 h-11 mb-md">
+                            <h2 className="text-xl font-bold text-foreground">Kết quả mã QR</h2>
+                        </div>
+                        <div className="flex-1">
+                            <QRDisplay
+                                type="public"
+                                qrImageUrl={qrResult?.qrImageUrl}
+                                qrData={qrResult?.qrData}
+                                transactionRef={qrResult?.transactionRef}
+                                onDownload={() => {
+                                    if (!qrResult?.qrImageUrl) return;
+                                    const a = document.createElement('a');
+                                    a.href = qrResult.qrImageUrl;
+                                    a.download = `QR_${qrResult.transactionRef ?? 'code'}.png`;
+                                    a.click();
+                                }}
+                                onCopyLink={() => {
+                                    if (!qrResult?.qrImageUrl) return;
+                                    navigator.clipboard.writeText(qrResult.qrImageUrl);
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

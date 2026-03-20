@@ -11,10 +11,11 @@ import Button from "@/components/UICustoms/Button";
 interface BankSelectionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSelectBank: (bankCode: string, bankName: string, logoUrl: string | null) => void;
+    onSelectBank: (napasBin: string, bankCode: string, bankShortName: string, isActive: boolean) => void;
+    allowInactiveSelection?: boolean;
 }
 
-const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose, onSelectBank }) => {
+const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose, onSelectBank, allowInactiveSelection = true }) => {
     const [loading, setLoading] = useState(false);
     const [banks, setBanks] = useState<BankRes[]>([]);
 
@@ -57,12 +58,6 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
     useEffect(() => {
         if (isOpen) {
             fetchBanks();
-        } else {
-            // Reset state when modal is closed
-            setSearchValue("");
-            setSortState(null);
-            setPaging({ pageNumber: 1, pageSize: 10, totalPages: 1, totalItems: 0 });
-            setBanks([]);
         }
     }, [isOpen, paging.pageNumber, paging.pageSize, sortState, searchValue]);
 
@@ -78,22 +73,22 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
 
     return (
         <div
-            className="modal-overlay bg-black/60 px-4 py-6"
+            className="modal-overlay"
             onClick={onClose}
         >
             <div
-                className="relative flex flex-col overflow-hidden rounded-2xl shadow-2xl bg-surface mx-auto w-[1000px] h-[800px] max-w-[95vw] max-h-[90vh]"
+                className="relative flex flex-col overflow-hidden rounded-2xl shadow-lg bg-surface mx-auto w-[1000px] h-[800px] max-w-[95vw] max-h-[90vh]"
                 onClick={e => e.stopPropagation()}
             >
-                <div className="p-5 border-b border-border flex justify-between items-center shrink-0">
-                    <h3 className="font-bold text-xl text-text-primary">Chọn ngân hàng</h3>
-                    <button type="button" onClick={onClose} className="text-text-subtle hover:text-text-primary transition-colors">
+                <div className="p-md border-b border-border flex justify-between items-center shrink-0">
+                    <h3 className="font-bold text-xl text-foreground">Chọn ngân hàng</h3>
+                    <button type="button" onClick={onClose} className="text-foreground-muted hover:text-foreground transition-colors">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
 
                 <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                    <div className="p-5 shrink-0 border-b border-border">
+                    <div className="p-md shrink-0 border-b border-border">
                         <TableToolbar
                             value={searchValue}
                             onChange={setSearchValue}
@@ -102,7 +97,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                         />
                     </div>
 
-                    <div className="flex-1 min-h-[400px] overflow-auto p-5 relative">
+                    <div className="flex-1 min-h-[400px] overflow-auto p-md relative">
                         <div className="min-w-[800px] h-full">
                             <DataTable
                                 loading={loading}
@@ -126,9 +121,9 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                                         header: "Logo",
                                         accessor: (bank) => bank.logoUrl,
                                         cell: (bank) => bank.logoUrl ? (
-                                            <img src={resolveAvatarPreview(bank.logoUrl ?? null)} alt={bank.shortName} className="w-10 h-10 object-contain rounded bg-white p-1 border border-border" />
+                                            <img src={resolveAvatarPreview(bank.logoUrl ?? null)} alt={bank.shortName} className="w-10 h-10 object-contain rounded bg-bg p-xs border border-border" />
                                         ) : (
-                                            <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-text-secondary">
+                                            <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-foreground-secondary">
                                                 {bank.bankCode}
                                             </div>
                                         )
@@ -167,11 +162,14 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                                         cell: (bank) => (
                                             <Button
                                                 value={bank.isActive ? "Chọn" : "Chọn (Bảo trì)"}
-                                                onClick={() => onSelectBank(bank.bankCode, bank.bankName, bank.logoUrl || null)}
+                                                onClick={() => {
+                                                    onSelectBank(bank.napasBin, bank.bankCode, bank.shortName, bank.isActive)
+                                                }}
                                                 type="button"
                                                 size="medium"
                                                 width="w-full"
-                                                className={bank.isActive ? "btn-primary" : "bg-amber-500 hover:bg-amber-600 text-white border-none"}
+                                                className={bank.isActive ? "btn-primary" : "bg-warning hover:bg-warning/80 text-white border-none"}
+                                                disabled={!bank.isActive && !allowInactiveSelection}
                                             />
                                         )
                                     }
@@ -180,7 +178,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                         </div>
                     </div>
 
-                    <div className="shrink-0 border-t border-border p-3">
+                    <div className="shrink-0 border-t border-border p-sm">
                         <TablePagination
                             pageNumber={paging.pageNumber}
                             pageSize={paging.pageSize}

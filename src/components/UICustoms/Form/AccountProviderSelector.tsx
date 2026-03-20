@@ -1,103 +1,105 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { providerApi } from "@/services/provider-api.service";
-import type { ProviderRes } from "@/models/entity.model";
+import type { BankRes, ProviderRes } from "@/models/entity.model";
 import BankSelectionModal from "@/components/UICustoms/Modal/BankSelectionModal";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
+import { ProviderCode } from '@/models/enum';
+import { bankApi } from '@/services/bank-api.service';
 
 interface AccountProviderSelectorProps {
     providerId: string;
-    bankCode: string;
-    bankName: string;
-    bankLogo?: string | null;
+    providerCode?: string;
+    providerName?: string;
+    napasBin?: string | null;
+    bankCode?: string | null;
+    bankShortName?: string | null;
+    allProviders: ProviderRes[];
+    onFetchProviders: () => void;
     onProviderChange: (providerId: string) => void;
-    onBankSelect: (code: string, name: string, logoUrl: string | null) => void;
-    isBankInactive?: boolean;
+    onBankSelect: (napasBin: string, code: string, shortName: string, isActive: boolean) => void;
+    isBankInactive?: boolean | null;
+    isProviderInactive?: boolean;
+    allowInactiveSelection?: boolean;
     layout?: 'vertical' | 'horizontal';
+    bankSelectionMode?: 'modal' | 'dropdown';
 }
 
 const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
     providerId,
+    providerCode,
+    providerName,
+    napasBin,
     bankCode,
-    bankName,
-    bankLogo,
+    bankShortName,
+    allProviders,
+    onFetchProviders,
     onProviderChange,
     onBankSelect,
     isBankInactive,
-    layout = 'vertical'
+    isProviderInactive,
+    allowInactiveSelection = true,
+    layout = 'vertical',
+    bankSelectionMode = 'modal',
 }) => {
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
-    const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
-
-    useEffect(() => {
-        const fetchProviders = async () => {
-            try {
-                const res = await providerApi.getAll();
-                if (res) {
-                    setAllProviders(res);
-                }
-            } catch (error) {
-                console.error("Error fetching providers:", error);
-            }
-        };
-        fetchProviders();
-    }, []);
 
     const isHorizontal = layout === 'horizontal';
-    const containerClass = isHorizontal ? "grid grid-cols-2 gap-4" : "flex flex-col gap-4";
+    const containerClass = isHorizontal ? "grid grid-cols-2 gap-md" : "flex flex-col gap-md";
 
     const selectedProvider = allProviders.find(p => p.id === providerId);
-    const isBank = selectedProvider?.code === "BANK";
+    const isBank = selectedProvider ? selectedProvider.code === ProviderCode.BANK : providerCode === ProviderCode.BANK;
 
     return (
         <div className={containerClass}>
-            <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-text-secondary">Loại tài khoản</label>
+            <div className="flex flex-col gap-sm">
+                <label className="text-sm font-medium text-foreground-secondary">Loại tài khoản</label>
                 <div className="relative">
                     <select
-                        className={`input cursor-pointer appearance-none pr-10 ${selectedProvider && !selectedProvider.isActive ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                        className={`input cursor-pointer appearance-none pr-10 ${selectedProvider && !selectedProvider.isActive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
                         value={providerId}
                         onChange={(e) => onProviderChange(e.target.value)}
+                        onMouseDown={() => onFetchProviders()}
                     >
-                        <option value="" disabled>Chọn loại tài khoản</option>
+                        <option value="" disabled hidden>Loại tài khoản</option>
+                        {allProviders.length === 0 && providerId !== "" && (
+                            <option value={providerId}>{providerName || (isBank ? ProviderCode.BANK : "")}</option>
+                        )}
                         {allProviders.map(p => (
-                            <option key={p.id} value={p.id}>
+                            <option key={p.id} value={p.id} disabled={!p.isActive && !allowInactiveSelection}>
                                 {p.name}
                             </option>
                         ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-subtle pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted pointer-events-none" />
                 </div>
-                {selectedProvider && !selectedProvider.isActive && (
-                    <p className="text-xs text-red-500 font-medium">
+                {isProviderInactive && (
+                    <p className="text-xs text-danger font-medium">
                         Phương thức thanh toán đang bảo trì
                     </p>
                 )}
             </div>
 
-            {isBank && (
-                <div className={`flex flex-col gap-2 relative`}>
-                    <label className="text-sm font-medium text-text-secondary">Ngân hàng</label>
-                    <div
-                        className={`input cursor-pointer flex items-center justify-between min-h-[42px] pr-3 ${isBankInactive ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
-                        onClick={() => setIsBankModalOpen(true)}
-                    >
-                        <div className="flex items-center gap-2 overflow-hidden w-full">
-                            {bankLogo && (
-                                <img src={resolveAvatarPreview(bankLogo)} alt="Logo" className="w-6 h-6 object-contain flex-shrink-0" />
-                            )}
-                            <span className="truncate w-full text-left text-sm">
-                                {bankName ? `${bankCode} - ${bankName}` : <span className="text-text-subtle">Chọn ngân hàng</span>}
-                            </span>
-                        </div>
-                        <ChevronDown className="w-4 h-4 text-text-subtle flex-shrink-0" />
-                    </div>
-                    {isBankInactive && (
-                        <p className="text-xs text-red-500 font-medium">
-                            Ngân hàng đang bảo trì
-                        </p>
-                    )}
-                </div>
+            {isBank && bankSelectionMode === 'modal' && (
+                <BankFieldModal
+                    napasBin={napasBin ?? ""}
+                    bankCode={bankCode ?? ""}
+                    bankShortName={bankShortName ?? ""}
+                    isBankInactive={isBankInactive ?? false}
+                    isBankModalOpen={isBankModalOpen}
+                    onOpenModal={() => setIsBankModalOpen(true)}
+                    onCloseModal={() => setIsBankModalOpen(false)}
+                    onBankSelect={onBankSelect}
+                    allowInactiveSelection={allowInactiveSelection}
+                />
+            )}
+
+            {isBank && bankSelectionMode === 'dropdown' && (
+                <BankFieldDropdown
+                    napasBin={napasBin ?? ""}
+                    bankCode={bankCode ?? ""}
+                    bankShortName={bankShortName ?? ""}
+                    isBankInactive={isBankInactive ?? false}
+                    onBankSelect={onBankSelect}
+                />
             )}
 
             {!isHorizontal && !isBank && providerId !== "" && (
@@ -107,15 +109,179 @@ const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
             {isHorizontal && !isBank && (
                 <div className="invisible" aria-hidden="true" />
             )}
+        </div>
+    );
+};
 
-            <BankSelectionModal
-                isOpen={isBankModalOpen}
-                onClose={() => setIsBankModalOpen(false)}
-                onSelectBank={(code, name, logo) => {
-                    onBankSelect(code, name, logo);
-                    setIsBankModalOpen(false);
-                }}
-            />
+interface BankFieldModalProps {
+    napasBin: string;
+    bankCode: string;
+    bankShortName: string;
+    isBankInactive: boolean;
+    isBankModalOpen: boolean;
+    onOpenModal: () => void;
+    onCloseModal: () => void;
+    onBankSelect: (napasBin: string, code: string, shortName: string, isActive: boolean) => void;
+    allowInactiveSelection: boolean;
+}
+
+const BankFieldModal: React.FC<BankFieldModalProps> = ({
+    napasBin, bankCode, bankShortName, isBankInactive,
+    isBankModalOpen, onOpenModal, onCloseModal,
+    onBankSelect, allowInactiveSelection,
+}) => (
+    <div className="flex flex-col gap-sm relative">
+        <label className="text-sm font-medium text-foreground-secondary">Ngân hàng</label>
+        <div
+            className={`input cursor-pointer flex items-center justify-between min-h-[42px] pr-3 ${isBankInactive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
+            onClick={onOpenModal}
+        >
+            <div className="flex items-center gap-sm overflow-hidden w-full">
+                <span className="truncate w-full text-left text-sm">
+                    {bankCode ? `(${napasBin}) ${bankShortName}` : <span className="text-foreground-muted">Chọn ngân hàng</span>}
+                </span>
+            </div>
+            <ChevronDown className="w-4 h-4 text-foreground-muted flex-shrink-0" />
+        </div>
+        {isBankInactive && (
+            <p className="text-xs text-danger font-medium">Ngân hàng đang bảo trì</p>
+        )}
+        <BankSelectionModal
+            isOpen={isBankModalOpen}
+            onClose={onCloseModal}
+            onSelectBank={(napasBin, bankCode, bankShortName, isActive) => {
+                onBankSelect(napasBin, bankCode, bankShortName, isActive);
+                onCloseModal();
+            }}
+            allowInactiveSelection={allowInactiveSelection}
+        />
+    </div>
+);
+
+interface BankFieldDropdownProps {
+    napasBin: string;
+    bankCode: string;
+    bankShortName: string;
+    isBankInactive: boolean;
+    onBankSelect: (napasBin: string, code: string, shortName: string, isActive: boolean) => void;
+}
+
+const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
+    napasBin,
+    bankCode,
+    bankShortName,
+    isBankInactive,
+    onBankSelect,
+}) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [banks, setBanks] = useState<BankRes[]>([]);
+    const [hasFetched, setHasFetched] = useState(false);
+    const [search, setSearch] = useState("");
+    const containerRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const fetchBanks = useCallback(async () => {
+        if (hasFetched) return;
+        try {
+            const res = await bankApi.getAll(1, 200, null, null, true, null);
+            if (res?.list) {
+                setBanks(res.list);
+                setHasFetched(true);
+            }
+        } catch {
+            setHasFetched(true);
+        }
+    }, [hasFetched]);
+
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    const handleOpen = () => {
+        fetchBanks();
+        setIsOpen(true);
+        setSearch("");
+        setTimeout(() => inputRef.current?.focus(), 50);
+    };
+
+    const filtered = banks.filter(b => {
+        if (!search) return true;
+        const q = search.toLowerCase();
+        return (
+            b.bankCode.toLowerCase().includes(q) ||
+            (b.napasBin?.toLowerCase().includes(q))
+        );
+    });
+
+    return (
+        <div className="flex flex-col gap-sm relative" ref={containerRef}>
+            <label className="text-sm font-medium text-foreground-secondary">Ngân hàng</label>
+            <div
+                className={`input cursor-pointer flex items-center justify-between min-h-[42px] pr-3 ${isBankInactive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
+                onClick={handleOpen}
+            >
+                <span className="truncate w-full text-left text-sm">
+                    {napasBin
+                        ? `(${napasBin}) ${bankShortName}`
+                        : <span className="text-foreground-muted">Chọn ngân hàng</span>
+                    }
+                </span>
+                <ChevronDown className={`w-4 h-4 text-foreground-muted flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+            {isBankInactive && (
+                <p className="text-xs text-danger font-medium">Ngân hàng đang bảo trì</p>
+            )}
+
+            {isOpen && (
+                <div className="absolute top-full left-0 right-0 mt-xs z-dropdown bg-surface border border-border rounded-lg shadow-lg overflow-hidden animate-in fade-in zoom-in duration-200">
+                    <div className="p-sm border-b border-border">
+                        <div className="relative">
+                            <input
+                                ref={inputRef}
+                                type="text"
+                                className="input pl-xl text-sm"
+                                placeholder="Tìm theo BIN hoặc mã NH..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                        </div>
+                    </div>
+                    <ul className="max-h-[240px] overflow-y-auto">
+                        {filtered.length === 0 && (
+                            <li className="px-md py-sm text-sm text-foreground-muted text-center">
+                                Không tìm thấy ngân hàng
+                            </li>
+                        )}
+                        {filtered.map(b => (
+                            <li
+                                key={b.id}
+                                className={`flex items-center gap-sm px-md py-sm cursor-pointer transition-colors hover:bg-surface-muted ${b.bankCode === bankCode ? 'bg-primary/5 font-semibold' : ''}`}
+                                onClick={() => {
+                                    onBankSelect(b.napasBin, b.bankCode, b.shortName, b.isActive);
+                                    setIsOpen(false);
+                                }}
+                            >
+                                <span className="text-sm font-mono text-foreground-secondary shrink-0">
+                                    ({b.napasBin})
+                                </span>
+                                <span className="text-sm text-foreground font-medium">
+                                    {b.shortName}
+                                </span>
+                                {!b.isActive && (
+                                    <span className="ml-auto text-xs text-danger font-bold shrink-0">Bảo trì</span>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 };

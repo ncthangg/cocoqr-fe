@@ -2,19 +2,19 @@ import { QrCode } from "lucide-react"
 
 export function Footer() {
     return (
-        <footer className="border-t border-border bg-card">
-            <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-6 py-10 md:flex-row md:justify-between">
-                <div className="flex items-center gap-2">
+        <footer className="border-t border-border bg-surface">
+            <div className="mx-auto flex max-w-6xl flex-col items-center gap-lg px-lg py-xl md:flex-row md:justify-between">
+                <div className="flex items-center gap-sm">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                        <QrCode className="h-4 w-4 text-primary-foreground" />
+                        <QrCode className="h-4 w-4 text-btn-primary-text" />
                     </div>
                     <span className="text-lg font-bold text-foreground">QR Pay</span>
                 </div>
 
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-md">
                     <a
                         href="#"
-                        className="text-muted-foreground transition-colors hover:text-foreground"
+                        className="text-foreground-muted transition-colors hover:text-foreground"
                         aria-label="Facebook"
                     >
                         <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -23,7 +23,7 @@ export function Footer() {
                     </a>
                     <a
                         href="#"
-                        className="text-muted-foreground transition-colors hover:text-foreground"
+                        className="text-foreground-muted transition-colors hover:text-foreground"
                         aria-label="YouTube"
                     >
                         <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -32,7 +32,7 @@ export function Footer() {
                     </a>
                     <a
                         href="#"
-                        className="text-muted-foreground transition-colors hover:text-foreground"
+                        className="text-foreground-muted transition-colors hover:text-foreground"
                         aria-label="Zalo"
                     >
                         <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -41,7 +41,7 @@ export function Footer() {
                     </a>
                 </div>
 
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-foreground-muted">
                     &copy; {new Date().getFullYear()} QR Pay. All rights reserved.
                 </p>
             </div>

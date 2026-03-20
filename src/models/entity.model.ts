@@ -56,10 +56,10 @@ export interface RoleRes extends BaseRes {
 }
 
 export interface BankRes extends BaseRes {
+    napasBin: string;
     bankCode: string;
     bankName: string;
     shortName: string;
-    napasBin: string;
     swiftCode?: string;
     logoUrl?: string;
     isActive: boolean;
@@ -94,8 +94,8 @@ export interface AccountRes extends BaseRes {
 export interface ProviderRes extends BaseRes {
     code: string;
     name: string;
-    isActive: boolean;
     logoUrl?: string;
+    isActive: boolean;
 }
 
 export interface PostQrRes {

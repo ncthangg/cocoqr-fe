@@ -30,34 +30,34 @@ const features = [
 
 export function FeaturesSection() {
     return (
-        <section id="features" className="w-full min-h-[calc(100vh-73px)] snap-start snap-always py-16 flex flex-col justify-center bg-bg">
-            <div className="mx-auto max-w-6xl px-6">
-                <div className="mx-auto mb-14 max-w-2xl text-center">
-                    <span className="mb-3 inline-block text-sm font-semibold tracking-wide text-primary">
+        <section id="features" className="w-full min-h-[calc(100vh-var(--header-height,73px))] py-2xl flex flex-col justify-center bg-bg relative overflow-hidden snap-start snap-always">
+            <div className="mx-auto max-w-6xl px-lg">
+                <div className="mx-auto mb-xl w-full text-center animate-in fade-in duration-300">
+                    <span className="mb-sm inline-block text-sm font-semibold tracking-wide text-primary">
                         Tại sao chọn QR Pay?
                     </span>
-                    <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
                         Tính năng nổi bật
                     </h2>
-                    <p className="mt-4 text-foreground-muted">
+                    <p className="mt-md w-full text-foreground-muted">
                         Giải pháp tạo mã QR thanh toán toàn diện, phục vụ cá nhân và doanh nghiệp.
                     </p>
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-lg sm:grid-cols-2 lg:grid-cols-4">
                     {features.map((feature) => (
                         <Card
                             key={feature.title}
-                            className="group border-border/60 bg-bg transition-shadow hover:shadow-lg"
+                            className="group border-border/60 bg-bg transition-all duration-300 hover:shadow-md hover:scale-[1.01]"
                         >
-                            <CardContent className="flex flex-col gap-4 p-6">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-btn-primary-text">
+                            <CardContent className="flex flex-col gap-md p-lg">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-btn-primary-text">
                                     <feature.icon className="h-6 w-6" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-text-primary">
+                                <h3 className="text-lg font-semibold text-foreground">
                                     {feature.title}
                                 </h3>
-                                <p className="leading-relaxed text-foreground-muted">
+                                <p className="text-base leading-relaxed text-foreground-muted">
                                     {feature.description}
                                 </p>
                             </CardContent>

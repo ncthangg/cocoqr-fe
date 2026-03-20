@@ -161,9 +161,8 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
         }
     };
 
-    const handleSelectBank = useCallback((code: string, name: string, logoUrl: string | null, _isActive: boolean) => {
-        setFormData(prev => ({ ...prev, bankCode: code, bankName: name }));
-        setBankLogoUrl(logoUrl);
+    const handleSelectBank = useCallback((napasBin: string, code: string, shortName: string, isActive: boolean) => {
+        setFormData(prev => ({ ...prev, napasBin, bankCode: code, bankShortName: shortName, isBankInactive: !isActive }));
         setIsBankModalOpen(false);
     }, []);
 
