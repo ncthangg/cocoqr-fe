@@ -89,6 +89,9 @@ const AdminLayout: React.FC = () => {
                                 <Link to={RouteConstant.ADMIN_HISTORY} className="text-sm font-bold text-white transition-colors hover:text-foreground">
                                     History
                                 </Link>
+                                <Link to={RouteConstant.ADMIN_SEED} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                    Seed
+                                </Link>
                             </nav>
                         </div>
 

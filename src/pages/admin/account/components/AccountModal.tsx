@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { X, Landmark, User, CreditCard, Hash, Calendar, Wallet, ShieldCheck, ShieldOff, BookmarkCheck, LayoutDashboard, Lock, LockOpen } from "lucide-react";
+import { X, Landmark, User, CreditCard, Hash, Calendar, Wallet, ShieldCheck, ShieldOff, LayoutDashboard, Lock, LockOpen } from "lucide-react";
 import { toast } from "react-toastify";
 import { accountApi } from "@/services/account-api.service";
 import type { AccountRes } from "@/models/entity.model";

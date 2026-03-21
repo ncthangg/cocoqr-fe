@@ -146,3 +146,59 @@ export interface QrRes {
     paidAt?: string;
     deletedAt?: string;
 }
+
+///===================================================
+// Data Sync Models
+
+export const SyncAction = {
+    Insert: "Insert",
+    Update: "Update",
+    Delete: "Delete",
+    Unchanged: "Unchanged",
+} as const;
+
+export type SyncAction = (typeof SyncAction)[keyof typeof SyncAction];
+
+// Keep backward compat alias
+export const BankSyncAction = SyncAction;
+export type BankSyncAction = SyncAction;
+
+export interface SyncFieldDiff {
+    field: string;
+    oldValue: string;
+    newValue: string;
+}
+
+export interface SyncDiffItem {
+    action: SyncAction;
+    code: string;
+    name: string;
+    diffs?: SyncFieldDiff[];
+}
+
+export interface SyncSummary {
+    totalInFile: number;
+    totalInDb: number;
+    toInsert: number;
+    toUpdate: number;
+    toDelete: number;
+    unchanged: number;
+}
+
+export interface SyncPreviewRes {
+    sourceFile: string;
+    fileLastModified: string;
+    summary: SyncSummary;
+    changes: SyncDiffItem[];
+}
+
+// Bank-specific aliases (backward compat)
+export type BankFieldDiff = SyncFieldDiff;
+export interface BankSyncDiffItem {
+    action: BankSyncAction;
+    bankCode: string;
+    bankName: string;
+    diffs?: BankFieldDiff[];
+}
+export type BankSyncSummary = SyncSummary;
+export type BankSyncPreviewRes = SyncPreviewRes;

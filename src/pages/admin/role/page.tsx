@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { roleApi } from "../../../services/role-api.service";
 import type { RoleRes } from "../../../models/entity.model";
-import { Edit, Trash2, Wallet } from "lucide-react";
+import { Eye, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
 import RoleModal from "./components/RoleModal";
-import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
+//import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
@@ -17,7 +17,7 @@ const RolePage: React.FC = () => {
 
     // Modal state
     const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    //const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<RoleRes | null>(null);
 
     const fetchRoles = useCallback(async () => {
@@ -39,46 +39,26 @@ const RolePage: React.FC = () => {
         fetchRoles();
     }, [fetchRoles]);
 
-    // const handleOpenCreateModal = () => {
-    //     setSelectedRole(null);
-    //     setIsRoleModalOpen(true);
-    // };
-
-    const handleOpenEditModal = (role: RoleRes) => {
+    const handleOpenViewModal = (role: RoleRes) => {
         setSelectedRole(role);
         setIsRoleModalOpen(true);
     };
 
-    const handleOpenDeleteModal = (role: RoleRes) => {
-        setSelectedRole(role);
-        setIsDeleteModalOpen(true);
-    };
-
-    const handleModalSuccess = (updatedRole?: RoleRes) => {
-        if (updatedRole) {
-            setAllRoles(prev =>
-                prev.map(r => r.id === updatedRole.id ? updatedRole : r)
-            );
-        } else {
-            fetchRoles();
-        }
-    };
-
-    const handleDeleteRole = async () => {
-        if (!selectedRole) return;
-        try {
-            setLoading(true);
-            await roleApi.delete(selectedRole.id);
-            toast.success("Role deleted successfully!");
-            handleModalSuccess();
-            setIsDeleteModalOpen(false);
-        } catch (error) {
-            console.error("Error deleting role:", error);
-            toast.error("Failed to delete role.");
-        } finally {
-            setLoading(false);
-        }
-    };
+    // const handleDeleteRole = async () => {
+    //     if (!selectedRole) return;
+    //     try {
+    //         setLoading(true);
+    //         await roleApi.delete(selectedRole.id);
+    //         toast.success("Role deleted successfully!");
+    //         handleModalSuccess();
+    //         setIsDeleteModalOpen(false);
+    //     } catch (error) {
+    //         console.error("Error deleting role:", error);
+    //         toast.error("Failed to delete role.");
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
@@ -148,16 +128,10 @@ const RolePage: React.FC = () => {
                                 cell: (role) => (
                                     <div className="flex items-center gap-sm">
                                         <ActionButton
-                                            icon={<Edit className="w-4 h-4" />}
-                                            onClick={() => handleOpenEditModal(role)}
+                                            icon={<Eye className="w-4 h-4" />}
+                                            onClick={() => handleOpenViewModal(role)}
                                             color="blue"
-                                            title="Chỉnh sửa"
-                                        />
-                                        <ActionButton
-                                            icon={<Trash2 className="w-4 h-4" />}
-                                            onClick={() => handleOpenDeleteModal(role)}
-                                            color="red"
-                                            title="Xóa"
+                                            title="Xem chi tiết"
                                         />
                                     </div>
                                 )
@@ -170,17 +144,16 @@ const RolePage: React.FC = () => {
             <RoleModal
                 isOpen={isRoleModalOpen}
                 onClose={() => setIsRoleModalOpen(false)}
-                onSuccess={handleModalSuccess}
                 role={selectedRole}
             />
 
-            <DeleteConfirmModal
+            {/* <DeleteConfirmModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleDeleteRole}
                 itemName={selectedRole?.name || ""}
                 loading={loading}
-            />
+            /> */}
         </div>
     );
 };

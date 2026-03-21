@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { bankApi } from "../../../services/bank-api.service";
 import type { BankRes, PagingVM } from "../../../models/entity.model";
-import { Edit, Trash2, Wallet } from "lucide-react";
+import { Edit, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import BankModal from "./components/BankModal";
-import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
+//import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
 import { resolveAvatarPreview } from "../../../utils/imageConvertUtils";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
@@ -25,7 +25,7 @@ const BankPage: React.FC = () => {
     });
 
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    //const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedBank, setSelectedBank] = useState<BankRes | null>(null);
 
     const [searchValue, setSearchValue] = useState<string>("");
@@ -55,7 +55,7 @@ const BankPage: React.FC = () => {
             }
         } catch (error) {
             console.error("Error fetching banks:", error);
-            toast.error("Kh�ng th? t?i d? li?u ng�n h�ng.");
+            toast.error("Không thể tải dữ liệu ngân hàng.");
         } finally {
             setLoading(false);
         }
@@ -71,20 +71,17 @@ const BankPage: React.FC = () => {
         }
     };
 
-    const handleOpenCreateModal = () => {
-        setSelectedBank(null);
-        setIsBankModalOpen(true);
-    };
-
     const handleOpenEditModal = (bank: BankRes) => {
+        console.log(bank);
+
         setSelectedBank(bank);
         setIsBankModalOpen(true);
     };
 
-    const handleOpenDeleteModal = (bank: BankRes) => {
-        setSelectedBank(bank);
-        setIsDeleteModalOpen(true);
-    };
+    // const handleOpenDeleteModal = (bank: BankRes) => {
+    //     setSelectedBank(bank);
+    //     setIsDeleteModalOpen(true);
+    // };
 
     const handleModalSuccess = (updatedBank?: BankRes) => {
         if (updatedBank) {
@@ -96,21 +93,21 @@ const BankPage: React.FC = () => {
         }
     };
 
-    const handleDeleteBank = async () => {
-        if (!selectedBank) return;
-        try {
-            setLoading(true);
-            await bankApi.delete(selectedBank.id);
-            toast.success("X�a ng�n h�ng th�nh c�ng!");
-            handleModalSuccess();
-            setIsDeleteModalOpen(false);
-        } catch (error) {
-            console.error("Error deleting bank:", error);
-            toast.error("Kh�ng th? x�a ng�n h�ng.");
-        } finally {
-            setLoading(false);
-        }
-    };
+    // const handleDeleteBank = async () => {
+    //     if (!selectedBank) return;
+    //     try {
+    //         setLoading(true);
+    //         await bankApi.delete(selectedBank.id);
+    //         toast.success("Xóa ngân hàng thành công!");
+    //         handleModalSuccess();
+    //         setIsDeleteModalOpen(false);
+    //     } catch (error) {
+    //         console.error("Error deleting bank:", error);
+    //         toast.error("Không thể xóa ngân hàng.");
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
@@ -137,7 +134,6 @@ const BankPage: React.FC = () => {
                         value={searchValue}
                         onChange={setSearchValue}
                         placeholder="Tìm kiếm ngân hàng..."
-                        handleOpenCreateModal={handleOpenCreateModal}
                         onResetPage={() => handlePageChange(1)}
                     />
                 </div>
@@ -147,12 +143,12 @@ const BankPage: React.FC = () => {
                         loading={loading}
                         data={banks}
                         sortState={sortState ? {
-                            index: ["bankCode", "shortName", "bankName", "Tr?ng th�i"]
+                            index: ["bankCode", "shortName", "bankName", "Trạng thái"]
                                 .indexOf(sortState.field) + 1, dir: sortState.dir
                         } : null}
                         filterState={statusFilter !== undefined ? { 4: statusFilter } : {}}
                         onSortChange={(index, dir) => {
-                            const columns = ["logo", "bankCode", "shortName", "bankName", "Tr?ng th�i", "Thao t�c"];
+                            const columns = ["logo", "bankCode", "shortName", "bankName", "Trạng thái", "Thao tác"];
                             const field = columns[index];
                             if (!dir) setSortState(null);
                             else setSortState({ field, dir });
@@ -177,15 +173,15 @@ const BankPage: React.FC = () => {
                                 )
                             },
                             {
-                                header: "M� NH",
-                                accessor: (bank) => bank.bankCode,
+                                header: "MÃ NH",
+                                accessor: (bank) => bank.napasBin,
                                 type: "string",
                                 sortable: true,
                                 filterable: false,
-                                cell: (bank) => <span className="font-medium">{bank.bankCode}</span>
+                                cell: (bank) => <span className="font-medium">{bank.napasBin}</span>
                             },
                             {
-                                header: "T�n vi?t t?t",
+                                header: "Tên viết tắt",
                                 accessor: (bank) => bank.shortName,
                                 type: "string",
                                 sortable: true,
@@ -193,7 +189,7 @@ const BankPage: React.FC = () => {
                                 cell: (bank) => bank.shortName
                             },
                             {
-                                header: "T�n ng�n h�ng",
+                                header: "Tên ngân hàng",
                                 accessor: (bank) => bank.bankName,
                                 type: "string",
                                 sortable: true,
@@ -201,7 +197,7 @@ const BankPage: React.FC = () => {
                                 cell: (bank) => bank.bankName
                             },
                             {
-                                header: "Tr?ng th�i",
+                                header: "Trạng thái",
                                 accessor: (bank) => bank.isActive,
                                 type: "boolean",
                                 sortable: false,
@@ -227,12 +223,12 @@ const BankPage: React.FC = () => {
                                             color="blue"
                                             title="Chỉnh sửa"
                                         />
-                                        <ActionButton
+                                        {/* <ActionButton
                                             icon={<Trash2 className="w-4 h-4" />}
                                             onClick={() => handleOpenDeleteModal(bank)}
                                             color="red"
                                             title="Xóa"
-                                        />
+                                        /> */}
                                     </div>
                                 )
                             }
@@ -262,13 +258,13 @@ const BankPage: React.FC = () => {
                 bank={selectedBank}
             />
 
-            <DeleteConfirmModal
+            {/* <DeleteConfirmModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleDeleteBank}
                 itemName={selectedBank?.bankName || ""}
                 loading={loading}
-            />
+            /> */}
         </div>
     );
 };

@@ -16,8 +16,4 @@ export const roleApi = {
         const response = await axiosPrivate.put(ApiConstant.ROLE.PUT(id), req);
         return response.data;
     },
-    delete: async (id: string): Promise<string> => {
-        const response = await axiosPrivate.delete(ApiConstant.ROLE.DELETE(id));
-        return response.data;
-    },
 };

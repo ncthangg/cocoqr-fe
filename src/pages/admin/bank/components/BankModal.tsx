@@ -19,7 +19,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<PostBankInfoReq>({
         bankCode: "",
-        napasCode: "",
+        napasBin: "",
         swiftCode: "",
         bankName: "",
         shortName: "",
@@ -35,7 +35,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
             if (bank) {
                 setFormData({
                     bankCode: bank.bankCode,
-                    napasCode: bank.napasBin || "",
+                    napasBin: bank.napasBin || "",
                     swiftCode: bank.swiftCode || "",
                     bankName: bank.bankName,
                     shortName: bank.shortName,
@@ -43,7 +43,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                 });
                 setPreviewUrl(resolveAvatarPreview(bank.logoUrl ?? null));
             } else {
-                setFormData({ bankCode: "", napasCode: "", swiftCode: "", bankName: "", shortName: "", isActive: true });
+                setFormData({ bankCode: "", napasBin: "", swiftCode: "", bankName: "", shortName: "", isActive: true });
                 setPreviewUrl(null);
             }
             setFile(undefined);
@@ -85,35 +85,21 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
     const executeSave = async () => {
         try {
             setLoading(true);
-            const reqFormData = new FormData();
-            reqFormData.append("bankCode", formData.bankCode);
-            reqFormData.append("napasCode", formData.napasCode || "");
-            reqFormData.append("swiftCode", formData.swiftCode || "");
-            reqFormData.append("bankName", formData.bankName);
-            reqFormData.append("shortName", formData.shortName);
-            reqFormData.append("isActive", String(formData.isActive));
-            if (file) reqFormData.append("logoUrl", file);
-
             if (bank) {
+                const reqFormData = new FormData();
+                reqFormData.append("isActive", String(formData.isActive));
+                if (file) reqFormData.append("logoUrl", file);
                 reqFormData.append("isDeleteFile", String(!file && !previewUrl));
+
                 await bankApi.put(bank.id, reqFormData as any);
                 toast.success("Cập nhật ngân hàng thành công!");
                 const updatedBank: BankRes = {
                     ...bank,
-                    bankCode: formData.bankCode,
-                    bankName: formData.bankName,
-                    shortName: formData.shortName,
-                    napasBin: formData.napasCode || undefined,
-                    swiftCode: formData.swiftCode || undefined,
                     isActive: formData.isActive,
+                    logoUrl: file ? (previewUrl ?? undefined) : (previewUrl ? bank.logoUrl : undefined),
                 };
                 setIsConfirmOpen(false);
                 onSuccess(updatedBank);
-            } else {
-                await bankApi.post(reqFormData as any);
-                toast.success("Thêm mới ngân hàng thành công!");
-                setIsConfirmOpen(false);
-                onSuccess();
             }
             onClose();
         } catch (error) {
@@ -139,7 +125,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                 <div className="flex items-center justify-between px-lg py-md border-b border-border bg-surface-muted/30 shrink-0">
                     <h2 className="text-lg font-bold text-foreground flex items-center gap-sm">
                         <Landmark className="w-5 h-5 text-primary" />
-                        {bank ? "Chỉnh sửa ngân hàng" : "Thêm ngân hàng mới"}
+                        Cập nhật ngân hàng
                     </h2>
                     <button
                         type="button"
@@ -154,10 +140,10 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                 {/* Body */}
                 <form onSubmit={handleFormSubmit} className="overflow-y-auto flex-1">
                     <div className="p-lg">
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
 
-                            {/* LEFT: Inputs (3/5) */}
-                            <div className="md:col-span-3 flex flex-col gap-md">
+                            {/* LEFT: Inputs (1/2) */}
+                            <div className="flex flex-col gap-md">
                                 <div className="grid grid-cols-2 gap-md">
                                     {/* Bank Code */}
                                     <div className="flex flex-col gap-sm">
@@ -170,10 +156,9 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                             type="text"
                                             name="bankCode"
                                             value={formData.bankCode}
-                                            onChange={handleInputChange}
-                                            className="input uppercase tracking-wider"
+                                            readOnly
+                                            className="input uppercase tracking-wider bg-surface-muted/50 cursor-not-allowed opacity-80"
                                             placeholder="VD: VCB"
-                                            required
                                         />
                                     </div>
 
@@ -188,10 +173,9 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                             type="text"
                                             name="shortName"
                                             value={formData.shortName}
-                                            onChange={handleInputChange}
-                                            className="input"
+                                            readOnly
+                                            className="input bg-surface-muted/50 cursor-not-allowed opacity-80"
                                             placeholder="VD: Vietcombank"
-                                            required
                                         />
                                     </div>
                                 </div>
@@ -207,26 +191,25 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                         type="text"
                                         name="bankName"
                                         value={formData.bankName}
-                                        onChange={handleInputChange}
-                                        className="input"
+                                        readOnly
+                                        className="input bg-surface-muted/50 cursor-not-allowed opacity-80"
                                         placeholder="VD: Ngân hàng TMCP Ngoại thương Việt Nam"
-                                        required
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-md">
+                                <div className="grid grid-cols-2 gap-md items-end">
                                     {/* Napas Code */}
                                     <div className="flex flex-col gap-sm">
-                                        <label htmlFor="napasCode" className="text-sm font-semibold text-foreground-secondary">
+                                        <label htmlFor="napasBin" className="text-sm font-semibold text-foreground-secondary">
                                             Mã Napas
                                         </label>
                                         <input
-                                            id="napasCode"
+                                            id="napasBin"
                                             type="text"
-                                            name="napasCode"
-                                            value={formData.napasCode || ""}
-                                            onChange={handleInputChange}
-                                            className="input font-mono"
+                                            name="napasBin"
+                                            value={formData.napasBin || ""}
+                                            readOnly
+                                            className="input font-mono bg-surface-muted/50 cursor-not-allowed opacity-80 text-center"
                                             placeholder="VD: 970436"
                                         />
                                     </div>
@@ -241,37 +224,19 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                             type="text"
                                             name="swiftCode"
                                             value={formData.swiftCode || ""}
-                                            onChange={handleInputChange}
-                                            className="input font-mono uppercase"
+                                            readOnly
+                                            className="input font-mono uppercase bg-surface-muted/50 cursor-not-allowed opacity-80 text-center"
                                             placeholder="VD: BFTVVNVX"
                                         />
                                     </div>
                                 </div>
-
-                                {/* isActive Toggle */}
-                                <label className="flex items-center gap-sm py-sm px-md bg-surface-muted/30 rounded-xl border border-border cursor-pointer hover:bg-surface-muted/50 transition-all group">
-                                    <div className="relative h-6 w-11 flex-shrink-0">
-                                        <input
-                                            type="checkbox"
-                                            className="sr-only peer"
-                                            name="isActive"
-                                            id="isActive"
-                                            checked={formData.isActive}
-                                            onChange={handleInputChange}
-                                        />
-                                        <div className="w-11 h-6 bg-surface-muted peer-checked:bg-primary rounded-full transition-all border border-border after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                                    </div>
-                                    <span className="text-sm font-semibold text-foreground-secondary select-none group-hover:text-foreground transition-colors">
-                                        Đang hoạt động (Cho phép giao dịch)
-                                    </span>
-                                </label>
                             </div>
 
-                            {/* RIGHT: Logo Upload (2/5) */}
-                            <div className="md:col-span-2 flex flex-col items-center gap-md">
+                            {/* RIGHT: Logo Upload (2/2) */}
+                            <div className="flex flex-col items-center gap-md">
                                 <span className="text-sm font-semibold text-foreground-secondary self-start">Logo ngân hàng</span>
                                 <div
-                                    className="relative w-full aspect-square max-w-[200px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border-strong bg-surface-muted/20 hover:border-primary hover:bg-primary/5 transition-all group cursor-pointer"
+                                    className="relative w-full aspect-square max-w-[240px] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border-strong bg-surface-muted/20 hover:border-primary hover:bg-primary/5 transition-all group cursor-pointer"
                                     onClick={() => !previewUrl && fileInputRef.current?.click()}
                                 >
                                     {previewUrl ? (
@@ -280,7 +245,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                                 <img
                                                     src={previewUrl}
                                                     alt="Logo preview"
-                                                    className="w-24 h-24 object-contain rounded-xl bg-bg p-xs border border-border"
+                                                    className="w-40 h-40 object-contain rounded-xl bg-bg p-1 border border-border"
                                                 />
                                                 <div
                                                     className="absolute inset-0 bg-foreground/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl cursor-pointer"
@@ -313,6 +278,27 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                         onChange={handleFileChange}
                                     />
                                 </div>
+
+                                {/* isActive Toggle */}
+                                <div className="mt-auto w-full flex flex-col gap-sm pt-md">
+                                    <label className="text-sm font-semibold text-foreground-secondary">Trạng thái (Có thể cập nhật)</label>
+                                    <label className="w-full flex items-center gap-sm py-sm px-md bg-surface-muted/30 rounded-xl border border-border cursor-pointer hover:bg-surface-muted/50 transition-all group">
+                                        <div className="relative h-6 w-11 flex-shrink-0">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                name="isActive"
+                                                id="isActive"
+                                                checked={formData.isActive}
+                                                onChange={handleInputChange}
+                                            />
+                                            <div className="w-11 h-6 bg-surface-muted peer-checked:bg-primary rounded-full transition-all border border-border after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                                        </div>
+                                        <span className="text-xs font-bold text-primary select-none uppercase tracking-widest leading-relaxed">
+                                            Đang hoạt động
+                                        </span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -323,7 +309,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                             Hủy
                         </Button>
                         <Button type="submit" variant="primary" size="medium" loading={loading} disabled={isConfirmOpen}>
-                            {bank ? "Cập nhật" : "Tạo mới"}
+                            Cập nhật
                         </Button>
                     </div>
                 </form>
@@ -333,10 +319,10 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                 isOpen={isConfirmOpen}
                 onClose={() => setIsConfirmOpen(false)}
                 onConfirm={executeSave}
-                title={bank ? "Xác nhận cập nhật ngân hàng" : "Xác nhận tạo ngân hàng mới"}
-                description={`Bạn có chắc chắn muốn ${bank ? "cập nhật" : "tạo mới"} ngân hàng "${formData.shortName || formData.bankCode}"?`}
+                title="Xác nhận cập nhật ngân hàng"
+                description={`Bạn có chắc chắn muốn cập nhật ngân hàng "${formData.shortName || formData.bankCode}"?`}
                 loading={loading}
-                confirmText={bank ? "Cập nhật" : "Tạo mới"}
+                confirmText="Cập nhật"
             />
         </div>
     );

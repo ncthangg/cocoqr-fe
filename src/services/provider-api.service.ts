@@ -20,8 +20,4 @@ export const providerApi = {
         });
         return response.data;
     },
-    delete: async (id: string): Promise<string> => {
-        const response = await axiosPrivate.delete(ApiConstant.PROVIDER.DELETE(id));
-        return response.data;
-    },
 };

@@ -86,6 +86,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                     code: formData.code,
                     name: formData.name,
                     isActive: formData.isActive,
+                    logoUrl: file ? (previewUrl ?? undefined) : (previewUrl ? provider.logoUrl : undefined),
                 };
                 setIsConfirmOpen(false);
                 onSuccess(updatedProvider);
@@ -194,7 +195,8 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                                         name="code"
                                         value={formData.code}
                                         onChange={handleInputChange}
-                                        className="input uppercase tracking-wider"
+                                        readOnly={!!provider}
+                                        className={`input uppercase tracking-wider ${provider ? "bg-surface-muted/50 cursor-not-allowed opacity-80" : ""}`}
                                         placeholder="VD: MOMO"
                                         required
                                     />

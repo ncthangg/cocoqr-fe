@@ -17,6 +17,7 @@ import RolePage from "../pages/admin/role/page";
 import HistoryPage from "../pages/admin/history/page";
 import AccountPage from "@/pages/admin/account/page";
 import ProviderPage from "../pages/admin/provider/page";
+import SeedPage from "../pages/admin/seed/page";
 
 const RootWrapper = () => (
     <>
@@ -69,6 +70,7 @@ export const router = createBrowserRouter([
                     { path: RouteConstant.ADMIN_ACCOUNTS, element: <AccountPage /> },
                     { path: RouteConstant.ADMIN_HISTORY, element: <HistoryPage /> },
                     { path: RouteConstant.ADMIN_PROVIDERS, element: <ProviderPage /> },
+                    { path: RouteConstant.ADMIN_SEED, element: <SeedPage /> },
                 ],
             },
 

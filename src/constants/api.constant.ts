@@ -18,13 +18,13 @@ export const ApiConstant = {
         GET_ALL: "/bankinfos",
         POST: "/bankinfos",
         PUT: (id: string) => `/bankinfos/${id}`,
-        DELETE: (id: string) => `/bankinfos/${id}`,
+        //DELETE: (id: string) => `/bankinfos/${id}`,
     },
     ROLE: {
         GET_ALL: "/roles",
         POST: "/roles",
         PUT: (id: string) => `/roles/${id}`,
-        DELETE: (id: string) => `/roles/${id}`,
+        //DELETE: (id: string) => `/roles/${id}`,
     },
     USER: {
         GET_ALL: "/users",
@@ -46,6 +46,14 @@ export const ApiConstant = {
         GET_ALL: "/providers",
         POST: "/providers",
         PUT: (id: string) => `/providers/${id}`,
-        DELETE: (id: string) => `/providers/${id}`,
+        //DELETE: (id: string) => `/providers/${id}`,
+    },
+    DATASYNC: {
+        ROLES: "/datasync/roles",
+        ROLES_PREVIEW: "/datasync/roles/preview",
+        BANKS: "/datasync/banks",
+        BANKS_PREVIEW: "/datasync/banks/preview",
+        PROVIDERS: "/datasync/providers",
+        PROVIDERS_PREVIEW: "/datasync/providers/preview",
     },
 };
