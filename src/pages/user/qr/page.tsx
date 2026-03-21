@@ -60,6 +60,8 @@ const CreatePaymentPage: React.FC = () => {
         napasBin?: string | null,
         bankCode?: string | null,
         bankShortName?: string | null,
+        bankName?: string | null,
+        bankLogoUrl?: string | null,
         isBankInactive?: boolean | null,
         number: string,
         amount: string,
@@ -72,6 +74,8 @@ const CreatePaymentPage: React.FC = () => {
         napasBin: "",
         bankCode: "",
         bankShortName: "",
+        bankName: "",
+        bankLogoUrl: "",
         isBankInactive: null,
         number: "",
         amount: "",
@@ -179,9 +183,10 @@ const CreatePaymentPage: React.FC = () => {
             toast.warning("Vui lòng nhập số tài khoản / số điện thoại.");
             return;
         }
-        const selectedProvider = allProviders.find(p => p.id === formData.providerId);
-        const isBank = selectedProvider?.code === ProviderCode.BANK;
-        if (isBank && !formData.bankCode) {
+
+        const isBank = formData.providerCode === ProviderCode.BANK;
+        
+        if (isBank && !formData.bankCode && !selectedAccount) {
             toast.warning("Vui lòng chọn ngân hàng.");
             return;
         }
@@ -194,12 +199,14 @@ const CreatePaymentPage: React.FC = () => {
             return;
         }
         try {
+            console.log("isBank:", isBank);
             setQrLoading(true);
+
             const req: PostQrReq = {
                 providerId: formData.providerId,
                 accountId: selectedAccount?.id ?? null,
-                accountNumber: formData.number,
-                bankCode: isBank ? String(formData.bankCode) : null,
+                accountNumber: selectedAccount ? null : formData.number,
+                bankCode: selectedAccount ? null : (isBank ? String(formData.bankCode) : null),
                 amount: formData.amount ? Number(formData.amount) : null,
                 description: formData.note || null,
                 isFixedAmount: !!formData.amount,
@@ -215,6 +222,8 @@ const CreatePaymentPage: React.FC = () => {
         }
     };
 
+    console.log(selectedAccount);
+
     const handleSelectAccount = (acc: AccountRes) => {
         setSelectedAccount(acc);
         const isBank = acc.providerCode === ProviderCode.BANK;
@@ -226,6 +235,8 @@ const CreatePaymentPage: React.FC = () => {
             napasBin: acc.napasBin || "",
             bankCode: acc.bankCode || "",
             bankShortName: acc.bankShortName || "",
+            bankName: acc.bankName || "",
+            bankLogoUrl: acc.bankLogoUrl || "",
             isBankInactive: isBank ? !acc.bankIsActive : null,
             number: acc.accountNumber ?? "",
             amount: "",
@@ -266,7 +277,7 @@ const CreatePaymentPage: React.FC = () => {
     }, [leftPercent]);
 
     return (
-        <div 
+        <div
             ref={containerRef}
             className="h-full w-full flex bg-bg flex-1 overflow-hidden relative qr-container"
         >
@@ -401,8 +412,8 @@ const CreatePaymentPage: React.FC = () => {
             </div>
 
             {/* Left Column: QR Form (Resizable) */}
-            <div 
-                className="flex flex-col gap-lg h-full min-h-0 overflow-y-auto px-lg py-md relative scrollbar-hidden animate-in fade-in slide-in-from-left-4 duration-500" 
+            <div
+                className="flex flex-col gap-lg h-full min-h-0 overflow-y-auto px-lg py-md relative scrollbar-hidden animate-in fade-in slide-in-from-left-4 duration-500"
                 style={{ width: `${leftPercent}%`, flexShrink: 0 }}
             >
 
@@ -442,6 +453,8 @@ const CreatePaymentPage: React.FC = () => {
                                 napasBin: "",
                                 bankCode: "",
                                 bankShortName: "",
+                                bankName: "",
+                                bankLogoUrl: "",
                                 isBankInactive: null,
                                 number: "",
                                 amount: "",
@@ -468,6 +481,7 @@ const CreatePaymentPage: React.FC = () => {
                         napasBin={formData?.napasBin || ""}
                         bankCode={formData?.bankCode || ""}
                         bankShortName={formData?.bankShortName || ""}
+                        bankLogoUrl={formData?.bankLogoUrl || ""}
                         allProviders={allProviders}
                         onFetchProviders={fetchProviders}
                         onProviderChange={(id) => {
@@ -482,14 +496,15 @@ const CreatePaymentPage: React.FC = () => {
                                 napasBin: "",
                                 bankCode: "",
                                 bankShortName: "",
+                                bankLogoUrl: "",
                                 isBankInactive: false,
                             });
                             setIsProviderMaintenance(p ? !p.isActive : false);
                             setIsBankMaintenance(false);
                         }}
-                        onBankSelect={(napasBin, code, shortName, isActive) => {
+                        onBankSelect={(napasBin, code, shortName, bankName, logoUrl, isActive) => {
                             if (selectedAccount && code !== selectedAccount.bankCode) setSelectedAccount(null);
-                            setFormData({ ...formData, napasBin, bankCode: code, bankShortName: shortName, isBankInactive: !isActive });
+                            setFormData({ ...formData, napasBin, bankCode: code, bankShortName: shortName, bankName: bankName, bankLogoUrl: logoUrl, isBankInactive: !isActive });
                             setIsBankMaintenance(!isActive);
                         }}
                         isProviderInactive={isProviderInactive || false}
@@ -544,8 +559,8 @@ const CreatePaymentPage: React.FC = () => {
                     {(isProviderInactive || isBankInactive) && (
                         <div className="p-md bg-danger/5 border border-danger/20 rounded-lg animate-in fade-in duration-300">
                             <p className="text-xs text-danger font-medium">
-                                {isProviderInactive 
-                                    ? "Phương thức thanh toán này hiện đang bảo trì. Vui lòng chọn phương thức thanh toán khác." 
+                                {isProviderInactive
+                                    ? "Phương thức thanh toán này hiện đang bảo trì. Vui lòng chọn phương thức thanh toán khác."
                                     : "Ngân hàng đang bảo trì. Vui lòng chọn ngân hàng khác."}
                             </p>
                         </div>

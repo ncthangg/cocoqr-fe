@@ -4,6 +4,7 @@ import type { BankRes, ProviderRes } from "@/models/entity.model";
 import BankSelectionModal from "@/components/UICustoms/Modal/BankSelectionModal";
 import { ProviderCode } from '@/models/enum';
 import { bankApi } from '@/services/bank-api.service';
+import { resolveAvatarPreview } from '@/utils/imageConvertUtils';
 
 interface AccountProviderSelectorProps {
     providerId: string;
@@ -12,10 +13,11 @@ interface AccountProviderSelectorProps {
     napasBin?: string | null;
     bankCode?: string | null;
     bankShortName?: string | null;
+    bankLogoUrl?: string | null;
     allProviders: ProviderRes[];
     onFetchProviders: () => void;
     onProviderChange: (providerId: string) => void;
-    onBankSelect: (napasBin: string, code: string, shortName: string, isActive: boolean) => void;
+    onBankSelect: (napasBin: string, code: string, shortName: string, bankName: string, logoUrl: string | null, isActive: boolean) => void;
     isBankInactive?: boolean | null;
     isProviderInactive?: boolean;
     allowInactiveSelection?: boolean;
@@ -30,6 +32,7 @@ const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
     napasBin,
     bankCode,
     bankShortName,
+    bankLogoUrl,
     allProviders,
     onFetchProviders,
     onProviderChange,
@@ -54,7 +57,7 @@ const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
                 <label className="text-sm font-medium text-foreground-secondary">Loại tài khoản</label>
                 <div className="relative">
                     <select
-                        className={`input cursor-pointer appearance-none pr-10 ${selectedProvider && !selectedProvider.isActive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
+                        className={`input cursor-pointer appearance-none pr-10 h-11 ${selectedProvider && !selectedProvider.isActive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
                         value={providerId}
                         onChange={(e) => onProviderChange(e.target.value)}
                         onMouseDown={() => onFetchProviders()}
@@ -84,6 +87,7 @@ const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
                     bankCode={bankCode ?? ""}
                     bankShortName={bankShortName ?? ""}
                     isBankInactive={isBankInactive ?? false}
+                    logoUrl={bankLogoUrl ?? null}
                     isBankModalOpen={isBankModalOpen}
                     onOpenModal={() => setIsBankModalOpen(true)}
                     onCloseModal={() => setIsBankModalOpen(false)}
@@ -98,6 +102,7 @@ const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
                     bankCode={bankCode ?? ""}
                     bankShortName={bankShortName ?? ""}
                     isBankInactive={isBankInactive ?? false}
+                    logoUrl={bankLogoUrl ?? null}
                     onBankSelect={onBankSelect}
                 />
             )}
@@ -118,27 +123,44 @@ interface BankFieldModalProps {
     bankCode: string;
     bankShortName: string;
     isBankInactive: boolean;
+    logoUrl: string | null;
     isBankModalOpen: boolean;
     onOpenModal: () => void;
     onCloseModal: () => void;
-    onBankSelect: (napasBin: string, code: string, shortName: string, isActive: boolean) => void;
+    onBankSelect: (napasBin: string, code: string, shortName: string, bankName: string, logoUrl: string | null, isActive: boolean) => void;
     allowInactiveSelection: boolean;
 }
 
 const BankFieldModal: React.FC<BankFieldModalProps> = ({
-    napasBin, bankCode, bankShortName, isBankInactive,
+    napasBin, bankCode, bankShortName, isBankInactive, logoUrl,
     isBankModalOpen, onOpenModal, onCloseModal,
     onBankSelect, allowInactiveSelection,
 }) => (
     <div className="flex flex-col gap-sm relative">
         <label className="text-sm font-medium text-foreground-secondary">Ngân hàng</label>
         <div
-            className={`input cursor-pointer flex items-center justify-between min-h-[42px] pr-3 ${isBankInactive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
+            className={`input cursor-pointer flex items-center justify-between h-11 pr-3 ${isBankInactive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
             onClick={onOpenModal}
         >
             <div className="flex items-center gap-sm overflow-hidden w-full">
                 <span className="truncate w-full text-left text-sm">
-                    {bankCode ? `(${napasBin}) ${bankShortName}` : <span className="text-foreground-muted">Chọn ngân hàng</span>}
+                    {
+                        bankCode ? (
+                            <div className="flex items-center gap-md">
+                                {logoUrl ? (
+                                    <img src={resolveAvatarPreview(logoUrl ?? null)} alt={bankShortName} className="w-10 h-10 object-contain rounded bg-bg p-xs border border-border" />
+                                ) : (
+                                    <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-foreground-secondary">
+                                        {bankCode}
+                                    </div>
+                                )}
+                                <span className="truncate">
+                                    ({napasBin}) {bankShortName}
+                                </span>
+                            </div>
+                        )
+                            : <span className="text-foreground-muted">Chọn ngân hàng</span>
+                    }
                 </span>
             </div>
             <ChevronDown className="w-4 h-4 text-foreground-muted flex-shrink-0" />
@@ -149,8 +171,8 @@ const BankFieldModal: React.FC<BankFieldModalProps> = ({
         <BankSelectionModal
             isOpen={isBankModalOpen}
             onClose={onCloseModal}
-            onSelectBank={(napasBin, bankCode, bankShortName, isActive) => {
-                onBankSelect(napasBin, bankCode, bankShortName, isActive);
+            onSelectBank={(napasBin, bankCode, bankShortName, bankName, logoUrl, isActive) => {
+                onBankSelect(napasBin, bankCode, bankShortName, bankName, logoUrl, isActive);
                 onCloseModal();
             }}
             allowInactiveSelection={allowInactiveSelection}
@@ -163,7 +185,8 @@ interface BankFieldDropdownProps {
     bankCode: string;
     bankShortName: string;
     isBankInactive: boolean;
-    onBankSelect: (napasBin: string, code: string, shortName: string, isActive: boolean) => void;
+    logoUrl: string | null;
+    onBankSelect: (napasBin: string, code: string, shortName: string, bankName: string, logoUrl: string | null, isActive: boolean) => void;
 }
 
 const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
@@ -171,6 +194,7 @@ const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
     bankCode,
     bankShortName,
     isBankInactive,
+    logoUrl,
     onBankSelect,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -223,13 +247,26 @@ const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
         <div className="flex flex-col gap-sm relative" ref={containerRef}>
             <label className="text-sm font-medium text-foreground-secondary">Ngân hàng</label>
             <div
-                className={`input cursor-pointer flex items-center justify-between min-h-[42px] pr-3 ${isBankInactive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
+                className={`input cursor-pointer flex items-center justify-between h-11 pr-3 ${isBankInactive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
                 onClick={handleOpen}
             >
                 <span className="truncate w-full text-left text-sm">
-                    {napasBin
-                        ? `(${napasBin}) ${bankShortName}`
-                        : <span className="text-foreground-muted">Chọn ngân hàng</span>
+                    {
+                        napasBin ? (
+                            <div className="flex items-center gap-md">
+                                {logoUrl ? (
+                                    <img src={resolveAvatarPreview(logoUrl ?? null)} alt={bankShortName} className="w-8 h-8 object-contain rounded bg-bg border border-border" />
+                                ) : (
+                                    <div className="w-8 h-8 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-foreground-secondary">
+                                        {bankCode}
+                                    </div>
+                                )}
+                                <span className="truncate">
+                                    ({napasBin}) {bankShortName}
+                                </span>
+                            </div>
+                        )
+                            : <span className="text-foreground-muted">Chọn ngân hàng</span>
                     }
                 </span>
                 <ChevronDown className={`w-4 h-4 text-foreground-muted flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
@@ -264,7 +301,7 @@ const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
                                 key={b.id}
                                 className={`flex items-center gap-sm px-md py-sm cursor-pointer transition-colors hover:bg-surface-muted ${b.bankCode === bankCode ? 'bg-primary/5 font-semibold' : ''}`}
                                 onClick={() => {
-                                    onBankSelect(b.napasBin, b.bankCode, b.shortName, b.isActive);
+                                    onBankSelect(b.napasBin, b.bankCode, b.shortName, b.bankName, b.logoUrl ?? null, b.isActive);
                                     setIsOpen(false);
                                 }}
                             >

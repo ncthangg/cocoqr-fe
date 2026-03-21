@@ -60,7 +60,7 @@ export interface BankRes extends BaseRes {
     bankCode: string;
     bankName: string;
     shortName: string;
-    swiftCode?: string;
+    swiftCode: string;
     logoUrl?: string;
     isActive: boolean;
 }

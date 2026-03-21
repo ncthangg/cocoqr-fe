@@ -11,7 +11,7 @@ import Button from "@/components/UICustoms/Button";
 interface BankSelectionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSelectBank: (napasBin: string, bankCode: string, bankShortName: string, isActive: boolean) => void;
+    onSelectBank: (napasBin: string, bankCode: string, bankShortName: string, bankName: string, bankLogoUrl: string | null, isActive: boolean) => void;
     allowInactiveSelection?: boolean;
 }
 
@@ -163,7 +163,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                                             <Button
                                                 value={bank.isActive ? "Chọn" : "Chọn (Bảo trì)"}
                                                 onClick={() => {
-                                                    onSelectBank(bank.napasBin, bank.bankCode, bank.shortName, bank.isActive)
+                                                    onSelectBank(bank.napasBin, bank.bankCode, bank.shortName, bank.bankName, bank.logoUrl ?? null, bank.isActive)
                                                 }}
                                                 type="button"
                                                 size="medium"

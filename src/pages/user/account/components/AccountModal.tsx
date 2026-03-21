@@ -139,8 +139,12 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
                 onSuccess({
                     id: accountId,
                     providerId: formData.providerId,
+                    providerCode: selectedProvider?.code,
+                    providerName: selectedProvider?.name,
+                    providerLogoUrl: selectedProvider?.logoUrl,
                     bankCode: formData.bankCode ?? undefined,
                     bankName: formData.bankName ?? undefined,
+                    bankLogoUrl: bankLogoUrl ?? undefined,
                     accountHolder: formData.accountHolder,
                     accountNumber: formData.accountNumber,
                     isActive: formData.isActive,
@@ -161,8 +165,9 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
         }
     };
 
-    const handleSelectBank = useCallback((napasBin: string, code: string, shortName: string, isActive: boolean) => {
-        setFormData(prev => ({ ...prev, napasBin, bankCode: code, bankShortName: shortName, isBankInactive: !isActive }));
+    const handleSelectBank = useCallback((napasBin: string, code: string, shortName: string, bankName: string, logoUrl: string | null, isActive: boolean) => {
+        setFormData(prev => ({ ...prev, napasBin, bankCode: code, bankName: bankName, bankShortName: shortName, bankLogoUrl: logoUrl, isBankInactive: !isActive }));
+        setBankLogoUrl(logoUrl);
         setIsBankModalOpen(false);
     }, []);
 

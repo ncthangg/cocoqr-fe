@@ -18,6 +18,7 @@ const defaultForm = {
     bankCode: "",
     bankName: "",
     bankShortName: "",
+    bankLogoUrl: "" as string | null,
     isBankInactive: null as boolean | null,
     number: "",
     amount: "",
@@ -138,6 +139,7 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                     napasBin={formData.napasBin}
                     bankCode={formData.bankCode}
                     bankShortName={formData.bankShortName}
+                    bankLogoUrl={formData.bankLogoUrl}
                     allProviders={allProviders}
                     onFetchProviders={fetchProviders}
                     onProviderChange={(id) => {
@@ -150,12 +152,13 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                             napasBin: "",
                             bankCode: "",
                             bankName: "",
+                            bankLogoUrl: "",
                         });
                         setIsProviderMaintenance(p ? !p.isActive : false);
                         setIsBankMaintenance(false);
                     }}
-                    onBankSelect={(napasBin, code, shortName, isActive) => {
-                        setFormData({ ...formData, napasBin: napasBin, bankCode: code, bankShortName: shortName, isBankInactive: !isActive });
+                    onBankSelect={(napasBin, code, shortName, bankName, logoUrl, isActive) => {
+                        setFormData({ ...formData, napasBin: napasBin, bankCode: code, bankShortName: shortName, bankName: bankName, bankLogoUrl: logoUrl, isBankInactive: !isActive });
                         setIsBankMaintenance(!isActive);
                     }}
                     isProviderInactive={isProviderInactive || false}

@@ -15,8 +15,8 @@ export interface PostPutUserRoleReq {
 
 export interface PostBankInfoReq {
     bankCode: string;
-    napasCode: string | null;
-    swiftCode: string | null;
+    napasBin: string;
+    swiftCode: string;
     bankName: string;
     shortName: string;
     logoUrl?: File;
@@ -57,7 +57,7 @@ export interface PostQrReq {
     providerId: string;
 
     accountId: string | null;
-    accountNumber: string;
+    accountNumber: string | null;
 
     bankCode: string | null;
     amount: number | null;
