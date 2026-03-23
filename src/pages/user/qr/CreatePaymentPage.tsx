@@ -148,18 +148,14 @@ const CreatePaymentPage: React.FC = () => {
                     <div className="flex gap-4 w-full max-w-sm">
                         <Button
                             className="flex-1 flex gap-2 items-center justify-center"
-                            bgColor="bg-surface-muted"
-                            textColor="text-text-primary"
-                            hoverColor="hover:bg-border"
+                            variant="outline"
                         >
                             <Download className="w-4 h-4" />
                             Tải xuống
                         </Button>
                         <Button
                             className="flex-1 flex gap-2 items-center justify-center"
-                            bgColor="bg-surface-muted"
-                            textColor="text-text-primary"
-                            hoverColor="hover:bg-border"
+                            variant="outline"
                         >
                             <Copy className="w-4 h-4" />
                             Copy Link

@@ -266,10 +266,7 @@ const AccountsPage: React.FC = () => {
 
                             <div className="flex gap-3 justify-end mt-4">
                                 <Button
-                                    bgColor="bg-transparent"
-                                    textColor="text-text-secondary"
-                                    hoverColor="hover:bg-surface-muted"
-                                    className="border border-border"
+                                    variant="outline"
                                     onClick={() => setAddEditModalOpen(false)}
                                 >
                                     Hủy
@@ -297,17 +294,14 @@ const AccountsPage: React.FC = () => {
 
                         <div className="flex gap-3 justify-center">
                             <Button
-                                bgColor="bg-transparent"
-                                textColor="text-text-secondary"
-                                hoverColor="hover:bg-surface-muted"
+                                variant="outline"
                                 className="border border-border flex-1"
                                 onClick={() => setDeleteModalOpen(false)}
                             >
                                 Hủy
                             </Button>
                             <Button
-                                bgColor="bg-red-600"
-                                hoverColor="hover:bg-red-700"
+                                variant="danger"
                                 className="flex-1"
                                 onClick={handleDeleteAccount}
                             >
