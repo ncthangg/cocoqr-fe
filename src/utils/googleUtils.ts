@@ -16,9 +16,6 @@ export const buildGoogleAuthUrl = (path: string, frontendOrigin: string) =>
   `${getBackendOrigin()}${path}?origin=${encodeURIComponent(frontendOrigin)}`;
 
 export const openGooglePopup = (authUrl: string) => {
-  console.log("[GoogleAuth] Đang mở popup với URL:", authUrl);
-  console.log("[GoogleAuth] Popup features:", POPUP_FEATURES);
-
   const popup = window.open(authUrl, "GoogleAuth", POPUP_FEATURES);
 
   if (!popup) {
@@ -28,7 +25,6 @@ export const openGooglePopup = (authUrl: string) => {
 
     // Thêm listener để theo dõi khi popup load
     popup.addEventListener('load', () => {
-      console.log("[GoogleAuth] Popup đã load xong");
     });
 
     // Thêm listener để theo dõi khi popup bị lỗi
@@ -54,9 +50,6 @@ export const registerGoogleAuthListener = (
   })();
 
   const wrappedHandler = (event: MessageEvent) => {
-    console.log("[GoogleAuth] Nhận được message từ origin:", event.origin);
-    console.log("[GoogleAuth] Message data:", event.data);
-    console.log("[GoogleAuth] Expected origins:", expectedOrigin, "or", expectedHostOrigin);
 
     const isAllowedOrigin =
       event.origin === expectedOrigin ||
@@ -68,7 +61,6 @@ export const registerGoogleAuthListener = (
       return;
     }
 
-    console.log("[GoogleAuth] Message từ origin hợp lệ, đang xử lý...");
     handler(event as MessageEvent<ApiSuccessResponse<SignInGoogleRes>>);
   };
 
@@ -95,9 +87,9 @@ const transformRoleRes = (roles: any[]): RoleRes[] => {
   if (!roles || !Array.isArray(roles)) return [];
 
   return roles.map(role => ({
-    roleId: role.id ?? role.Id,
-    roleName: role.name ?? role.Name,
-    roleNameUpperCase: role.nameUpperCase ?? role.NameUpperCase
+    id: role.id ?? role.Id,
+    name: role.name ?? role.Name,
+    nameUpperCase: role.nameUpperCase ?? role.NameUpperCase
   }));
 };
 
@@ -105,14 +97,9 @@ const transformRoleRes = (roles: any[]): RoleRes[] => {
 const transformUserRes = (pascalUser: any): UserRes => {
   if (!pascalUser) return {} as UserRes;
   return {
-    userId: pascalUser.userId || pascalUser.UserId,
-    googleId: pascalUser.googleId || pascalUser.GoogleId,
     email: pascalUser.email || pascalUser.Email,
     fullName: pascalUser.fullName || pascalUser.FullName,
     pictureUrl: pascalUser.pictureUrl || pascalUser.avatarUrl || pascalUser.PictureUrl,
-    salt: pascalUser.salt || pascalUser.Salt,
-    encryptedUserKeyWithUMK: pascalUser.encryptedUserKeyWithUMK || pascalUser.EncryptedUserKeyWithUMK,
-    isNewUser: pascalUser.isNewUser !== undefined ? pascalUser.isNewUser : pascalUser.IsNewUser
   };
 };
 
@@ -130,9 +117,6 @@ const normalizeGoogleAuthResponse = (
   raw: RawGoogleAuthResponse
 ): ApiSuccessResponse<SignInGoogleRes> | null => {
   const rawData = raw.data;
-
-  console.log("[GoogleAuth] Raw data:", raw);
-  console.log("[GoogleAuth] Raw data data:", rawData);
 
   if (raw.code !== "SUCCESS") {
     console.error("[GoogleAuth] API trả về lỗi:", raw);

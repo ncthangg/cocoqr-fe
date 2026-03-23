@@ -96,10 +96,8 @@ const AuthenModal: React.FC = () => {
 
         // 2. Định nghĩa handler xử lý message từ backend
         const handleMessage = async (event: MessageEvent<ApiSuccessResponse<SignInGoogleRes>>) => {
-            console.log("handleMessage", event);
 
             const parsedPayload = parseGoogleAuthPayload(event.data);
-            console.log("parsedPayload", parsedPayload);
             if (!parsedPayload) {
                 toast.error("Dữ liệu Google không hợp lệ.");
                 setIsLoading(false);
@@ -123,7 +121,7 @@ const AuthenModal: React.FC = () => {
                 }));
 
                 // Redirection logic
-                if (roles[0].roleName === "admin") {
+                if (roles[0].name === "admin") {
                     navigate(RouteConstant.ADMIN);
                 } else {
                     navigate(RouteConstant.USER);
@@ -143,7 +141,6 @@ const AuthenModal: React.FC = () => {
         // 3. Đăng ký listener cho postMessage
         listenerCleanupRef.current = registerGoogleAuthListener(backendOrigin, handleMessage);
 
-        console.log("authUrl", authUrl);
         // 4. Mở popup OAuth
         const popup = openGooglePopup(authUrl);
         if (!popup) {
@@ -202,25 +199,25 @@ const AuthenModal: React.FC = () => {
     }
     return (
         <div
-            className="modal-overlay bg-black/60 px-4 py-6"
+            className="modal-overlay px-md py-lg"
             onClick={handleClose}
         >
             <div
-                className="modal-content max-w-modal-xl relative flex flex-col overflow-hidden rounded-2xl p-0 md:flex-row shadow-2xl"
+                className="modal-content max-w-modal-md relative flex flex-col overflow-hidden rounded-2xl p-0 md:flex-row shadow-lg"
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
                     type="button"
                     onClick={handleClose}
-                    className="absolute right-4 top-4 text-text-subtle transition hover:text-text-emphasis"
+                    className="absolute right-4 top-4 text-foreground-muted transition hover:text-foreground"
                     aria-label="Đóng"
                 >
                     ✕
                 </button>
 
-                <div className="hidden w-1/2 items-center justify-center bg-gradient-to-br from-brand-600 to-purple-600 p-10 text-white md:flex">
-                    <div className="space-y-4 text-center">
-                        <div className="rounded-full bg-surface-base/20 px-4 py-1 text-sm font-medium">Secret Sharing</div>
+                <div className="hidden w-1/2 items-center justify-center bg-gradient-to-br from-primary to-primary/80 p-lg text-white md:flex">
+                    <div className="space-y-md text-center">
+                        <div className="rounded-full bg-surface/20 px-md py-1 text-sm font-medium">Secret Sharing</div>
                         <h3 className="text-3xl font-semibold leading-tight">Bảo vệ bí mật của bạn</h3>
                         <p className="text-sm text-white/80">
                             Kết nối với Gmail để đồng bộ hoá dữ liệu, đảm bảo mọi secrets luôn được mã hoá và chỉ bạn mới có quyền giải mã.
@@ -233,27 +230,25 @@ const AuthenModal: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex w-full flex-col justify-center gap-6 p-10 md:w-1/2">
+                <div className="flex w-full flex-col justify-center gap-lg p-lg md:w-1/2">
                     <div>
-                        <h3 className="text-2xl font-semibold text-text-primary">Tiếp tục với Google</h3>
+                        <h3 className="text-2xl font-semibold">Đăng nhập với Google</h3>
                     </div>
 
                     <Button
                         type="button"
-                        value="Login with Google"
                         icon={<GoogleIcon />}
                         onClick={handleLoginWithGoogle}
                         loading={isLoading}
                         size="large"
-                        width="w-full"
-                        bgColor="bg-surface-base"
-                        textColor="text-text-emphasis"
-                        hoverColor="hover:bg-surface-muted"
-                        className="border border-border-strong font-semibold shadow-sm"
-                    />
+                        width="w-full h-12"
+                        className="btn-outline font-semibold shadow-sm"
+                    >
+                        <span className="text-lg font-bold text-foreground">Login Google</span>
+                    </Button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

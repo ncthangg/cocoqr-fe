@@ -1,42 +1,137 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
 @config "../../tailwind.config.js";
 
 :root {
-    /* Colors */
+    /* Background & Surface */
     --color-bg: #ffffff;
-    --color-surface: #f8f9fa;
-    --color-border: #e5e7eb;
+    --color-surface: #fafafa;
+    --color-surface-muted: #f4f4f5;
+    --color-surface-elevated: #ffffff;
 
-    --color-text-primary: #202124;
-    --color-text-secondary: #5f6368;
+    /* Border — 3 mức rõ ràng */
+    --color-border: #e4e4e7;           /* zinc-200  – viền mặc định nhẹ nhàng */
+    --color-border-strong: #a1a1aa;    /* zinc-400  – input, header table, outer card */
+    --color-border-subtle: #f4f4f5;    /* zinc-100  – row divider trong table */
 
-    --color-primary: #1a73e8;
-    --color-success: #34a853;
-    --color-warning: #fbbc05;
-    --color-danger: #ea4335;
+    /* Modal overlay */
+    --color-modal-overlay: rgba(9, 9, 11, 0.65);
+
+    /* Text */
+    --color-text-primary: #18181b;     /* zinc-900 */
+    --color-text-secondary: #52525b;   /* zinc-600 */
+    --color-text-subtle: #71717a;      /* zinc-500 */
+
+    /* Status */
+    --color-success: #16a34a;          /* green-600 */
+    --color-warning: #ca8a04;          /* yellow-600 */
+    --color-danger: #dc2626;           /* red-600 */
+
+    /* Action (Primary = high-contrast monochrome) */
+    --color-primary: #18181b;          /* zinc-900 */
+    --color-primary-foreground: #fafafa;
+
+    /* Button Tokens */
+    --color-btn-primary-bg: #18181b;
+    --color-btn-primary-text: #fafafa;
+    --color-btn-secondary-bg: #ffffff;
+    --color-btn-secondary-text: #18181b;
+    --color-btn-secondary-border: #e4e4e7;
 
     /* Radius */
     --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 24px;
+    --radius-3xl: 32px;
 
-    /* Shadow */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.08);
+    /* Shadow — softer for modern feel */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+
+    /* Shadcn/UI Fallback — synced với custom tokens */
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.141 0.005 285.82);
+    --card: oklch(0.985 0.002 286.32);
+    --card-foreground: oklch(0.141 0.005 285.82);
+    --popover: oklch(0.985 0.002 286.32);
+    --popover-foreground: oklch(0.141 0.005 285.82);
+    --primary: oklch(0.141 0.005 285.82);
+    --primary-foreground: oklch(0.985 0.002 286.32);
+    --secondary: oklch(0.969 0.002 286.32);
+    --secondary-foreground: oklch(0.141 0.005 285.82);
+    --muted: oklch(0.969 0.002 286.32);
+    --muted-foreground: oklch(0.52 0.009 286.32);
+    --accent: oklch(0.969 0.002 286.32);
+    --accent-foreground: oklch(0.141 0.005 285.82);
+    --destructive: oklch(0.6 0.2 27);
+    --border: oklch(0.92 0.004 286.32);      /* zinc-200 */
+    --input: oklch(0.703 0.009 286.32);      /* zinc-400 */
+    --ring: oklch(0.141 0.005 285.82);
+    --radius: 0.75rem;
 }
 
 .dark {
-    --color-bg: #111827;
-    --color-surface: #1f2937;
-    --color-border: #374151;
+    /* Background & Surface */
+    --color-bg: #09090b;               /* zinc-950 */
+    --color-surface: #18181b;          /* zinc-900 */
+    --color-surface-muted: #27272a;    /* zinc-800 */
+    --color-surface-elevated: #1c1c1f;
 
-    --color-text-primary: #f9fafb;
-    --color-text-secondary: #9ca3af;
+    /* Border */
+    --color-border: #3f3f46;           /* zinc-700 */
+    --color-border-strong: #52525b;    /* zinc-600 */
+    --color-border-subtle: #27272a;    /* zinc-800 */
 
-    --color-primary: #3b82f6;
+    /* Modal overlay */
+    --color-modal-overlay: rgba(9, 9, 11, 0.80);
+
+    /* Text */
+    --color-text-primary: #fafafa;     /* zinc-50 */
+    --color-text-secondary: #a1a1aa;   /* zinc-400 */
+    --color-text-subtle: #71717a;      /* zinc-500 */
+
+    /* Status — brighter for dark bg */
     --color-success: #22c55e;
-    --color-warning: #facc15;
+    --color-warning: #eab308;
     --color-danger: #ef4444;
+
+    /* Action */
+    --color-primary: #fafafa;
+    --color-primary-foreground: #18181b;
+
+    /* Button Tokens */
+    --color-btn-primary-bg: #fafafa;
+    --color-btn-primary-text: #18181b;
+    --color-btn-secondary-bg: #18181b;
+    --color-btn-secondary-text: #fafafa;
+    --color-btn-secondary-border: #3f3f46;
+
+    /* Shadcn/UI Fallback */
+    --background: oklch(0.075 0.003 285.82);
+    --foreground: oklch(0.985 0.002 286.32);
+    --card: oklch(0.141 0.005 285.82);
+    --card-foreground: oklch(0.985 0.002 286.32);
+    --popover: oklch(0.141 0.005 285.82);
+    --popover-foreground: oklch(0.985 0.002 286.32);
+    --primary: oklch(0.985 0.002 286.32);
+    --primary-foreground: oklch(0.141 0.005 285.82);
+    --secondary: oklch(0.21 0.006 285.82);
+    --secondary-foreground: oklch(0.985 0.002 286.32);
+    --muted: oklch(0.21 0.006 285.82);
+    --muted-foreground: oklch(0.703 0.009 286.32);
+    --accent: oklch(0.21 0.006 285.82);
+    --accent-foreground: oklch(0.985 0.002 286.32);
+    --destructive: oklch(0.4 0.15 27);
+    --border: oklch(0.315 0.007 285.82);     /* zinc-700 */
+    --input: oklch(0.393 0.008 285.82);      /* zinc-600 */
+    --ring: oklch(0.985 0.002 286.32);
 }
 
 /* =========================
@@ -50,28 +145,28 @@ html {
 body {
     background-color: var(--color-bg);
     color: var(--color-text-primary);
-    font-family: 'Inter', sans-serif;
+    font-family: 'GeistVariable', 'Inter', sans-serif;
+    @apply antialiased;
 }
 
 * {
     border-color: var(--color-border);
 }
 
-
 /* =========================
    PAGE LAYOUT
 ========================= */
 
 .page-container {
-    @apply max-w-7xl mx-auto px-4 py-6;
+    @apply max-w-7xl mx-auto px-lg py-xl;
 }
 
 .card {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-2xl);
     box-shadow: var(--shadow-sm);
-    padding: 1.5rem;
+    @apply p-xl transition-all duration-300;
 }
 
 /* =========================
@@ -79,50 +174,84 @@ body {
 ========================= */
 
 .btn {
-    @apply inline-flex items-center justify-center font-medium transition-all duration-200;
+    @apply inline-flex items-center justify-center font-bold transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
     border-radius: var(--radius-md);
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.5rem;
 }
 
 .btn-primary {
-    background-color: var(--color-primary);
-    color: white;
+    background-color: var(--color-btn-primary-bg);
+    color: var(--color-btn-primary-text);
+    border: 2px solid var(--color-btn-primary-bg);
 }
 
-.btn-primary:hover {
-    opacity: 0.9;
+.btn-primary:hover:not(:disabled) {
+    background-color: transparent;
+    color: var(--color-btn-primary-bg);
+}
+
+.btn-secondary {
+    background-color: var(--color-btn-secondary-bg);
+    color: var(--color-btn-secondary-text);
+    border: 2px solid var(--color-btn-secondary-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-btn-secondary-text);
+    color: var(--color-btn-secondary-bg);
 }
 
 .btn-outline {
-    border: 1px solid var(--color-border);
-    background: transparent;
+    background-color: transparent;
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-border-strong);
 }
 
-.btn-outline:hover {
-    background-color: var(--color-surface);
+.btn-outline:hover:not(:disabled) {
+    background-color: var(--color-border-strong);
+    color: var(--color-bg);
 }
 
 .btn-danger {
     background-color: var(--color-danger);
-    color: white;
+    color: #ffffff;
+    border: 2px solid var(--color-danger);
 }
 
+.btn-danger:hover:not(:disabled) {
+    background-color: transparent;
+    color: var(--color-danger);
+}
+
+.btn-ghost {
+    background-color: var(--color-surface-muted);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+}
+
+.btn-ghost:hover:not(:disabled) {
+    background-color: var(--color-border);
+    color: var(--color-text-primary);
+}
 
 /* =========================
    INPUT
 ========================= */
 
 .input {
-    @apply w-full px-3 py-2 outline-none transition;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
+    @apply w-full px-md py-sm outline-none transition-all duration-300 font-medium;
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
     background-color: var(--color-surface);
     color: var(--color-text-primary);
 }
 
 .input:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    @apply ring-4 ring-primary/10 border-primary;
+}
+
+.input::placeholder {
+    color: var(--color-text-subtle);
 }
 
 /* =========================
@@ -130,60 +259,52 @@ body {
 ========================= */
 
 .modal-overlay {
-    @apply fixed inset-0 flex items-center justify-center;
-    background: rgba(0, 0, 0, 0.4);
+    @apply fixed inset-0 flex items-center justify-center p-md;
+    background: var(--color-modal-overlay);
+    backdrop-filter: blur(6px);
     z-index: 50;
-    animation: fadeIn 0.2s ease-out;
+    @apply animate-in fade-in duration-300;
 }
 
 .modal-content {
-    background-color: var(--color-surface);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    padding: 2rem;
-    width: 100%;
-    animation: scaleIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes scaleIn {
-    from {
-        transform: scale(0.95);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+    background-color: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg);
+    @apply w-full overflow-hidden;
+    @apply animate-in zoom-in-95 duration-300;
 }
 
 /* =========================
    TABLE
 ========================= */
 
-.table {
-    @apply w-full border-collapse;
+.table-wrapper {
+    @apply w-full overflow-x-auto rounded-2xl;
+    border: 1px solid var(--color-border-strong);
 }
 
-.table th,
-.table td {
-    border: 1px solid var(--color-border);
-    padding: 0.75rem;
+.table {
+    @apply w-full border-collapse text-left;
 }
 
 .table th {
-    background-color: var(--color-surface);
-    text-align: left;
+    @apply px-md py-sm font-bold text-sm bg-surface-muted uppercase tracking-widest;
+    color: var(--color-text-secondary);
+    border-bottom: 2px solid var(--color-border-strong);
+}
+
+.table td {
+    @apply px-md py-sm text-sm transition-colors;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.table tr:last-child td {
+    @apply border-b-0;
+}
+
+.table tr:hover td {
+    background-color: var(--color-surface-muted);
 }
 
 /* =========================
@@ -191,17 +312,13 @@ body {
 ========================= */
 
 .fade-in {
-    animation: fadeIn 0.2s ease-in-out;
+    @apply animate-in fade-in duration-300;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(4px);
-    }
+.zoom-in {
+    @apply animate-in zoom-in duration-300;
+}
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.slide-up {
+    @apply animate-in slide-in-from-bottom-4 duration-300;
 }

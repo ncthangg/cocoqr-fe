@@ -71,7 +71,7 @@ export default function KeyText({
     const paddingRight = hasValue && readOnly ? "pr-20" : "";
 
     // Styles chung cho input và textarea
-    const baseInputStyles = `w-full rounded-md border border-border-subtle px-3 py-2 font-mono text-sm resize-y bg-surface-muted focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 ${paddingRight} ${className}`;
+    const baseInputStyles = `w-full rounded-md border border-border px-md py-sm font-mono text-sm resize-y bg-surface-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary ${paddingRight} ${className}`;
 
     // Khi không readOnly, luôn hiển thị giá trị thực (không mask)
     const displayValueForEdit = !readOnly ? safeValue : (isRealContent ? safeValue : (hasValue ? getMaskedText(safeValue) : safeValue));
@@ -141,16 +141,13 @@ export default function KeyText({
             )}
 
             {hasValue && readOnly && (
-                <div className={`absolute right-2 flex items-center gap-1 ${multiline ? 'top-2' : 'top-1/2 transform -translate-y-1/2'}`}>
+                <div className={`absolute right-2 flex items-center gap-xs ${multiline ? 'top-2' : 'top-1/2 transform -translate-y-1/2'}`}>
                     {/* Toggle hide/show - chỉ hiển thị khi readOnly */}
                     <Button
                         type="button"
                         onClick={handleViewClick}
                         icon={showKey ? <EyeOff size={18} /> : <Eye size={18} />}
-                        className="p-1.5 rounded hover:bg-surface-subtle min-w-0 h-auto w-auto border-0 shadow-none !gap-0"
-                        bgColor="bg-transparent"
-                        textColor="text-text-subtle"
-                        hoverColor="hover:text-text-secondary hover:bg-surface-subtle"
+                        className="btn-primary"
                         size="small"
                         aria-label={showKey ? "Ẩn key" : "Hiện key"}
                         disabled={disabled}
@@ -161,10 +158,7 @@ export default function KeyText({
                         type="button"
                         onClick={onCopy}
                         icon={<Copy size={18} />}
-                        className="p-1.5 rounded hover:bg-surface-subtle min-w-0 h-auto w-auto border-0 shadow-none !gap-0"
-                        bgColor="bg-transparent"
-                        textColor="text-text-subtle"
-                        hoverColor="hover:text-text-secondary hover:bg-surface-subtle"
+                        className="btn-primary"
                         size="small"
                         aria-label="Copy key"
                         disabled={disabled}

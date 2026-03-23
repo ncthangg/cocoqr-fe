@@ -1,4 +1,3 @@
-import * as React from 'react'
 import clsx from 'clsx'
 
 function Card({ className, ...props }: React.ComponentProps<'div'>) {
@@ -6,7 +5,7 @@ function Card({ className, ...props }: React.ComponentProps<'div'>) {
         <div
             data-slot="card"
             className={clsx(
-                'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
+                'bg-surface text-foreground flex flex-col gap-lg rounded-xl border py-lg shadow-sm',
                 className,
             )}
             {...props}
@@ -19,7 +18,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
         <div
             data-slot="card-header"
             className={clsx(
-                '@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6',
+                '@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-sm px-lg has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-lg',
                 className,
             )}
             {...props}
@@ -41,7 +40,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<'div'>) {
     return (
         <div
             data-slot="card-description"
-            className={clsx('text-muted-foreground text-sm', className)}
+            className={clsx('text-foreground-muted text-sm', className)}
             {...props}
         />
     )
@@ -64,7 +63,7 @@ function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
     return (
         <div
             data-slot="card-content"
-            className={clsx('px-6', className)}
+            className={clsx('px-lg', className)}
             {...props}
         />
     )
@@ -74,7 +73,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
     return (
         <div
             data-slot="card-footer"
-            className={clsx('flex items-center px-6 [.border-t]:pt-6', className)}
+            className={clsx('flex items-center px-lg [.border-t]:pt-lg', className)}
             {...props}
         />
     )

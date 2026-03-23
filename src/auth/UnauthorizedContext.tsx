@@ -4,12 +4,14 @@ import {
     useState,
     useEffect,
     type ReactNode,
+    useCallback,
 } from "react";
 import { finalizeSession, setSessionExpiredHandler } from "../services/auth-token.service";
-import UnauthorizedModal from "../components/Modals/UnauthorizedModal";
+import UnauthorizedModal, { type UnauthorizedType } from "../components/Modals/UnauthorizedModal";
 
 interface UnauthorizedContextType {
-    showUnauthorizedModal: () => void;
+    showSessionExpired: () => void;
+    showNoPermission: (redirectPath: string) => void;
 }
 
 const UnauthorizedContext = createContext<UnauthorizedContextType | undefined>(
@@ -55,7 +57,9 @@ function useUnauthorizedCountdown(
         return () => window.clearTimeout(timer);
     }, [isOpen, countdown, initialSeconds, onTimeout]);
 
-    const reset = () => setCountdown(initialSeconds);
+    const reset = useCallback(() => {
+        setCountdown(initialSeconds);
+    }, [initialSeconds]);
 
     return { countdown, reset };
 }
@@ -64,41 +68,49 @@ function useUnauthorizedCountdown(
 
 export function UnauthorizedProvider({ children }: UnauthorizedProviderProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [type, setType] = useState<UnauthorizedType>("SESSION_EXPIRED");
+    const [redirectPath, setRedirectPath] = useState<string>("/");
 
-    const handleTimeout = () => {
+    const handleAction = useCallback(() => {
         setIsOpen(false);
-        finalizeSession();
-        window.location.href = "/";
-    };
+        if (type === "SESSION_EXPIRED") {
+            finalizeSession();
+            window.location.href = "/";
+        } else {
+            window.location.href = redirectPath;
+        }
+    }, [type, redirectPath]);
 
     const { countdown, reset } = useUnauthorizedCountdown(
         isOpen,
-        5,
-        handleTimeout,
+        10,
+        handleAction,
     );
 
-    const showUnauthorizedModal = () => {
+    const showSessionExpired = useCallback(() => {
+        setType("SESSION_EXPIRED");
         setIsOpen(true);
         reset();
-    };
+    }, [reset]);
+
+    const showNoPermission = useCallback((path: string) => {
+        setType("NO_PERMISSION");
+        setRedirectPath(path);
+        setIsOpen(true);
+        reset();
+    }, [reset]);
 
     // Đăng ký để khi token hết hạn → mở modal
-    useRegisterSessionExpiredHandler(showUnauthorizedModal);
-
-    const handleGoToLogin = () => {
-        setIsOpen(false);
-        reset();
-        finalizeSession();
-        window.location.href = "/";
-    };
+    useRegisterSessionExpiredHandler(showSessionExpired);
 
     return (
-        <UnauthorizedContext.Provider value={{ showUnauthorizedModal }}>
+        <UnauthorizedContext.Provider value={{ showSessionExpired, showNoPermission }}>
             {children}
             <UnauthorizedModal
                 isOpen={isOpen}
+                type={type}
                 countdown={countdown}
-                onGoToLogin={handleGoToLogin}
+                onAction={handleAction}
             />
         </UnauthorizedContext.Provider>
     );

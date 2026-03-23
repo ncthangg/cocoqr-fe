@@ -25,7 +25,6 @@ function App() {
           dispatch(loadUserInfo({
             user: response,
           }));
-          console.log('User data synced successfully');
         } catch (error) {
           console.error('Failed to sync user data:', error);
           dispatch(loadUserInfo({
