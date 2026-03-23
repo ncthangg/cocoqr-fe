@@ -45,3 +45,11 @@ export const ProviderCode = {
 } as const;
 
 export type ProviderCode = keyof typeof ProviderCode;
+///=====================================================================
+
+export const QRStyleType = {
+    SYSTEM: "SYSTEM",
+    USER: "USER"
+} as const;
+
+export type QRStyleType = typeof QRStyleType[keyof typeof QRStyleType];

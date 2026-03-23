@@ -7,12 +7,13 @@ interface ActionConfirmModalProps {
     onClose: () => void;
     onConfirm: () => Promise<void> | void;
     title: string;
-    description?: string;
+    description?: React.ReactNode;
     loading?: boolean;
     confirmText?: string;
     cancelText?: string;
     icon?: React.ReactNode;
     confirmButtonClass?: string;
+    variant?: "primary" | "danger" | "amber";
 }
 
 const ActionConfirmModal: React.FC<ActionConfirmModalProps> = ({
@@ -25,8 +26,17 @@ const ActionConfirmModal: React.FC<ActionConfirmModalProps> = ({
     confirmText = "Xác nhận",
     cancelText = "Hủy",
     icon = <Info className="w-5 h-5" />,
-    confirmButtonClass = "btn-primary px-4 py-2"
+    confirmButtonClass,
+    variant = "primary"
 }) => {
+    const finalConfirmClass = confirmButtonClass || (
+        variant === "danger"
+            ? "bg-danger text-white hover:bg-danger/90 px-md py-sm rounded-lg"
+            : variant === "amber"
+                ? "bg-amber-500 text-white hover:bg-amber-600 px-md py-sm rounded-lg"
+                : "bg-primary text-white hover:bg-primary-hover px-md py-sm rounded-lg"
+    );
+
     if (!isOpen) return null;
 
     return (
@@ -48,12 +58,8 @@ const ActionConfirmModal: React.FC<ActionConfirmModalProps> = ({
                     </button>
                 </div>
 
-                <div className="p-lg">
-                    {description && (
-                        <p className="text-foreground">
-                            {description}
-                        </p>
-                    )}
+                <div className="p-xl border-b border-border/50">
+                    {description}
                 </div>
 
                 <div className="p-md border-t border-border flex justify-end gap-sm bg-surface-muted/20">
@@ -68,7 +74,7 @@ const ActionConfirmModal: React.FC<ActionConfirmModalProps> = ({
                     <Button
                         type="button"
                         onClick={onConfirm}
-                        className={confirmButtonClass}
+                        className={finalConfirmClass}
                         disabled={loading}
                     >
                         {loading ? "Đang xử lý..." : confirmText}

@@ -14,17 +14,17 @@ export const ApiConstant = {
         PUT_STATUS: (id: string) => `/accounts/${id}/status`,
         DELETE: (id: string) => `/accounts/${id}`,
     },
+    PROVIDER: {
+        GET_ALL: "/providers",
+        PUT: (id: string) => `/providers/${id}`,
+    },
     BANKINFO: {
         GET_ALL: "/bankinfos",
-        POST: "/bankinfos",
         PUT: (id: string) => `/bankinfos/${id}`,
-        //DELETE: (id: string) => `/bankinfos/${id}`,
     },
     ROLE: {
         GET_ALL: "/roles",
-        POST: "/roles",
         PUT: (id: string) => `/roles/${id}`,
-        //DELETE: (id: string) => `/roles/${id}`,
     },
     USER: {
         GET_ALL: "/users",
@@ -42,12 +42,6 @@ export const ApiConstant = {
         GET_ALL_BY_ADMIN: "/qr/by-admin",
         GET_BY_ID: (id: string) => `/qr/${id}`,
     },
-    PROVIDER: {
-        GET_ALL: "/providers",
-        POST: "/providers",
-        PUT: (id: string) => `/providers/${id}`,
-        //DELETE: (id: string) => `/providers/${id}`,
-    },
     DATASYNC: {
         ROLES: "/datasync/roles",
         ROLES_PREVIEW: "/datasync/roles/preview",
@@ -55,5 +49,12 @@ export const ApiConstant = {
         BANKS_PREVIEW: "/datasync/banks/preview",
         PROVIDERS: "/datasync/providers",
         PROVIDERS_PREVIEW: "/datasync/providers/preview",
+    },
+    QR_STYLE_LIB: {
+        GET_ALL: "/qrstylelibraries",
+        GET_BY_ID: (id: string) => `/qrstylelibraries/${id}`,
+        POST: "/qrstylelibraries",
+        PUT: (id: string) => `/qrstylelibraries/${id}`,
+        DELETE: (id: string) => `/qrstylelibraries/${id}`,
     },
 };

@@ -1,8 +1,4 @@
-
-
-export interface PostRoleReq {
-    name: string;
-}
+import type { QRStyleType } from "./enum";
 
 export interface PutRoleReq {
     name: string;
@@ -13,19 +9,9 @@ export interface PostPutUserRoleReq {
     roleIds: string[];
 }
 
-export interface PostBankInfoReq {
-    bankCode: string;
-    napasBin: string;
-    swiftCode: string;
-    bankName: string;
-    shortName: string;
-    logoUrl?: File;
-    isActive: boolean;
-}
-
 export interface PutBankInfoReq {
     bankCode: string;
-    napasCode: string | null;
+    napasBin: string | null;
     swiftCode: string | null;
     bankName: string;
     shortName: string;
@@ -64,13 +50,7 @@ export interface PostQrReq {
     description: string | null;
 
     isFixedAmount: boolean;
-}
-
-export interface PostProviderReq {
-    code: string;
-    name: string;
-    isActive: boolean;
-    logoUrl?: File;
+    styleJson?: string | null;
 }
 
 export interface PutProviderReq {
@@ -79,4 +59,26 @@ export interface PutProviderReq {
     isActive: boolean;
     logoUrl?: File;
     isDeleteFile?: boolean;
+}
+
+export interface GetQrStyleLibraryReq {
+    userId?: string | null;
+    type?: QRStyleType | null;
+    isActive?: boolean | null;
+}
+
+export interface CreateQrStyleLibraryReq {
+    name: string;
+    styleJson: string;
+    isDefault: boolean;
+    type: QRStyleType;
+    isActive: boolean;
+}
+
+export interface UpdateQrStyleLibraryReq {
+    name: string;
+    styleJson: string;
+    isDefault: boolean;
+    type: QRStyleType;
+    isActive: boolean;
 }

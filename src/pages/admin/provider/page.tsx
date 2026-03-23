@@ -4,8 +4,6 @@ import type { ProviderRes } from "../../../models/entity.model";
 import { Edit, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
 import ProviderModal from "./components/ProviderModal";
-//import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
-import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 
@@ -17,9 +15,7 @@ const ProviderPage: React.FC = () => {
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
-    // Modal state
     const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
-    // const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedProvider, setSelectedProvider] = useState<ProviderRes | null>(null);
 
     const fetchProviders = useCallback(async () => {
@@ -41,20 +37,10 @@ const ProviderPage: React.FC = () => {
         fetchProviders();
     }, [fetchProviders]);
 
-    const handleOpenCreateModal = () => {
-        setSelectedProvider(null);
-        setIsProviderModalOpen(true);
-    };
-
     const handleOpenEditModal = (provider: ProviderRes) => {
         setSelectedProvider(provider);
         setIsProviderModalOpen(true);
     };
-
-    // const handleOpenDeleteModal = (provider: ProviderRes) => {
-    //     setSelectedProvider(provider);
-    //     setIsDeleteModalOpen(true);
-    // };
 
     const handleModalSuccess = (updatedProvider?: ProviderRes) => {
         if (updatedProvider) {
@@ -65,22 +51,6 @@ const ProviderPage: React.FC = () => {
             fetchProviders();
         }
     };
-
-    // const handleDeleteProvider = async () => {
-    //     if (!selectedProvider) return;
-    //     try {
-    //         setLoading(true);
-    //         await providerApi.delete(selectedProvider.id);
-    //         toast.success("Provider deleted successfully!");
-    //         handleModalSuccess();
-    //         setIsDeleteModalOpen(false);
-    //     } catch (error) {
-    //         console.error("Error deleting provider:", error);
-    //         toast.error("Failed to delete provider.");
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
 
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
@@ -102,14 +72,6 @@ const ProviderPage: React.FC = () => {
             </div>
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
-                <div className="shrink-0 border-b border-border">
-                    <TableToolbar
-                        value={null}
-                        onChange={null}
-                        placeholder="Search providers..."
-                        handleOpenCreateModal={handleOpenCreateModal}
-                    />
-                </div>
 
                 <div className="min-h-0 flex-1 overflow-hidden">
                     <DataTable
@@ -167,12 +129,6 @@ const ProviderPage: React.FC = () => {
                                             color="blue"
                                             title="Chỉnh sửa"
                                         />
-                                        {/* <ActionButton
-                                            icon={<Trash2 className="w-4 h-4" />}
-                                            onClick={() => handleOpenDeleteModal(provider)}
-                                            color="red"
-                                            title="Xóa"
-                                        /> */}
                                     </div>
                                 )
                             }
@@ -187,14 +143,6 @@ const ProviderPage: React.FC = () => {
                 onSuccess={handleModalSuccess}
                 provider={selectedProvider}
             />
-
-            {/* <DeleteConfirmModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                onConfirm={handleDeleteProvider}
-                itemName={selectedProvider?.name || ""}
-                loading={loading}
-            /> */}
         </div>
     );
 };

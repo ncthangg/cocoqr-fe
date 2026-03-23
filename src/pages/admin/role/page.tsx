@@ -4,8 +4,6 @@ import type { RoleRes } from "../../../models/entity.model";
 import { Eye, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
 import RoleModal from "./components/RoleModal";
-//import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
-import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import ActionButton from "@/components/UICustoms/ActionButton";
@@ -15,9 +13,7 @@ const RolePage: React.FC = () => {
     const [allRoles, setAllRoles] = useState<RoleRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
-    // Modal state
     const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
-    //const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<RoleRes | null>(null);
 
     const fetchRoles = useCallback(async () => {
@@ -44,22 +40,6 @@ const RolePage: React.FC = () => {
         setIsRoleModalOpen(true);
     };
 
-    // const handleDeleteRole = async () => {
-    //     if (!selectedRole) return;
-    //     try {
-    //         setLoading(true);
-    //         await roleApi.delete(selectedRole.id);
-    //         toast.success("Role deleted successfully!");
-    //         handleModalSuccess();
-    //         setIsDeleteModalOpen(false);
-    //     } catch (error) {
-    //         console.error("Error deleting role:", error);
-    //         toast.error("Failed to delete role.");
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -80,13 +60,6 @@ const RolePage: React.FC = () => {
             </div>
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
-                <div className="shrink-0 border-b border-border">
-                    <TableToolbar
-                        value={null}
-                        onChange={null}
-                        placeholder="Search roles..."
-                    />
-                </div>
 
                 <div className="min-h-0 flex-1 overflow-hidden">
                     <DataTable
@@ -146,14 +119,6 @@ const RolePage: React.FC = () => {
                 onClose={() => setIsRoleModalOpen(false)}
                 role={selectedRole}
             />
-
-            {/* <DeleteConfirmModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                onConfirm={handleDeleteRole}
-                itemName={selectedRole?.name || ""}
-                loading={loading}
-            /> */}
         </div>
     );
 };

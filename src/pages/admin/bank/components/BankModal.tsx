@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import Button from "@/components/UICustoms/Button";
 import { bankApi } from "@/services/bank-api.service";
 import type { BankRes } from "@/models/entity.model";
-import type { PostBankInfoReq } from "@/models/entity.request.model";
+import type { PutBankInfoReq } from "@/models/entity.request.model";
 import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 
@@ -17,7 +17,7 @@ interface BankModalProps {
 
 const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank }) => {
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState<PostBankInfoReq>({
+    const [formData, setFormData] = useState<PutBankInfoReq>({
         bankCode: "",
         napasBin: "",
         swiftCode: "",
@@ -305,7 +305,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
 
                     {/* Footer */}
                     <div className="px-lg py-md border-t border-border flex justify-end gap-sm bg-surface-muted/20 shrink-0">
-                        <Button type="button" variant="ghost" size="medium" onClick={onClose} disabled={loading}>
+                        <Button type="button" variant="outline" size="medium" onClick={onClose} disabled={loading}>
                             Hủy
                         </Button>
                         <Button type="submit" variant="primary" size="medium" loading={loading} disabled={isConfirmOpen}>

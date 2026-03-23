@@ -1,3 +1,5 @@
+import type { QRStyleType } from "@/models/enum";
+
 export interface PagingVM<T> {
     list?: T[];
     pageSize: number;
@@ -100,10 +102,10 @@ export interface ProviderRes extends BaseRes {
 
 export interface PostQrRes {
     id: number;
-
     qrData: string;
-    qrImageUrl: string;
+    styleJson?: string | null;
     transactionRef: string;
+    isValid: boolean;
 }
 
 export interface QrRes {
@@ -147,6 +149,13 @@ export interface QrRes {
     deletedAt?: string;
 }
 
+export interface QrStyleLibraryRes extends BaseRes {
+    name: string;
+    styleJson: string;
+    isDefault: boolean;
+    type: QRStyleType;
+    isActive: boolean;
+}
 ///===================================================
 // Data Sync Models
 

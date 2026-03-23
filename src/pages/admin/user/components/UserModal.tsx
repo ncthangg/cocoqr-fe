@@ -278,7 +278,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, onStatusCh
                     <div className="px-lg py-md border-t border-border bg-surface-muted/20 flex justify-end shrink-0">
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="outline"
                             onClick={onClose}
                             value="Đóng"
                         />

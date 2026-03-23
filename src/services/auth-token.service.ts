@@ -65,7 +65,6 @@ export const setSessionExpiredHandler = (handler: SessionExpiredHandler) => {
  * Refresh token request để lấy access token mới
  */
 const refreshToken = async (): Promise<string> => {
-    console.log("refreshToken");
     const storedRefreshToken = getCookie(REFRESH_TOKEN_KEY);
     const userId = getFromLocalStorage("loggedInUserId");
 
@@ -116,8 +115,6 @@ export function finalizeSession() {
  * khi nào gọi finalizeSession().
  */
 export function clearAuthAndRedirect() {
-    console.log("clearAuthAndRedirect");
-
     if (sessionExpiredHandler) {
         sessionExpiredHandler();
     } else {

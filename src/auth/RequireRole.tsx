@@ -4,7 +4,6 @@ import { useUnauthorized } from "./UnauthorizedContext";
 import { RouteConstant } from "../constants/route.constant";
 
 const RequireRole = ({ roleName, children }: { roleName: string; children: React.ReactNode }) => {
-    // console.log('RequireRole');
     const { roles, isAuthenticated, isLoading } = useAuthContext();
     const { showNoPermission } = useUnauthorized();
 

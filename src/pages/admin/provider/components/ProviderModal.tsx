@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import Button from "@/components/UICustoms/Button";
 import { providerApi } from "@/services/provider-api.service";
 import type { ProviderRes } from "@/models/entity.model";
-import type { PostProviderReq } from "@/models/entity.request.model";
+import type { PutProviderReq } from "@/models/entity.request.model";
 import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 
@@ -17,7 +17,7 @@ interface ProviderModalProps {
 
 const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSuccess, provider }) => {
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState<PostProviderReq>({ code: "", name: "", isActive: true });
+    const [formData, setFormData] = useState<PutProviderReq>({ code: "", name: "", isActive: true });
     const [file, setFile] = useState<File | undefined>(undefined);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -91,10 +91,8 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                 setIsConfirmOpen(false);
                 onSuccess(updatedProvider);
             } else {
-                await providerApi.post(reqFormData as any);
-                toast.success("Tạo mới provider thành công!");
+                toast.error("Tính năng tạo mới provider chưa được triển khai!");
                 setIsConfirmOpen(false);
-                onSuccess();
             }
             onClose();
         } catch (error) {
@@ -133,6 +131,61 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                 <form onSubmit={handleFormSubmit} className="overflow-y-auto flex-1">
                     <div className="p-lg">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+                            {/* Inputs */}
+                            <div className="flex flex-col gap-md justify-center">
+                                <div className="flex flex-col gap-sm">
+                                    <label htmlFor="code" className="text-sm font-semibold text-foreground-secondary flex items-center gap-xs">
+                                        <Hash className="w-4 h-4 text-primary" />
+                                        Mã provider <span className="text-danger">*</span>
+                                    </label>
+                                    <input
+                                        id="code"
+                                        type="text"
+                                        name="code"
+                                        value={formData.code}
+                                        onChange={handleInputChange}
+                                        readOnly={!!provider}
+                                        className={`input uppercase tracking-wider ${provider ? "bg-surface-muted/50 cursor-not-allowed opacity-80" : ""}`}
+                                        placeholder="VD: MOMO"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-sm">
+                                    <label htmlFor="providerName" className="text-sm font-semibold text-foreground-secondary flex items-center gap-xs">
+                                        <Layers className="w-4 h-4 text-primary" />
+                                        Tên provider <span className="text-danger">*</span>
+                                    </label>
+                                    <input
+                                        id="providerName"
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
+                                        readOnly={!!provider}
+                                        className={`input ${provider ? "bg-surface-muted/50 cursor-not-allowed opacity-80" : ""}`}
+                                        placeholder="VD: MoMo"
+                                        required
+                                    />
+                                </div>
+
+                                <label className="flex items-center gap-sm py-sm px-md bg-surface-muted/30 rounded-xl border border-border cursor-pointer hover:bg-surface-muted/50 transition-all group">
+                                    <div className="relative h-6 w-11 flex-shrink-0">
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only peer"
+                                            name="isActive"
+                                            id="isActive"
+                                            checked={formData.isActive}
+                                            onChange={handleInputChange}
+                                        />
+                                        <div className="w-11 h-6 bg-surface-muted peer-checked:bg-primary rounded-full transition-all border border-border after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                                    </div>
+                                    <span className="text-sm font-semibold text-foreground-secondary select-none group-hover:text-foreground transition-colors">
+                                        Đang hoạt động
+                                    </span>
+                                </label>
+                            </div>
 
                             {/* Logo Upload */}
                             <div className="flex flex-col items-center gap-md">
@@ -181,67 +234,12 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                                     />
                                 </div>
                             </div>
-
-                            {/* Inputs */}
-                            <div className="flex flex-col gap-md justify-center">
-                                <div className="flex flex-col gap-sm">
-                                    <label htmlFor="code" className="text-sm font-semibold text-foreground-secondary flex items-center gap-xs">
-                                        <Hash className="w-4 h-4 text-primary" />
-                                        Mã provider <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                        id="code"
-                                        type="text"
-                                        name="code"
-                                        value={formData.code}
-                                        onChange={handleInputChange}
-                                        readOnly={!!provider}
-                                        className={`input uppercase tracking-wider ${provider ? "bg-surface-muted/50 cursor-not-allowed opacity-80" : ""}`}
-                                        placeholder="VD: MOMO"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="flex flex-col gap-sm">
-                                    <label htmlFor="providerName" className="text-sm font-semibold text-foreground-secondary flex items-center gap-xs">
-                                        <Layers className="w-4 h-4 text-primary" />
-                                        Tên provider <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                        id="providerName"
-                                        type="text"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleInputChange}
-                                        className="input"
-                                        placeholder="VD: MoMo"
-                                        required
-                                    />
-                                </div>
-
-                                <label className="flex items-center gap-sm py-sm px-md bg-surface-muted/30 rounded-xl border border-border cursor-pointer hover:bg-surface-muted/50 transition-all group">
-                                    <div className="relative h-6 w-11 flex-shrink-0">
-                                        <input
-                                            type="checkbox"
-                                            className="sr-only peer"
-                                            name="isActive"
-                                            id="isActive"
-                                            checked={formData.isActive}
-                                            onChange={handleInputChange}
-                                        />
-                                        <div className="w-11 h-6 bg-surface-muted peer-checked:bg-primary rounded-full transition-all border border-border after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                                    </div>
-                                    <span className="text-sm font-semibold text-foreground-secondary select-none group-hover:text-foreground transition-colors">
-                                        Đang hoạt động
-                                    </span>
-                                </label>
-                            </div>
                         </div>
                     </div>
 
                     {/* Footer */}
                     <div className="px-lg py-md border-t border-border flex justify-end gap-sm bg-surface-muted/20 shrink-0">
-                        <Button type="button" variant="ghost" size="medium" onClick={onClose} disabled={loading}>
+                        <Button type="button" variant="outline" size="medium" onClick={onClose} disabled={loading}>
                             Hủy
                         </Button>
                         <Button

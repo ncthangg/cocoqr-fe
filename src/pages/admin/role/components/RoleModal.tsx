@@ -71,7 +71,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, role }) => {
 
                 {/* Footer */}
                 <div className="px-lg py-md border-t border-border flex justify-end bg-surface-muted/20 shrink-0">
-                    <Button type="button" variant="ghost" size="medium" onClick={onClose}>
+                    <Button type="button" variant="outline" size="medium" onClick={onClose}>
                         Đóng
                     </Button>
                 </div>

@@ -5,7 +5,6 @@ import { Edit, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import BankModal from "./components/BankModal";
-//import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
 import { resolveAvatarPreview } from "../../../utils/imageConvertUtils";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
@@ -25,7 +24,6 @@ const BankPage: React.FC = () => {
     });
 
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
-    //const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedBank, setSelectedBank] = useState<BankRes | null>(null);
 
     const [searchValue, setSearchValue] = useState<string>("");
@@ -33,7 +31,6 @@ const BankPage: React.FC = () => {
     const [sortState, setSortState] = useState<{ field: string, dir: "asc" | "desc" } | null>(null);
     const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
 
-    // Debounce search input
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedSearch(searchValue);
@@ -72,16 +69,9 @@ const BankPage: React.FC = () => {
     };
 
     const handleOpenEditModal = (bank: BankRes) => {
-        console.log(bank);
-
         setSelectedBank(bank);
         setIsBankModalOpen(true);
     };
-
-    // const handleOpenDeleteModal = (bank: BankRes) => {
-    //     setSelectedBank(bank);
-    //     setIsDeleteModalOpen(true);
-    // };
 
     const handleModalSuccess = (updatedBank?: BankRes) => {
         if (updatedBank) {
@@ -92,22 +82,6 @@ const BankPage: React.FC = () => {
             fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter);
         }
     };
-
-    // const handleDeleteBank = async () => {
-    //     if (!selectedBank) return;
-    //     try {
-    //         setLoading(true);
-    //         await bankApi.delete(selectedBank.id);
-    //         toast.success("Xóa ngân hàng thành công!");
-    //         handleModalSuccess();
-    //         setIsDeleteModalOpen(false);
-    //     } catch (error) {
-    //         console.error("Error deleting bank:", error);
-    //         toast.error("Không thể xóa ngân hàng.");
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
 
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
@@ -257,14 +231,6 @@ const BankPage: React.FC = () => {
                 onSuccess={handleModalSuccess}
                 bank={selectedBank}
             />
-
-            {/* <DeleteConfirmModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                onConfirm={handleDeleteBank}
-                itemName={selectedBank?.bankName || ""}
-                loading={loading}
-            /> */}
         </div>
     );
 };

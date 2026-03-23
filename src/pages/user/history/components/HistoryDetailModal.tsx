@@ -61,7 +61,7 @@ function QrStatusBadge({ status }: { status: string }) {
 // ─── QR Mode badge ────────────────────────────────────────────────────────────
 function QrModeBadge({ mode }: { mode: string }) {
     const map: Record<string, { label: string; className: string }> = {
-        STATIC:  { label: "Static",  className: "bg-surface-muted text-foreground-secondary border border-border" },
+        STATIC: { label: "Static", className: "bg-surface-muted text-foreground-secondary border border-border" },
         DYNAMIC: { label: "Dynamic", className: "bg-primary/10 text-primary border border-primary/20" },
     };
     const cfg = map[mode?.toUpperCase()] ?? {
@@ -152,9 +152,9 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
 
     if (!isOpen) return null;
 
-    const bankLogo     = detail?.bankLogoUrl;
+    const bankLogo = detail?.bankLogoUrl;
     const providerLogo = detail?.providerLogoUrl;
-    const logoUrl      = bankLogo || providerLogo;
+    const logoUrl = bankLogo || providerLogo;
 
     return (
         <div
@@ -206,7 +206,7 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
                             {/* Status badges */}
                             <div className="flex flex-wrap items-center justify-center gap-sm">
                                 <QrStatusBadge status={detail.qrStatus} />
-                                <QrModeBadge   mode={detail.qrMode} />
+                                <QrModeBadge mode={detail.qrMode} />
                                 {detail.isFixedAmount ? (
                                     <span className="inline-flex items-center gap-xs px-sm py-2xs rounded-full text-xs font-semibold bg-warning/10 text-warning border border-warning/20">
                                         <BadgeDollarSign className="w-3.5 h-3.5" />
@@ -381,7 +381,7 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
                 <div className="px-lg py-md border-t border-border bg-surface-muted/20 flex justify-end shrink-0">
                     <Button
                         type="button"
-                        variant="ghost"
+                        variant="outline"
                         onClick={onClose}
                         value="Đóng"
                     />

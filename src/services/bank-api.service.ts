@@ -23,12 +23,6 @@ export const bankApi = {
         );
         return response.data;
     },
-    // post: async (req: PostBankInfoReq | FormData): Promise<string> => {
-    //     const response = await axiosPrivate.post(ApiConstant.BANKINFO.POST, req, {
-    //         headers: req instanceof FormData ? { "Content-Type": "multipart/form-data" } : undefined
-    //     });
-    //     return response.data;
-    // },
     put: async (id: string, req: PutBankInfoReq | FormData): Promise<string> => {
         const response = await axiosPrivate.put(ApiConstant.BANKINFO.PUT(id), req, {
             headers: req instanceof FormData ? { "Content-Type": "multipart/form-data" } : undefined

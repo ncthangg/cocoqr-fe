@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { X, Plus, Pencil, Trash2, Minus, ArrowRight, FileText, Database, RefreshCw, ChevronDown, ChevronRight } from "lucide-react";
+import { DataLoader } from "@/components/UICustoms/Snipper";
 import Button from "@/components/UICustoms/Button";
 import { toast } from "react-toastify";
 import { SyncAction } from "@/models/entity.model";
@@ -188,14 +189,11 @@ const SyncPreviewModal: React.FC<SyncPreviewModalProps> = ({
                 </div>
 
                 {/* Body */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto min-h-[300px] flex flex-col items-center justify-center">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20 gap-md">
-                            <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-                            <p className="text-sm text-foreground-muted font-medium">Đang phân tích dữ liệu...</p>
-                        </div>
+                        <DataLoader size="lg" text="Đang phân tích dữ liệu..." />
                     ) : preview ? (
-                        <div className="p-lg flex flex-col gap-lg">
+                        <div className="p-lg flex-1 w-full flex flex-col gap-lg">
                             {/* Source Info */}
                             <div className="flex items-center gap-md p-md bg-surface-muted/20 rounded-xl border border-border text-xs text-foreground-secondary">
                                 <FileText className="w-4 h-4 text-primary shrink-0" />
@@ -255,7 +253,7 @@ const SyncPreviewModal: React.FC<SyncPreviewModalProps> = ({
                         ) : null}
                     </div>
                     <div className="flex items-center gap-sm">
-                        <Button type="button" variant="ghost" size="medium" onClick={onClose} disabled={syncing}>
+                        <Button type="button" variant="outline" size="medium" onClick={onClose} disabled={syncing}>
                             Đóng
                         </Button>
                         {hasChanges && (

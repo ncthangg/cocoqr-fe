@@ -1,4 +1,4 @@
-import React from 'react';
+import { DataLoader } from "../Snipper";
 
 interface ModalLoadingProps {
     loading: boolean;
@@ -14,13 +14,8 @@ const ModalLoading: React.FC<ModalLoadingProps> = ({
     if (!loading) return null;
 
     return (
-        <div className={`absolute inset-0 bg-surface/50 z-20 flex items-center justify-center rounded-xl fade-in ${className}`}>
-            <div className="flex flex-col items-center gap-sm">
-                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-sm"></div>
-                <span className="text-sm font-semibold text-foreground tracking-wide">
-                    {message}
-                </span>
-            </div>
+        <div className={`absolute inset-0 bg-surface/60 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-xl animate-in fade-in duration-300 ${className}`}>
+            <DataLoader size="md" text={message} />
         </div>
     );
 };

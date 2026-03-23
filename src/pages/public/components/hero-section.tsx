@@ -45,20 +45,8 @@ export function HeroSection() {
                         <div className="flex-1">
                             <QRDisplay
                                 type="public"
-                                qrImageUrl={qrResult?.qrImageUrl}
                                 qrData={qrResult?.qrData}
                                 transactionRef={qrResult?.transactionRef}
-                                onDownload={() => {
-                                    if (!qrResult?.qrImageUrl) return;
-                                    const a = document.createElement('a');
-                                    a.href = qrResult.qrImageUrl;
-                                    a.download = `QR_${qrResult.transactionRef ?? 'code'}.png`;
-                                    a.click();
-                                }}
-                                onCopyLink={() => {
-                                    if (!qrResult?.qrImageUrl) return;
-                                    navigator.clipboard.writeText(qrResult.qrImageUrl);
-                                }}
                             />
                         </div>
                     </div>

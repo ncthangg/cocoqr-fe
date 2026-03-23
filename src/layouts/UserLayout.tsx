@@ -77,6 +77,9 @@ const UserLayout: React.FC = () => {
                                 <Link to={RouteConstant.QR_HISTORY} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     QR History
                                 </Link>
+                                <Link to={RouteConstant.USER_QR_STYLE_LIB} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
+                                    QR Style Lib
+                                </Link>
                             </nav>
                         </div>
 

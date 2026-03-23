@@ -10,9 +10,11 @@ export const RouteConstant = {
     ADMIN_HISTORY: "history",
     ADMIN_PROVIDERS: "providers",
     ADMIN_SEED: "seed",
+    ADMIN_QR_STYLE_LIB: "qr-style-lib",
 
     CREATE_QR: "create-qr",
     ACCOUNTS: "accounts",
     QR_HISTORY: "qr-history",
+    USER_QR_STYLE_LIB: "qr-style-lib",
 };
 

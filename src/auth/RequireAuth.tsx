@@ -3,7 +3,6 @@ import { useAuthContext } from "./AuthContext";
 import { useUnauthorized } from "./UnauthorizedContext";
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
-    // console.log('RequireAuth');
     const { isAuthenticated, isLoading, isIntentionalLogout } = useAuthContext();
     const { showSessionExpired } = useUnauthorized();
 

@@ -7,7 +7,8 @@ import {
     TableCell,
 } from "@/components/ui/table"
 import { DataTableColumnHeader } from "./data-table-column-header"
-import { Loader, Search } from "lucide-react"
+import { DataLoader } from "../Snipper"
+import { Search } from "lucide-react"
 
 type ColumnType = "string" | "boolean" | "number"
 
@@ -145,12 +146,7 @@ export function DataTable<T>({
                                 colSpan={columns.length + (showIndex ? 1 : 0)}
                                 className="h-32 text-center text-foreground-muted"
                             >
-                                <div className="flex flex-col items-center justify-center gap-sm">
-                                    <div className="w-16 h-16 rounded-full bg-surface-muted flex items-center justify-center">
-                                        <Loader className="w-8 h-8 text-foreground-muted" />
-                                    </div>
-                                    <p>Đang tải dữ liệu...</p>
-                                </div>
+                                <DataLoader text="Đang tải dữ liệu..." />
                             </TableCell>
                         </TableRow>
                     ) : !Array.isArray(data) || data.length === 0 ? (

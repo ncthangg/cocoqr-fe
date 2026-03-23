@@ -96,10 +96,8 @@ const AuthenModal: React.FC = () => {
 
         // 2. Định nghĩa handler xử lý message từ backend
         const handleMessage = async (event: MessageEvent<ApiSuccessResponse<SignInGoogleRes>>) => {
-            console.log("handleMessage", event);
 
             const parsedPayload = parseGoogleAuthPayload(event.data);
-            console.log("parsedPayload", parsedPayload);
             if (!parsedPayload) {
                 toast.error("Dữ liệu Google không hợp lệ.");
                 setIsLoading(false);

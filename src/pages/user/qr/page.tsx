@@ -4,6 +4,7 @@ import Button from "../../../components/UICustoms/Button";
 import { accountApi } from "@/services/account-api.service";
 import { providerApi } from "@/services/provider-api.service";
 import { qrApi } from "@/services/qr-api.service";
+
 import type { AccountRes, PagingVM, PostQrRes, ProviderRes } from "@/models/entity.model";
 import type { PostQrReq, PutAccountReq } from "@/models/entity.request.model";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
@@ -185,7 +186,7 @@ const CreatePaymentPage: React.FC = () => {
         }
 
         const isBank = formData.providerCode === ProviderCode.BANK;
-        
+
         if (isBank && !formData.bankCode && !selectedAccount) {
             toast.warning("Vui lòng chọn ngân hàng.");
             return;
@@ -199,7 +200,6 @@ const CreatePaymentPage: React.FC = () => {
             return;
         }
         try {
-            console.log("isBank:", isBank);
             setQrLoading(true);
 
             const req: PostQrReq = {
@@ -221,8 +221,6 @@ const CreatePaymentPage: React.FC = () => {
             setQrLoading(false);
         }
     };
-
-    console.log(selectedAccount);
 
     const handleSelectAccount = (acc: AccountRes) => {
         setSelectedAccount(acc);
@@ -249,7 +247,7 @@ const CreatePaymentPage: React.FC = () => {
     };
 
     const containerRef = useRef<HTMLDivElement>(null);
-    const [leftPercent, setLeftPercent] = useState<number>(60);
+    const [leftPercent, setLeftPercent] = useState<number>(40);
 
     const startResizing = useCallback((mouseDownEvent: React.MouseEvent) => {
         if (!containerRef.current) return;
@@ -420,7 +418,7 @@ const CreatePaymentPage: React.FC = () => {
                 {/* Top: Title + Open Drawer Tag + Clear */}
                 <div className="flex items-center justify-between shrink-0 mb-sm">
                     <div className="flex items-center gap-lg">
-                        <h2 className="text-2xl font-extrabold text-foreground">Tạo mã QR</h2>
+                        <h2 className="text-2xl font-extrabold text-foreground">Tạo QR</h2>
                         {/* Drawer Trigger Tag */}
                         <button
                             onClick={() => setIsDrawerOpen(true)}
@@ -556,6 +554,8 @@ const CreatePaymentPage: React.FC = () => {
                         </div>
                     </div>
 
+
+
                     {(isProviderInactive || isBankInactive) && (
                         <div className="p-md bg-danger/5 border border-danger/20 rounded-lg animate-in fade-in duration-300">
                             <p className="text-xs text-danger font-medium">
@@ -597,20 +597,10 @@ const CreatePaymentPage: React.FC = () => {
                 <div className="flex-1 flex flex-col">
                     <QRDisplay
                         type="private"
-                        qrImageUrl={qrResult?.qrImageUrl ?? null}
                         qrData={qrResult?.qrData}
+                        styleJson={qrResult?.styleJson}
                         transactionRef={qrResult?.transactionRef}
-                        onDownload={() => {
-                            if (!qrResult?.qrImageUrl) return;
-                            const a = document.createElement('a');
-                            a.href = qrResult.qrImageUrl;
-                            a.download = `QR_${qrResult.transactionRef ?? 'code'}.png`;
-                            a.click();
-                        }}
-                        onCopyLink={() => {
-                            if (!qrResult?.qrImageUrl) return;
-                            navigator.clipboard.writeText(qrResult.qrImageUrl);
-                        }}
+                        isWide={leftPercent <= 50}
                     />
                 </div>
             </div>

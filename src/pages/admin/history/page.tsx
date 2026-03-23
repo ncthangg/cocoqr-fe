@@ -99,7 +99,7 @@ const AdminHistoryPage: React.FC = () => {
                     <TableToolbar
                         value={searchValue}
                         onChange={setSearchValue}
-                        placeholder="Tìm kiếm theo tên, số tài khoản..."
+                        placeholder="Tìm kiếm theo 'tên tài khoản, số tài khoản, mã ngân hàng, số napas của ngân hàng, email'"
                         onResetPage={() => handlePageChange(1)}
                         filterValue={providerFilter !== undefined ? String(providerFilter) : ""}
                         filterOptions={allProviders.map(p => ({ label: p.name, value: p.id }))}

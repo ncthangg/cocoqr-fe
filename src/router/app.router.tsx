@@ -18,6 +18,8 @@ import HistoryPage from "../pages/admin/history/page";
 import AccountPage from "@/pages/admin/account/page";
 import ProviderPage from "../pages/admin/provider/page";
 import SeedPage from "../pages/admin/seed/page";
+import AdminQrStyleLibPage from "../pages/admin/qrStyleLib/page";
+import UserQrStyleLibPage from "../pages/user/qrStyleLib/page";
 
 const RootWrapper = () => (
     <>
@@ -49,6 +51,7 @@ export const router = createBrowserRouter([
                     { index: true, element: <CreatePaymentPage /> },
                     { path: RouteConstant.ACCOUNTS, element: <AccountsPage /> },
                     { path: RouteConstant.QR_HISTORY, element: <QrHistoryPage /> },
+                    { path: RouteConstant.USER_QR_STYLE_LIB, element: <UserQrStyleLibPage /> },
                 ],
             },
 
@@ -71,6 +74,7 @@ export const router = createBrowserRouter([
                     { path: RouteConstant.ADMIN_HISTORY, element: <HistoryPage /> },
                     { path: RouteConstant.ADMIN_PROVIDERS, element: <ProviderPage /> },
                     { path: RouteConstant.ADMIN_SEED, element: <SeedPage /> },
+                    { path: RouteConstant.ADMIN_QR_STYLE_LIB, element: <AdminQrStyleLibPage /> },
                 ],
             },
 

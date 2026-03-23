@@ -7,8 +7,6 @@ import { RoleConstant } from "../constants/role.constant";
 const RootRoute = () => {
     const { isAuthenticated, roles, isLoading } = useAuthContext();
 
-    console.log(isAuthenticated, roles);
-
     if (isLoading) {
         return (
             <div className="flex h-screen items-center justify-center bg-background">

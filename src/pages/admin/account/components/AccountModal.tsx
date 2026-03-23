@@ -284,7 +284,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                     <div className="px-lg py-md border-t border-border bg-surface-muted/20 flex justify-end shrink-0">
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="outline"
                             onClick={onClose}
                             value="Đóng"
                         />

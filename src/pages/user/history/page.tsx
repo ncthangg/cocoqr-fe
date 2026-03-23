@@ -100,7 +100,7 @@ const UserHistoryPage: React.FC = () => {
                     <TableToolbar
                         value={searchValue}
                         onChange={setSearchValue}
-                        placeholder="Tìm kiếm theo số tài khoản, tên tài khoản..."
+                        placeholder="Tìm kiếm theo 'tên tài khoản, số tài khoản, mã ngân hàng, số napas của ngân hàng'"
                         onResetPage={() => handlePageChange(1)}
                         filterValue={providerFilter !== undefined ? String(providerFilter) : ""}
                         filterOptions={allProviders.map(p => ({ label: p.name, value: p.id }))}
