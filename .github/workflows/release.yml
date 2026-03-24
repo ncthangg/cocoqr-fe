@@ -22,18 +22,27 @@ jobs:
 
       - name: Login Docker Hub
         uses: docker/login-action@v3
-        with:
+        with: 
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build image
+      - name: Validate env
         run: |
           if [[ "${{ github.ref_name }}" == *"-rc"* ]]; then
-              MODE=staging
-            else
-              MODE=production
-            fi
-
+            MODE=staging
+            URL=${{ vars.VITE_STAGING_API_URL }}
+          else
+            MODE=production
+            URL=${{ vars.VITE_PRODUCTION_API_URL }}
+          fi
+   
+          if [ -z "$URL" ]; then
+            echo "❌ Missing API URL for $MODE"
+            exit 1
+          fi
+    
+      - name: Build image
+        run: |
           docker build \
            --build-arg VITE_MODE=$MODE \
            --build-arg VITE_STAGING_API_URL=${{ vars.VITE_STAGING_API_URL }} \
