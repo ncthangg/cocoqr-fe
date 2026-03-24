@@ -23,6 +23,13 @@ RUN npm run build -- --mode $VITE_MODE
 # production stage
 FROM nginx:alpine
 
+# ❗ Xoá config mặc định (tránh conflict)
+RUN rm /etc/nginx/conf.d/default.conf
+
+# ✅ Copy config SPA của bạn
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+
+# ✅ Copy build React
 COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
