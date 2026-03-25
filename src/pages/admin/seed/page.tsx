@@ -13,8 +13,8 @@ const SeedPage: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-8 flex-1 min-h-0">
-             {/* Header Section */}
-             <div className="flex flex-col gap-2">
+            {/* Header Section */}
+            <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-extrabold text-foreground tracking-tight uppercase">Cấu hình & Khởi tạo dữ liệu</h1>
                 <p className="text-foreground-muted font-medium">Hệ thống đồng bộ dữ liệu gốc từ API Service hoặc các nguồn dữ liệu tin cậy.</p>
             </div>
@@ -44,7 +44,7 @@ const SeedPage: React.FC = () => {
                                 onClick={() => setIsBankPreviewOpen(true)}
                                 size="large"
                                 width="w-full"
-                                className="group/btn relative overflow-hidden rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold h-14 transition-all active:scale-95 shadow-lg shadow-primary/20 border-none"
+                                className="btn-primary"
                             >
                                 <div className="flex items-center justify-center gap-3">
                                     Xem trước & Đồng bộ
@@ -57,12 +57,12 @@ const SeedPage: React.FC = () => {
 
                 {/* Roles Seed Card */}
                 <div className="group relative overflow-hidden bg-surface border border-border rounded-3xl p-8 hover:shadow-2xl hover:border-amber-500/50 transition-all duration-500 shadow-sm">
-                     <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity duration-500">
+                    <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity duration-500">
                         <ShieldCheck className="w-48 h-48 -mr-12 -mt-12 text-amber-500 rotate-12" />
                     </div>
 
                     <div className="relative flex flex-col h-full">
-                         <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-sm border border-amber-500/20">
+                        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-sm border border-amber-500/20">
                             <ShieldCheck className="w-8 h-8 text-amber-500" />
                         </div>
 
@@ -75,7 +75,7 @@ const SeedPage: React.FC = () => {
                         </p>
 
                         <div className="mt-8">
-                             <Button
+                            <Button
                                 onClick={() => setIsRolePreviewOpen(true)}
                                 size="large"
                                 width="w-full"
@@ -92,12 +92,12 @@ const SeedPage: React.FC = () => {
 
                 {/* Providers Seed Card */}
                 <div className="group relative overflow-hidden bg-surface border border-border rounded-3xl p-8 hover:shadow-2xl hover:border-violet-500/50 transition-all duration-500 shadow-sm">
-                     <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity duration-500">
+                    <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity duration-500">
                         <Layers className="w-48 h-48 -mr-12 -mt-12 text-violet-500 rotate-12" />
                     </div>
 
                     <div className="relative flex flex-col h-full">
-                         <div className="w-16 h-16 rounded-2xl bg-violet-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-sm border border-violet-500/20">
+                        <div className="w-16 h-16 rounded-2xl bg-violet-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-sm border border-violet-500/20">
                             <Layers className="w-8 h-8 text-violet-500" />
                         </div>
 
@@ -110,7 +110,7 @@ const SeedPage: React.FC = () => {
                         </p>
 
                         <div className="mt-8">
-                             <Button
+                            <Button
                                 onClick={() => setIsProviderPreviewOpen(true)}
                                 size="large"
                                 width="w-full"
@@ -132,7 +132,7 @@ const SeedPage: React.FC = () => {
                 <div className="flex flex-col gap-1">
                     <h4 className="font-bold text-sm text-foreground uppercase tracking-widest">Lưu ý bảo mật & hiệu năng</h4>
                     <p className="text-xs text-foreground-muted leading-relaxed font-medium">
-                        Thao tác đồng bộ dữ liệu có thể ghi đè hoặc bổ sung bản ghi hiện tại. Vui lòng không làm mới trình duyệt khi quá trình đang diễn ra. 
+                        Thao tác đồng bộ dữ liệu có thể ghi đè hoặc bổ sung bản ghi hiện tại. Vui lòng không làm mới trình duyệt khi quá trình đang diễn ra.
                         Sau khi đồng bộ thành công, bạn có thể kiểm tra dữ liệu tại các trang quản lý tương ứng.
                     </p>
                 </div>
