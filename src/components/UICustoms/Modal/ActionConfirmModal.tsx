@@ -31,10 +31,10 @@ const ActionConfirmModal: React.FC<ActionConfirmModalProps> = ({
 }) => {
     const finalConfirmClass = confirmButtonClass || (
         variant === "danger"
-            ? "bg-danger text-white hover:bg-danger/90 px-md py-sm rounded-lg"
-            : variant === "amber"
-                ? "bg-amber-500 text-white hover:bg-amber-600 px-md py-sm rounded-lg"
-                : "bg-primary text-white hover:bg-primary-hover px-md py-sm rounded-lg"
+            ? "btn-danger"
+            : variant === "primary"
+                ? "btn-primary"
+                : "btn-amber"
     );
 
     if (!isOpen) return null;

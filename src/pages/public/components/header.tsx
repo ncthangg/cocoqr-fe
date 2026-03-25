@@ -1,7 +1,8 @@
-import { QrCode } from "lucide-react"
 import Button from "../../../components/UICustoms/Button"
 import { useAppDispatch } from "../../../store/redux.hooks"
 import { openAuthModal } from "../../../store/slices/auth.slice"
+import ThemeToggle from "../../../components/UICustoms/ThemeToggle"
+import Logo from "../../../components/UICustoms/Logo"
 
 export function Header() {
     const dispatch = useAppDispatch()
@@ -11,12 +12,8 @@ export function Header() {
             <div className="mx-auto flex max-w-6xl items-center justify-between px-lg py-md">
                 <div className="flex items-center gap-xl lg:gap-2xl">
                     <a href="#hero" className="flex items-center shrink-0 gap-sm">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                            <QrCode className="h-5 w-5 text-btn-primary-text" />
-                        </div>
-                        <span className="text-xl font-bold text-primary">QR Pay</span>
+                        <Logo />
                     </a>
-
                     <nav className="hidden items-center gap-lg md:flex">
                         <a
                             href="#features"
@@ -34,6 +31,7 @@ export function Header() {
                 </div>
 
                 <div className="flex items-center gap-md">
+                    <ThemeToggle />
                     <div className="hidden md:block">
                         <Button
                             size="large"

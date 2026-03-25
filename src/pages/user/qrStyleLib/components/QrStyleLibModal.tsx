@@ -477,6 +477,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                 description={`Bạn có chắc chắn muốn ${item ? "cập nhật" : "tạo mới"} style "${name}"?`}
                 loading={loading}
                 confirmText={item ? "Cập nhật" : "Tạo mới"}
+                variant="primary"
             />
         </div>
     );
