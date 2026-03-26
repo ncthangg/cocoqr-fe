@@ -154,7 +154,7 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
                                 <option value="">-- Chọn Role --</option>
                                 {availableRoles.map((role, idx) => (
                                     <option key={idx} value={role.id || role.Id}>
-                                        {role.name || role.Name}
+                                        {role.name.toUpperCase() || role.Name.toUpperCase()}
                                     </option>
                                 ))}
                             </select>
@@ -183,7 +183,7 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
                                     return (
                                         <div key={idx} className="flex items-center justify-between p-3 rounded-md border border-border bg-surface hover:bg-muted/30 transition-colors">
                                             <div className="flex flex-col">
-                                                <span className="font-medium text-foreground">{roleName}</span>
+                                                <span className="font-medium text-foreground">{roleName.toUpperCase()}</span>
                                             </div>
 
                                             <ActionButton

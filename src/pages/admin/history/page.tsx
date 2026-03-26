@@ -1,17 +1,20 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { Eye, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
 import { qrApi } from "@/services/qr-api.service";
 import { providerApi } from "@/services/provider-api.service";
 import type { QrRes, PagingVM, ProviderRes } from "@/models/entity.model";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
+import type { Column } from "@/components/UICustoms/Table/data-table";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { formatDateTime } from "@/utils/dateTimeUtils";
 import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
-import HistoryDetailModal from "../../user/history/components/HistoryDetailModal";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { StatCard } from "@/components/UICustoms/StatCard";
+import { useDebounce } from "@/hooks/useDebounce";
+
+const HistoryDetailModal = lazy(() => import("../../user/history/components/HistoryDetailModal"));
 
 const AdminHistoryPage: React.FC = () => {
     const [records, setRecords] = useState<QrRes[]>([]);
@@ -27,17 +30,14 @@ const AdminHistoryPage: React.FC = () => {
     });
 
     const [searchValue, setSearchValue] = useState("");
-    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const debouncedSearch = useDebounce(searchValue, 500);
     const [sortState, setSortState] = useState<{ field: string; dir: "asc" | "desc" } | null>(null);
     const [providerFilter, setProviderFilter] = useState<string | undefined>(undefined);
 
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<number | null>(null);
 
-    useEffect(() => {
-        const h = setTimeout(() => setDebouncedSearch(searchValue), 500);
-        return () => clearTimeout(h);
-    }, [searchValue]);
+
 
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
@@ -79,8 +79,8 @@ const AdminHistoryPage: React.FC = () => {
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Lịch sử QR (Admin)</h1>
-                    <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý thông tin các ngân hàng, ví điện tử của bạn.</p>
+                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Lịch sử Tạo QR (Admin)</h1>
+                    <p className="text-sm text-foreground-muted font-medium">Theo dõi và giám sát toàn bộ lịch sử tạo mã QR của người dùng trong hệ thống.</p>
                 </div>
 
                 {/* Stats Cards */}
@@ -116,17 +116,17 @@ const AdminHistoryPage: React.FC = () => {
                         showIndex
                         pageNumber={paging.pageNumber}
                         pageSize={paging.pageSize}
-                        sortState={sortState ? {
+                        sortState={useMemo(() => sortState ? {
                             index: ["email", "accountHolderSnapshot", "bankCodeSnapshot", "accountNumberSnapshot", "receiverType", "qrMode", "qrStatus", "createdAt"].indexOf(sortState.field),
                             dir: sortState.dir
-                        } : null}
-                        onSortChange={(index, dir) => {
+                        } : null, [sortState])}
+                        onSortChange={useCallback((index: number, dir: "asc" | "desc" | null) => {
                             const cols = ["email", "accountHolderSnapshot", "bankCodeSnapshot", "accountNumberSnapshot", "receiverType", "qrMode", "qrStatus", "createdAt"];
                             if (!dir) setSortState(null);
                             else setSortState({ field: cols[index], dir });
-                        }}
-                        onResetPage={() => handlePageChange(1)}
-                        columns={[
+                        }, [])}
+                        onResetPage={useCallback(() => handlePageChange(1), [paging.totalPages])}
+                        columns={useMemo<Column<QrRes>[]>(() => [
                             {
                                 header: "EMAIL",
                                 accessor: (r) => r.email,
@@ -219,7 +219,7 @@ const AdminHistoryPage: React.FC = () => {
                                     </div>
                                 )
                             }
-                        ]}
+                        ], [handleViewDetail])}
                     />
                 </div>
 
@@ -236,11 +236,15 @@ const AdminHistoryPage: React.FC = () => {
                 </div>
             </div>
 
-            <HistoryDetailModal
-                isOpen={isDetailOpen}
-                onClose={() => { setIsDetailOpen(false); setSelectedId(null); }}
-                historyId={selectedId}
-            />
+            {isDetailOpen && (
+                <Suspense fallback={null}>
+                    <HistoryDetailModal
+                        isOpen={isDetailOpen}
+                        onClose={() => { setIsDetailOpen(false); setSelectedId(null); }}
+                        historyId={selectedId}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 };

@@ -1,14 +1,14 @@
-import { QrCode } from "lucide-react"
+import Logo from "@/components/UICustoms/Logo"
 
 export function Footer() {
     return (
         <footer className="border-t border-border bg-surface">
             <div className="mx-auto flex max-w-6xl flex-col items-center gap-lg px-lg py-xl md:flex-row md:justify-between">
                 <div className="flex items-center gap-sm">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                        <QrCode className="h-4 w-4 text-btn-primary-text" />
-                    </div>
-                    <span className="text-lg font-bold text-foreground">QR Pay</span>
+                    <a href="#hero" className="flex items-center shrink-0 gap-sm">
+                        <Logo />
+                    </a>
+                    <span className="text-lg font-bold text-foreground">CocoQR</span>
                 </div>
 
                 <div className="flex items-center gap-md">
@@ -42,7 +42,7 @@ export function Footer() {
                 </div>
 
                 <p className="text-sm text-foreground-muted">
-                    &copy; {new Date().getFullYear()} QR Pay. All rights reserved.
+                    &copy; {new Date().getFullYear()} COCO QR. All rights reserved.
                 </p>
             </div>
         </footer>

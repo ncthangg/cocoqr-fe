@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { X } from "lucide-react";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
@@ -23,6 +24,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
     const [paging, setPaging] = useState({ pageNumber: 1, pageSize: 10, totalPages: 1, totalItems: 0 });
     const [sortState, setSortState] = useState<{ field: string, dir: "asc" | "desc" } | null>(null);
     const [searchValue, setSearchValue] = useState("");
+    const debouncedSearch = useDebounce(searchValue, 500);
 
     const fetchBanks = async () => {
         try {
@@ -36,7 +38,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                 sortField,
                 sortDir,
                 null, // Fetch all banks to show maintenance status
-                searchValue || null
+                debouncedSearch || null
             );
 
             if (res) {
@@ -59,9 +61,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
         if (isOpen) {
             fetchBanks();
         }
-    }, [isOpen, paging.pageNumber, paging.pageSize, sortState, searchValue]);
-
-    if (!isOpen) return null;
+    }, [isOpen, paging.pageNumber, paging.pageSize, sortState, debouncedSearch]);
 
     const handlePageChange = (newPage: number, newPageSize?: number) => {
         setPaging(prev => ({
@@ -71,14 +71,22 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
         }));
     };
 
+    const handleOverlayClick = useCallback((e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) onClose();
+    }, [onClose]);
+
+    const handleStopPropagation = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
+
+    if (!isOpen) return null;
+
     return (
         <div
             className="modal-overlay"
-            onClick={onClose}
+            onClick={handleOverlayClick}
         >
             <div
                 className="relative flex flex-col overflow-hidden rounded-2xl shadow-lg bg-surface mx-auto w-[1000px] h-[800px] max-w-[95vw] max-h-[90vh]"
-                onClick={e => e.stopPropagation()}
+                onClick={handleStopPropagation}
             >
                 <div className="p-md border-b border-border flex justify-between items-center shrink-0">
                     <h3 className="font-bold text-xl text-foreground">Chọn ngân hàng</h3>

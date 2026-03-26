@@ -7,6 +7,7 @@ import type { BankRes } from "@/models/entity.model";
 import type { PutBankInfoReq } from "@/models/entity.request.model";
 import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
+import StatusToggle from "@/components/UICustoms/Form/StatusToggle";
 
 interface BankModalProps {
     isOpen: boolean;
@@ -281,23 +282,12 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
 
                                 {/* isActive Toggle */}
                                 <div className="mt-auto w-full flex flex-col gap-sm pt-md">
-                                    <label className="text-sm font-semibold text-foreground-secondary">Trạng thái (Có thể cập nhật)</label>
-                                    <label className="w-full flex items-center gap-sm py-sm px-md bg-surface-muted/30 rounded-xl border border-border cursor-pointer hover:bg-surface-muted/50 transition-all group">
-                                        <div className="relative h-6 w-11 flex-shrink-0">
-                                            <input
-                                                type="checkbox"
-                                                className="sr-only peer"
-                                                name="isActive"
-                                                id="isActive"
-                                                checked={formData.isActive}
-                                                onChange={handleInputChange}
-                                            />
-                                            <div className="w-11 h-6 bg-surface-muted peer-checked:bg-primary rounded-full transition-all border border-border after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                                        </div>
-                                        <span className="text-xs font-bold text-primary select-none uppercase tracking-widest leading-relaxed">
-                                            Đang hoạt động
-                                        </span>
-                                    </label>
+                                    <StatusToggle
+                                        checked={formData.isActive}
+                                        onChange={handleInputChange}
+                                        checkedLabel="Hoạt động"
+                                        uncheckedLabel="Bảo trì"
+                                    />
                                 </div>
                             </div>
                         </div>

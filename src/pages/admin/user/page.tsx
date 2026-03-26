@@ -1,20 +1,23 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { userApi } from "../../../services/user-api.service";
-import { roleApi } from "../../../services/role-api.service";
-import type { PagingVM, GetUserBaseRes } from "../../../models/entity.model";
+import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
+import { userApi } from "@/services/user-api.service";
+import { roleApi } from "@/services/role-api.service";
+import type { PagingVM, GetUserBaseRes } from "@/models/entity.model";
 import { toast } from "react-toastify";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
-import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
-import UserRolesModal from "./components/UserRolesModal";
-import UserAccountsModal from "./components/UserAccountsModal";
-import UserModal from "./components/UserModal";
+import type { Column } from "@/components/UICustoms/Table/data-table";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { Eye } from "lucide-react";
 import { formatDate } from "@/utils/dateTimeUtils";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import { Wallet } from "lucide-react";
+import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
+import { useDebounce } from "@/hooks/useDebounce";
+
+const UserRolesModal = lazy(() => import("./components/UserRolesModal"));
+const UserAccountsModal = lazy(() => import("./components/UserAccountsModal"));
+const UserModal = lazy(() => import("./components/UserModal"));
 
 const UserPage: React.FC = () => {
     const [users, setUsers] = useState<GetUserBaseRes[]>([]);
@@ -34,7 +37,7 @@ const UserPage: React.FC = () => {
 
     // Filter states
     const [searchValue, setSearchValue] = useState<string>("");
-    const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+    const debouncedSearch = useDebounce(searchValue, 500);
     const [sortState, setSortState] = useState<{ field: string, dir: "asc" | "desc" } | null>(null);
     const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
     const [roleIdFilter, setRoleIdFilter] = useState<string | undefined>(undefined);
@@ -61,13 +64,7 @@ const UserPage: React.FC = () => {
         }
     }, [hasFetchedRoles]);
 
-    // Debounce search input
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearch(searchValue);
-        }, 500);
-        return () => clearTimeout(handler);
-    }, [searchValue]);
+
 
     const fetchUsers = useCallback(async (page: number, size: number, sortField?: string, sortDir?: "asc" | "desc", search?: string, status?: boolean, roleId?: string) => {
         try {
@@ -125,8 +122,8 @@ const UserPage: React.FC = () => {
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">User Management</h1>
-                    <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý thông tin các ngân hàng, ví điện tử của bạn.</p>
+                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Quản lý Người dùng</h1>
+                    <p className="text-sm text-foreground-muted font-medium">Quản lý danh sách người dùng, vai trò và các tài khoản liên kết trong hệ thống.</p>
                 </div>
 
                 {/* Stats Cards */}
@@ -162,25 +159,25 @@ const UserPage: React.FC = () => {
                     <DataTable
                         loading={loading}
                         data={users}
-                        sortState={sortState ? {
+                        sortState={useMemo(() => sortState ? {
                             index: ["fullName", "email", "roles", "createdAt", "status"].indexOf(sortState.field),
                             dir: sortState.dir
-                        } : null}
-                        filterState={statusFilter !== undefined ? { 4: statusFilter } : {}}
-                        onSortChange={(index, dir) => {
-                            const columns = ["fullName", "email", "roles", "createdAt", "status", "Thao t�c"];
+                        } : null, [sortState])}
+                        filterState={useMemo(() => statusFilter !== undefined ? { 4: statusFilter } : {}, [statusFilter])}
+                        onSortChange={useCallback((index: number, dir: "asc" | "desc" | null) => {
+                            const columns = ["fullName", "email", "roles", "createdAt", "status", "Thao tác"];
                             const field = columns[index];
                             if (!dir) setSortState(null);
                             else setSortState({ field, dir });
-                        }}
-                        onFilterChange={(index, value) => {
+                        }, [])}
+                        onFilterChange={useCallback((index: number, value: any) => {
                             if (index === 4) setStatusFilter(value);
-                        }}
-                        onResetPage={() => handlePageChange(1)}
+                        }, [])}
+                        onResetPage={useCallback(() => handlePageChange(1), [handlePageChange])}
                         showIndex
                         pageNumber={paging.pageNumber}
                         pageSize={paging.pageSize}
-                        columns={[
+                        columns={useMemo<Column<GetUserBaseRes>[]>(() => [
                             {
                                 header: "FullName",
                                 accessor: (user) => user.fullName,
@@ -270,7 +267,7 @@ const UserPage: React.FC = () => {
                                     </div>
                                 )
                             },
-                        ]}
+                        ], [handleOpenUserModal, handleOpenViewAccountsModal, handleOpenViewRolesModal])}
                     />
                 </div>
 
@@ -289,31 +286,43 @@ const UserPage: React.FC = () => {
                 </div>
             </div>
 
-            <UserModal
-                isOpen={isUserModalOpen}
-                onClose={() => setIsUserModalOpen(false)}
-                user={selectedUser}
-                onStatusChanged={handleUserStatusChanged}
-            />
+            {isUserModalOpen && (
+                <Suspense fallback={null}>
+                    <UserModal
+                        isOpen={isUserModalOpen}
+                        onClose={() => setIsUserModalOpen(false)}
+                        user={selectedUser}
+                        onStatusChanged={handleUserStatusChanged}
+                    />
+                </Suspense>
+            )}
 
-            <UserRolesModal
-                isOpen={isViewRolesModalOpen}
-                onClose={() => setIsViewRolesModalOpen(false)}
-                user={selectedUser}
-                allRoles={allRolesRaw}
-                onRolesUpdate={(userId, newRoles) => {
-                    setUsers(prev => prev.map(u => u.id === userId ? { ...u, roles: newRoles } : u));
-                    if (selectedUser?.id === userId) {
-                        setSelectedUser(prev => prev ? ({ ...prev, roles: newRoles }) : null);
-                    }
-                }}
-            />
+            {isViewRolesModalOpen && (
+                <Suspense fallback={null}>
+                    <UserRolesModal
+                        isOpen={isViewRolesModalOpen}
+                        onClose={() => setIsViewRolesModalOpen(false)}
+                        user={selectedUser}
+                        allRoles={allRolesRaw}
+                        onRolesUpdate={(userId, newRoles) => {
+                            setUsers(prev => prev.map(u => u.id === userId ? { ...u, roles: newRoles } : u));
+                            if (selectedUser?.id === userId) {
+                                setSelectedUser(prev => prev ? ({ ...prev, roles: newRoles }) : null);
+                            }
+                        }}
+                    />
+                </Suspense>
+            )}
 
-            <UserAccountsModal
-                isOpen={isViewAccountsModalOpen}
-                onClose={() => setIsViewAccountsModalOpen(false)}
-                user={selectedUser}
-            />
+            {isViewAccountsModalOpen && (
+                <Suspense fallback={null}>
+                    <UserAccountsModal
+                        isOpen={isViewAccountsModalOpen}
+                        onClose={() => setIsViewAccountsModalOpen(false)}
+                        user={selectedUser}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 };

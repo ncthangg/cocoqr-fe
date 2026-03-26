@@ -2,11 +2,17 @@ import type { QRStyleType } from "./enum";
 
 export interface PutRoleReq {
     name: string;
+    status: boolean;
 }
 
 export interface PostPutUserRoleReq {
     userId: string;
     roleIds: string[];
+}
+
+export interface SwitchRoleReq {
+    userId: string;
+    roleId: string;
 }
 
 export interface PutBankInfoReq {
@@ -65,6 +71,7 @@ export interface GetQrStyleLibraryReq {
     userId?: string | null;
     type?: QRStyleType | null;
     isActive?: boolean | null;
+    name?: string | null;
 }
 
 export interface CreateQrStyleLibraryReq {

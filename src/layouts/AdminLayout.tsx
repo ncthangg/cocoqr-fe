@@ -1,11 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { Outlet, Link } from "react-router-dom";
-import { RouteConstant } from "../constants/route.constant";
-import { useAuthContext } from "../auth/AuthContext";
-import { Bell, ChevronDown, LogOut, QrCode, UserIcon } from "lucide-react";
-import Button from "../components/UICustoms/Button";
-import { authApi } from "../services/auth-api.service";
-import ProfileModal from "../components/UICustoms/Modal/ProfileModal";
+import { RouteConstant } from "@/constants/route.constant";
+import { useAuthContext } from "@/auth/AuthContext";
+import { ChevronDown, LogOut, UserIcon } from "lucide-react";
+import ThemeToggle from "@/components/UICustoms/ThemeToggle";
+import { authApi } from "@/services/auth-api.service";
+import Logo from "@/components/UICustoms/Logo";
+
+const ProfileModal = lazy(() => import("@/components/UICustoms/Modal/ProfileModal"));
 
 const AdminLayout: React.FC = () => {
     const { logout, user, roles } = useAuthContext();
@@ -61,38 +63,34 @@ const AdminLayout: React.FC = () => {
         <>
             <div className="h-screen flex flex-col overflow-hidden bg-background">
                 <div className="shrink-0 z-50">
-                    <header className="p-4 border-b border-border bg-[#343a40] text-white flex justify-between items-center">
+                    <header className="p-4 border-b border-border bg-surface text-foreground flex justify-between items-center">
                         <div className="flex items-center gap-8 lg:gap-12">
                             <Link to={RouteConstant.ADMIN} className="flex items-center shrink-0 gap-2">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                                    <QrCode className="h-5 w-5 text-primary-foreground" />
-                                </div>
-                                <span className="text-xl font-bold text-white">Dashboard</span>
+                                <Logo />
                             </Link>
-
                             <nav className="hidden items-center gap-6 md:flex">
-                                <Link to={RouteConstant.ADMIN_USERS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                <Link to={RouteConstant.ADMIN_USERS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     User
                                 </Link>
-                                <Link to={RouteConstant.ADMIN_ROLES} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                <Link to={RouteConstant.ADMIN_ROLES} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     Role
                                 </Link>
-                                <Link to={RouteConstant.ADMIN_PROVIDERS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                <Link to={RouteConstant.ADMIN_PROVIDERS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     Provider
                                 </Link>
-                                <Link to={RouteConstant.ADMIN_BANKS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                <Link to={RouteConstant.ADMIN_BANKS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     Bank
                                 </Link>
-                                <Link to={RouteConstant.ADMIN_ACCOUNTS} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                <Link to={RouteConstant.ADMIN_ACCOUNTS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     Account
                                 </Link>
-                                <Link to={RouteConstant.ADMIN_HISTORY} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                <Link to={RouteConstant.ADMIN_HISTORY} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     History
                                 </Link>
-                                <Link to={RouteConstant.ADMIN_SEED} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                <Link to={RouteConstant.ADMIN_SEED} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     Seed
                                 </Link>
-                                <Link to={RouteConstant.ADMIN_QR_STYLE_LIB} className="text-sm font-bold text-white transition-colors hover:text-foreground">
+                                <Link to={RouteConstant.ADMIN_QR_STYLE_LIB} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     QR Style
                                 </Link>
                             </nav>
@@ -101,23 +99,18 @@ const AdminLayout: React.FC = () => {
 
                         <div className="flex items-center gap-4">
                             <div className="relative" ref={profileMenuRef}>
-                                <div className="flex items-center space-x-4 text-white">
-                                    <Button
-                                        onClick={() => { }}
-                                        icon={<Bell className="w-5 h-5 text-white" />}
-                                        aria-label="Thông báo"
-                                        className="bg-transparent border-none"
-                                    />
+                                <div className="flex items-center space-x-6 text-foreground">
+                                    <ThemeToggle />
                                     <button
                                         type="button"
                                         onClick={handleToggleMenu}
                                         className="flex items-center space-x-3 rounded-full border border-transparent px-2 py-1 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
                                     >
                                         <div className="hidden sm:flex flex-col text-left">
-                                            <span className="text-sm font-medium text-white">
+                                            <span className="text-sm font-medium text-foreground">
                                                 {user?.fullName || "Admin"}
                                             </span>
-                                            <span className="text-xs text-gray-300">{user?.email}</span>
+                                            <span className="text-xs text-foreground-secondary">{user?.email}</span>
                                         </div>
 
                                         {user?.pictureUrl ? (
@@ -162,17 +155,21 @@ const AdminLayout: React.FC = () => {
                 <main className="p-8 flex-1 overflow-auto flex flex-col min-h-0">
                     <Outlet />
                 </main>
-                <footer className="shrink-0 p-4 border-t border-border text-center bg-[#343a40] text-white">
+                <footer className="shrink-0 p-4 border-t border-border text-center bg-surface text-foreground">
                     <p>&copy; 2026 MyWallet - Administration</p>
                 </footer>
             </div>
 
-            <ProfileModal
-                isOpen={isProfileModalOpen}
-                onClose={() => setIsProfileModalOpen(false)}
-                user={user}
-                roles={roles}
-            />
+            {isProfileModalOpen && (
+                <Suspense fallback={null}>
+                    <ProfileModal
+                        isOpen={isProfileModalOpen}
+                        onClose={() => setIsProfileModalOpen(false)}
+                        user={user}
+                        roles={roles}
+                    />
+                </Suspense>
+            )}
         </>
     );
 };

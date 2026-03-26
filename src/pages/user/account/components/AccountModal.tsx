@@ -177,7 +177,6 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
         <>
             <div
                 className="modal-overlay"
-                onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
             >
                 <div
                     className="modal-content max-w-modal-lg flex flex-col overflow-hidden"

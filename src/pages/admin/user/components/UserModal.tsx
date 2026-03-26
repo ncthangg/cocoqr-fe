@@ -167,20 +167,6 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, onStatusCh
                                         )}
                                     </div>
 
-                                    {/* Status Card */}
-                                    <div className="flex flex-col gap-sm p-md bg-surface-muted/30 rounded-2xl border border-border">
-                                        <span className="text-xs text-foreground-muted font-bold uppercase tracking-widest">Trạng thái tài khoản</span>
-                                        <div className="flex flex-wrap items-center gap-sm">
-                                            <StatusBadge
-                                                status={detail.status !== false}
-                                                activeText="Đang hoạt động"
-                                                inactiveText="Đã bị khóa"
-                                                activeColor="green"
-                                                inactiveColor="red"
-                                            />
-                                        </div>
-                                    </div>
-
                                     {/* Timestamps */}
                                     <div className="grid grid-cols-2 gap-md p-md bg-surface-elevated rounded-2xl border border-border shadow-sm">
                                         <div className="flex flex-col gap-xs">
@@ -248,8 +234,8 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, onStatusCh
                                                     <StatusBadge
                                                         icon={<ShieldCheck className="w-3 h-3" />}
                                                         status={!isLocked}
-                                                        activeText="Status: TRUE"
-                                                        inactiveText="Status: FALSE"
+                                                        activeText="Status: ACTIVE"
+                                                        inactiveText="Status: INACTIVE"
                                                     />
                                                 </span>
                                                 <ActionButton

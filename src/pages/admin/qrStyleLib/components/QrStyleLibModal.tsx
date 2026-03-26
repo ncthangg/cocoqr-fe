@@ -8,6 +8,7 @@ import { qrStyleLibApi } from "@/services/qrStyleLib-api.service";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import type { QrStyleLibraryRes } from "@/models/entity.model";
 import { QRStyleType } from "@/models/enum";
+import StatusToggle from "@/components/UICustoms/Form/StatusToggle";
 
 interface StyleConfig {
     bgColor: string;
@@ -377,22 +378,14 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
 
                                 {/* Toggles */}
                                 <div className="flex flex-col gap-md">
-                                    <label className="flex items-center gap-sm cursor-pointer group">
-                                        <div className="relative h-6 w-11 flex-shrink-0">
-                                            <input
-                                                type="checkbox"
-                                                className="sr-only peer"
-                                                checked={isActive}
-                                                onChange={(e) => setIsActive(e.target.checked)}
-                                            />
-                                            <div className="w-11 h-6 bg-surface-muted peer-checked:bg-primary rounded-full transition-all border border-border after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-semibold text-foreground-secondary group-hover:text-foreground transition-colors">Đang hoạt động</span>
-                                            <span className="text-xs text-foreground-muted">Cho phép người dùng nhìn thấy và sử dụng style này</span>
-                                        </div>
-                                    </label>
-
+                                    <StatusToggle
+                                        checked={isActive}
+                                        onChange={(e) => setIsActive(e.target.checked)}
+                                        checkedLabel="Hoạt động"
+                                        uncheckedLabel="Bảo trì"
+                                        checkedSubtext="Cho phép người dùng nhìn thấy và sử dụng style này"
+                                        uncheckedSubtext="Ẩn khỏi danh sách style"
+                                    />
                                 </div>
                             </div>
 

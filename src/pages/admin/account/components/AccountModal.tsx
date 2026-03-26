@@ -253,8 +253,8 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                                                     <StatusBadge
                                                         icon={<ShieldCheck className="w-3 h-3" />}
                                                         status={!isLocked}
-                                                        activeText="Status: TRUE"
-                                                        inactiveText="Status: FALSE"
+                                                        activeText="Status: ACTIVE"
+                                                        inactiveText="Status: INACTIVE"
                                                     />
                                                 </span>
                                                 <ActionButton

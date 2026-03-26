@@ -1,30 +1,40 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
-import { RouteConstant } from "../constants/route.constant";
-import CreatePaymentPage from "../pages/user/qr/page";
-import AccountsPage from "../pages/user/account/page";
-import QrHistoryPage from "../pages/user/history/page";
-import AdminDashboardPage from "../pages/admin/dashboard/page";
-import ErrorPage from "../pages/ErrorPage/ErrorPage";
-import UserLayout from "../layouts/UserLayout";
-import AdminLayout from "../layouts/AdminLayout";
-import RequireAuth from "../auth/RequireAuth";
-import RequireRole from "../auth/RequireRole";
-import AuthenModal from "../components/Modals/AuthenModal";
-import RootRoute from "./RootRoute";
-import BankPage from "../pages/admin/bank/page";
-import UserPage from "../pages/admin/user/page";
-import RolePage from "../pages/admin/role/page";
-import HistoryPage from "../pages/admin/history/page";
-import AccountPage from "@/pages/admin/account/page";
-import ProviderPage from "../pages/admin/provider/page";
-import SeedPage from "../pages/admin/seed/page";
-import AdminQrStyleLibPage from "../pages/admin/qrStyleLib/page";
-import UserQrStyleLibPage from "../pages/user/qrStyleLib/page";
+import { RouteConstant } from "@/constants/route.constant";
+import { lazy, Suspense } from "react";
+
+const AdminLayout = lazy(() => import("@/layouts/AdminLayout"))
+const UserLayout = lazy(() => import("@/layouts/UserLayout"))
+
+import RequireAuth from "@/auth/RequireAuth";
+import RequireRole from "@/auth/RequireRole";
+import AuthenModal from "@/components/Modals/AuthenModal";
+import RoleSelectionModal from "@/components/Modals/RoleSelectionModal";
+
+const RootRoute = lazy(() => import("@/router/RootRoute"))
+const ErrorPage = lazy(() => import("@/pages/ErrorPage/ErrorPage"));
+
+const CreatePaymentPage = lazy(() => import("@/pages/user/qr/page"))
+const AccountsPage = lazy(() => import("@/pages/user/account/page"))
+const QrHistoryPage = lazy(() => import("@/pages/user/history/page"))
+const UserQrStyleLibPage = lazy(() => import("@/pages/user/qrStyleLib/page"))
+
+const AdminDashboardPage = lazy(() => import("@/pages/admin/dashboard/page"))
+const BankPage = lazy(() => import("@/pages/admin/bank/page"))
+const UserPage = lazy(() => import("@/pages/admin/user/page"))
+const RolePage = lazy(() => import("@/pages/admin/role/page"))
+const AccountPage = lazy(() => import("@/pages/admin/account/page"))
+const HistoryPage = lazy(() => import("@/pages/admin/history/page"))
+const ProviderPage = lazy(() => import("@/pages/admin/provider/page"))
+const SeedPage = lazy(() => import("@/pages/admin/seed/page"))
+const AdminQrStyleLibPage = lazy(() => import("@/pages/admin/qrStyleLib/page"))
 
 const RootWrapper = () => (
     <>
         <AuthenModal />
-        <Outlet />
+        <RoleSelectionModal />
+        <Suspense fallback={null}>
+            <Outlet />
+        </Suspense>
     </>
 );
 

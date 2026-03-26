@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { BankRes, ProviderRes } from "@/models/entity.model";
-import BankSelectionModal from "@/components/UICustoms/Modal/BankSelectionModal";
 import { ProviderCode } from '@/models/enum';
 import { bankApi } from '@/services/bank-api.service';
 import { resolveAvatarPreview } from '@/utils/imageConvertUtils';
+
+const BankSelectionModal = lazy(() => import("@/components/UICustoms/Modal/BankSelectionModal"));
 
 interface AccountProviderSelectorProps {
     providerId: string;
@@ -168,15 +169,19 @@ const BankFieldModal: React.FC<BankFieldModalProps> = ({
         {isBankInactive && (
             <p className="text-xs text-danger font-medium">Ngân hàng đang bảo trì</p>
         )}
-        <BankSelectionModal
-            isOpen={isBankModalOpen}
-            onClose={onCloseModal}
-            onSelectBank={(napasBin, bankCode, bankShortName, bankName, logoUrl, isActive) => {
-                onBankSelect(napasBin, bankCode, bankShortName, bankName, logoUrl, isActive);
-                onCloseModal();
-            }}
-            allowInactiveSelection={allowInactiveSelection}
-        />
+        {isBankModalOpen && (
+            <Suspense fallback={null}>
+                <BankSelectionModal
+                    isOpen={isBankModalOpen}
+                    onClose={onCloseModal}
+                    onSelectBank={(napasBin, bankCode, bankShortName, bankName, logoUrl, isActive) => {
+                        onBankSelect(napasBin, bankCode, bankShortName, bankName, logoUrl, isActive);
+                        onCloseModal();
+                    }}
+                    allowInactiveSelection={allowInactiveSelection}
+                />
+            </Suspense>
+        )}
     </div>
 );
 
@@ -243,6 +248,8 @@ const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
         );
     });
 
+    const handleInputClick = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
+
     return (
         <div className="flex flex-col gap-sm relative" ref={containerRef}>
             <label className="text-sm font-medium text-foreground-secondary">Ngân hàng</label>
@@ -286,7 +293,7 @@ const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
                                 placeholder="Tìm theo BIN hoặc mã NH..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={handleInputClick}
                             />
                         </div>
                     </div>
