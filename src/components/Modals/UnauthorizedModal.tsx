@@ -1,3 +1,4 @@
+import React, { useCallback } from "react";
 import Button from "../UICustoms/Button";
 
 export type UnauthorizedType = "SESSION_EXPIRED" | "NO_PERMISSION";
@@ -9,12 +10,14 @@ interface UnauthorizedModalProps {
     onAction: () => void;
 }
 
-export default function UnauthorizedModal({
+const UnauthorizedModal: React.FC<UnauthorizedModalProps> = ({
     isOpen,
     type,
     countdown,
     onAction
-}: UnauthorizedModalProps) {
+}) => {
+    const handleStopPropagation = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
+
     if (!isOpen) return null;
 
     const isSessionExpired = type === "SESSION_EXPIRED";
@@ -29,11 +32,11 @@ export default function UnauthorizedModal({
     return (
         <div
             className="modal-overlay"
-            onClick={(e) => e.stopPropagation()}
+            onClick={handleStopPropagation}
         >
             <div
                 className="modal-content max-w-modal-md relative flex flex-col overflow-hidden rounded-2xl p-lg md:p-xl text-center shadow-lg"
-                onClick={(e) => e.stopPropagation()}
+                onClick={handleStopPropagation}
             >
                 <div className="mb-md">
                     <div className="mx-auto flex items-center justify-center h-16 w-16 p-3 rounded-full bg-danger/10 mb-lg">
@@ -59,4 +62,6 @@ export default function UnauthorizedModal({
             </div>
         </div>
     );
-}
+};
+
+export default UnauthorizedModal;

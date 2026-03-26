@@ -1,15 +1,18 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { providerApi } from "../../../services/provider-api.service";
-import type { ProviderRes } from "../../../models/entity.model";
+import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
+import { providerApi } from "@/services/provider-api.service";
+import type { ProviderRes } from "@/models/entity.model";
 import { Edit, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
-import ProviderModal from "./components/ProviderModal";
+
 import { DataTable } from "@/components/UICustoms/Table/data-table";
+import type { Column } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 
-import { resolveAvatarPreview } from "../../../utils/imageConvertUtils";
+import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { StatCard } from "@/components/UICustoms/StatCard";
+
+const ProviderModal = lazy(() => import("./components/ProviderModal"));
 
 const ProviderPage: React.FC = () => {
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
@@ -56,8 +59,8 @@ const ProviderPage: React.FC = () => {
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Provider Management</h1>
-                    <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý thông tin các ngân hàng, ví điện tử của bạn.</p>
+                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Quản lý Provider</h1>
+                    <p className="text-sm text-foreground-muted font-medium">Quản lý các đơn vị cung cấp dịch vụ thanh toán và cổng kết nối (Momo, VNPay,...).</p>
                 </div>
 
                 {/* Stats Cards */}
@@ -81,7 +84,7 @@ const ProviderPage: React.FC = () => {
                         onSortChange={() => { }}
                         onFilterChange={() => { }}
                         showIndex
-                        columns={[
+                        columns={useMemo<Column<ProviderRes>[]>(() => [
                             {
                                 header: "Logo",
                                 accessor: (provider) => provider.logoUrl,
@@ -112,7 +115,7 @@ const ProviderPage: React.FC = () => {
                                 cell: (provider) =>
                                     <StatusBadge
                                         status={provider.isActive}
-                                        activeText="ĐANG HOẠT ĐỘNG"
+                                        activeText="HOẠT ĐỘNG"
                                         inactiveText="BẢO TRÌ"
                                         activeColor="green"
                                         inactiveColor="red"
@@ -132,17 +135,21 @@ const ProviderPage: React.FC = () => {
                                     </div>
                                 )
                             }
-                        ]}
+                        ], [handleOpenEditModal])}
                     />
                 </div>
             </div>
 
-            <ProviderModal
-                isOpen={isProviderModalOpen}
-                onClose={() => setIsProviderModalOpen(false)}
-                onSuccess={handleModalSuccess}
-                provider={selectedProvider}
-            />
+            {isProviderModalOpen && (
+                <Suspense fallback={null}>
+                    <ProviderModal
+                        isOpen={isProviderModalOpen}
+                        onClose={() => setIsProviderModalOpen(false)}
+                        onSuccess={handleModalSuccess}
+                        provider={selectedProvider}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 };

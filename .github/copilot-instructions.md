@@ -1,4 +1,4 @@
-# Project Instruction
+# Copilot Instructions
 
 ## Tech Stack
 - React + TypeScript (Vite)

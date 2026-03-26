@@ -3,6 +3,7 @@ export const ApiConstant = {
         SIGN_IN: "/auths/google-auth/signin",
         REFRESH_TOKEN: "/auths/refresh-token",
         SIGN_OUT: "/auths/signout",
+        SWITCH_ROLE: "/auths/switch-role",
         ME: "/auths/me",
     },
     ACCOUNT: {

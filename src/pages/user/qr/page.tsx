@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Pin, QrCode, Eraser, BookUser, X, ChevronRight } from "lucide-react";
 import Button from "../../../components/UICustoms/Button";
 import { accountApi } from "@/services/account-api.service";
@@ -8,6 +8,7 @@ import { qrApi } from "@/services/qr-api.service";
 import type { AccountRes, PagingVM, PostQrRes, ProviderRes } from "@/models/entity.model";
 import type { PostQrReq, PutAccountReq } from "@/models/entity.request.model";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
+import type { Column } from "@/components/UICustoms/Table/data-table";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { toast } from "react-toastify";
@@ -18,6 +19,7 @@ import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import { ProviderCode } from "@/models/enum";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const CreatePaymentPage: React.FC = () => {
     // API State
@@ -33,7 +35,7 @@ const CreatePaymentPage: React.FC = () => {
         totalPages: 0
     });
     const [searchValue, setSearchValue] = useState("");
-    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const debouncedSearch = useDebounce(searchValue, 500);
     const [isProviderMaintenance, setIsProviderMaintenance] = useState(false);
     const [isBankMaintenance, setIsBankMaintenance] = useState(false);
 
@@ -45,12 +47,7 @@ const CreatePaymentPage: React.FC = () => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [providerFilter, setProviderFilter] = useState<string | undefined>(undefined);
 
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearch(searchValue);
-        }, 500);
-        return () => clearTimeout(handler);
-    }, [searchValue]);
+
 
     const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
     const [formData, setFormData] = useState<{
@@ -338,7 +335,7 @@ const CreatePaymentPage: React.FC = () => {
                         data={accounts}
                         onRowClick={handleSelectAccount}
                         selectedRowPredicate={(acc) => selectedAccount?.id === acc.id}
-                        columns={[
+                        columns={useMemo<Column<AccountRes>[]>(() => [
                             {
                                 header: "TÀI KHOẢN",
                                 accessor: (acc) => acc.accountHolder,
@@ -388,7 +385,7 @@ const CreatePaymentPage: React.FC = () => {
                                         title={acc.isPinned ? "Bỏ ghim" : "Ghim"}
                                     />
                             }
-                        ]}
+                        ], [handleOpenPin])}
                     />
                 </div>
 
@@ -417,8 +414,11 @@ const CreatePaymentPage: React.FC = () => {
 
                 {/* Top: Title + Open Drawer Tag + Clear */}
                 <div className="flex items-center justify-between shrink-0 mb-sm">
-                    <div className="flex items-center gap-lg">
-                        <h2 className="text-2xl font-extrabold text-foreground">Tạo QR</h2>
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Tạo QR</h1>
+                        <p className="text-sm text-foreground-muted font-medium">Nhập thông tin hoặc chọn từ danh sách để tạo mã QR thanh toán nhanh chóng.</p>
+                    </div>
+                    <div className="flex items-center gap-md">
                         {/* Drawer Trigger Tag */}
                         <button
                             onClick={() => setIsDrawerOpen(true)}

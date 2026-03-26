@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { Edit, Trash2, Pin, Wallet, ShieldCheck } from "lucide-react";
 import { toast } from "react-toastify";
 import { accountApi } from "@/services/account-api.service";
 import { providerApi } from "@/services/provider-api.service";
 import type { AccountRes, PagingVM, ProviderRes } from "@/models/entity.model";
 import type { PutAccountReq } from "@/models/entity.request.model";
-import AccountModal from "./components/AccountModal";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
+import type { Column } from "@/components/UICustoms/Table/data-table";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
@@ -17,6 +17,9 @@ import { cn } from "@/lib/utils";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
+import { useDebounce } from "@/hooks/useDebounce";
+
+const AccountModal = lazy(() => import("./components/AccountModal"));
 
 const AccountsPage: React.FC = () => {
     const [accounts, setAccounts] = useState<AccountRes[]>([]);
@@ -32,7 +35,6 @@ const AccountsPage: React.FC = () => {
     });
 
     const [searchValue, setSearchValue] = useState("");
-    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [sortState, setSortState] = useState<{ field: string, dir: "asc" | "desc" } | null>(null);
     const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
     const [providerFilter, setProviderFilter] = useState<string | undefined>(undefined);
@@ -42,14 +44,7 @@ const AccountsPage: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isPinModalOpen, setIsPinModalOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
-
-    // Debounce search input
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearch(searchValue);
-        }, 500);
-        return () => clearTimeout(handler);
-    }, [searchValue]);
+    const debouncedSearch = useDebounce(searchValue, 500);
 
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
@@ -192,8 +187,8 @@ const AccountsPage: React.FC = () => {
             {/* Page Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Quản lý tài khoản</h1>
-                    <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý thông tin các ngân hàng, ví điện tử của bạn.</p>
+                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Quản lý Tài khoản</h1>
+                    <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý danh sách các tài khoản ngân hàng, ví điện tử cá nhân của bạn.</p>
                 </div>
 
                 {/* Stats Cards */}
@@ -245,27 +240,27 @@ const AccountsPage: React.FC = () => {
                     <DataTable
                         loading={loading}
                         data={accounts}
-                        sortState={sortState ? {
+                        sortState={useMemo(() => sortState ? {
                             index: ["accountHolder", "bankCode", "accountNumber", "createdAt", "isActive"]
                                 .indexOf(sortState.field), dir: sortState.dir
-                        } : null}
-                        filterState={{
+                        } : null, [sortState])}
+                        filterState={useMemo(() => ({
                             ...(activeFilter !== undefined ? { 4: activeFilter } : {}),
-                        }}
-                        onSortChange={(index, dir) => {
+                        }), [activeFilter])}
+                        onSortChange={useCallback((index: number, dir: "asc" | "desc" | null) => {
                             const columns = ["accountHolder", "bankCode", "accountNumber", "createdAt", "isActive", "actions"];
                             const field = columns[index];
                             if (!dir) setSortState(null);
                             else setSortState({ field, dir });
-                        }}
-                        onFilterChange={(index, value) => {
+                        }, [])}
+                        onFilterChange={useCallback((index: number, value: any) => {
                             if (index === 4) setActiveFilter(value as boolean | undefined);
-                        }}
-                        onResetPage={() => handlePageChange(1)}
+                        }, [])}
+                        onResetPage={useCallback(() => handlePageChange(1), [handlePageChange])}
                         showIndex
                         pageNumber={paging.pageNumber}
                         pageSize={paging.pageSize}
-                        columns={[
+                        columns={useMemo<Column<AccountRes>[]>(() => [
                             {
                                 header: "TÊN TÀI KHOẢN",
                                 accessor: (acc) => acc.accountHolder,
@@ -360,7 +355,7 @@ const AccountsPage: React.FC = () => {
                                     </div>
                                 )
                             }
-                        ]}
+                        ], [handleOpenPin, handleOpenEdit, handleOpenDelete])}
                     />
                 </div>
 
@@ -379,12 +374,16 @@ const AccountsPage: React.FC = () => {
                 </div>
             </div>
 
-            <AccountModal
-                isOpen={isAccountModalOpen}
-                onClose={() => setIsAccountModalOpen(false)}
-                onSuccess={handleModalSuccess}
-                accountId={selectedAccount?.id || null}
-            />
+            {isAccountModalOpen && (
+                <Suspense fallback={null}>
+                    <AccountModal
+                        isOpen={isAccountModalOpen}
+                        onClose={() => setIsAccountModalOpen(false)}
+                        onSuccess={handleModalSuccess}
+                        accountId={selectedAccount?.id || null}
+                    />
+                </Suspense>
+            )}
 
             <DeleteConfirmModal
                 isOpen={isDeleteModalOpen}

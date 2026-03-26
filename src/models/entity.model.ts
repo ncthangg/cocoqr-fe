@@ -29,9 +29,15 @@ export interface BaseRes {
 ///===================================================
 
 export interface SignInGoogleRes {
-    user: UserRes;
-    token: TokenRes;
-    roles: RoleRes[];
+    userId: string;
+    userRes: UserRes;
+    tokenRes?: TokenRes | null;
+    roleRes: RoleRes[];
+}
+
+export interface SwitchRoleRes {
+    tokenRes: TokenRes;
+    roleRes: RoleRes;
 }
 
 export interface UserRes {

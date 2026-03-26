@@ -1,8 +1,10 @@
 import { Navigate } from "react-router-dom";
 import { useAuthContext } from "../auth/AuthContext";
-import HomePage from "../pages/public/page";
 import { RouteConstant } from "../constants/route.constant";
 import { RoleConstant } from "../constants/role.constant";
+import { lazy } from "react";
+
+const HomePage = lazy(() => import("@/pages/public/page"));
 
 const RootRoute = () => {
     const { isAuthenticated, roles, isLoading } = useAuthContext();

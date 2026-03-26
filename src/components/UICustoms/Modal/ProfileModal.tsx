@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useCallback } from "react";
 import { X, User, Mail, Shield, BadgeCheck, UserCircle2 } from "lucide-react";
 import type { UserRes, RoleRes } from "@/models/entity.model";
 import Button from "@/components/UICustoms/Button";
@@ -29,19 +29,25 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user, role
             .toUpperCase();
     }, [user?.fullName]);
 
+    const handleOverlayClick = useCallback((e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) onClose();
+    }, [onClose]);
+
+    const handleStopPropagation = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
+
     if (!isOpen || !user) return null;
 
     return (
         <div
             className="modal-overlay"
-            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+            onClick={handleOverlayClick}
         >
             <div
                 className="modal-content max-w-modal-md flex flex-col overflow-hidden"
                 role="dialog"
                 aria-modal="true"
                 aria-label="Thông tin tài khoản"
-                onClick={(e) => e.stopPropagation()}
+                onClick={handleStopPropagation}
             >
                 {/* Header */}
                 <div className="flex items-center justify-between px-lg py-md border-b border-border bg-surface-muted/30 shrink-0">

@@ -6,7 +6,7 @@ import { buildGoogleAuthUrl, getBackendOrigin, GOOGLE_AUTH_TIMEOUT_MS, openGoogl
 import type { ApiSuccessResponse } from "../../models/system.model";
 import { ApiConstant } from "../../constants/api.constant";
 import { useAppDispatch, useAppSelector } from "../../store/redux.hooks";
-import { closeAuthModal, setCredentials } from "../../store/slices/auth.slice";
+import { closeAuthModal, openRoleSelectionModal, setCredentials } from "../../store/slices/auth.slice";
 import { setCookie } from "../../utils/storage";
 import { toast } from "react-toastify";
 import { RouteConstant } from "../../constants/route.constant";
@@ -73,19 +73,19 @@ const AuthenModal: React.FC = () => {
         };
     }, [cleanupSideEffects]);
 
+    const handleClose = useCallback(() => {
+        if (isLoading) return;
+        cleanupSideEffects();
+        dispatch(closeAuthModal());
+    }, [isLoading, cleanupSideEffects, dispatch]);
+
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {
             if (e.key === "Escape") handleClose();
         };
         window.addEventListener("keydown", handleEsc);
         return () => window.removeEventListener("keydown", handleEsc);
-    }, []);
-
-    const handleClose = () => {
-        if (isLoading) return;
-        cleanupSideEffects();
-        dispatch(closeAuthModal());
-    };
+    }, [handleClose]);
 
     const handleLoginWithGoogle = async () => {
         setIsLoading(true);
@@ -106,29 +106,38 @@ const AuthenModal: React.FC = () => {
             }
 
             if (parsedPayload.code === "SUCCESS" && parsedPayload.data) {
-                // Đăng nhập thành công
-                const { user, token, roles } = parsedPayload.data;
+                const { userRes: user, tokenRes: token, roleRes: roles } = parsedPayload.data;
 
-                // Lưu token vào cookies
-                setCookie("accessToken", token.accessToken ?? "", 60);
-                setCookie("refreshToken", token.refreshToken ?? "", 60 * 24 * 7);
+                if (roles.length > 1) {
+                    // Cần chọn role
+                    dispatch(openRoleSelectionModal(parsedPayload.data));
+                    cleanupSideEffects();
+                } else if (roles.length === 1 && token) {
+                    // Đăng nhập thành công
+                    // Lưu token vào cookies
+                    setCookie("accessToken", token.accessToken ?? "", 60);
+                    setCookie("refreshToken", token.refreshToken ?? "", 60 * 24 * 7);
 
-                // Cập nhật Redux store
-                dispatch(setCredentials({
-                    user,
-                    token,
-                    roles,
-                }));
+                    // Cập nhật Redux store
+                    dispatch(setCredentials({
+                        user,
+                        token,
+                        roles,
+                    }));
 
-                // Redirection logic
-                if (roles[0].name === "admin") {
-                    navigate(RouteConstant.ADMIN);
+                    // Redirection logic
+                    if (roles[0].name === "admin") {
+                        navigate(RouteConstant.ADMIN);
+                    } else {
+                        navigate(RouteConstant.USER);
+                    }
+
+                    toast.success(`Chào mừng ${user.fullName}!`);
+                    cleanupSideEffects();
                 } else {
-                    navigate(RouteConstant.USER);
+                    toast.error("Không có thông tin xác thực hoặc không có quyền truy cập.");
+                    cleanupSideEffects();
                 }
-
-                toast.success(`Chào mừng ${user.fullName}!`);
-                cleanupSideEffects();
             } else {
                 // Đăng nhập thất bại
                 toast.error(parsedPayload.message || "Đăng nhập thất bại");
@@ -194,6 +203,8 @@ const AuthenModal: React.FC = () => {
         setupPopupWatchers();
     };
 
+    const handleStopPropagation = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
+
     if (!isAuthModalOpen) {
         return null;
     }
@@ -204,7 +215,7 @@ const AuthenModal: React.FC = () => {
         >
             <div
                 className="modal-content max-w-modal-md relative flex flex-col overflow-hidden rounded-2xl p-0 md:flex-row shadow-lg"
-                onClick={(e) => e.stopPropagation()}
+                onClick={handleStopPropagation}
             >
                 <button
                     type="button"

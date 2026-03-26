@@ -1,16 +1,19 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { bankApi } from "../../../services/bank-api.service";
-import type { BankRes, PagingVM } from "../../../models/entity.model";
+import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
+import { bankApi } from "@/services/bank-api.service";
+import type { BankRes, PagingVM } from "@/models/entity.model";
 import { Edit, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
 import ActionButton from "@/components/UICustoms/ActionButton";
-import BankModal from "./components/BankModal";
-import { resolveAvatarPreview } from "../../../utils/imageConvertUtils";
+import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
+import type { Column } from "@/components/UICustoms/Table/data-table";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import { StatCard } from "@/components/UICustoms/StatCard";
+import { useDebounce } from "@/hooks/useDebounce";
+
+const BankModal = lazy(() => import("./components/BankModal"));
 
 const BankPage: React.FC = () => {
     const [banks, setBanks] = useState<BankRes[]>([]);
@@ -27,16 +30,11 @@ const BankPage: React.FC = () => {
     const [selectedBank, setSelectedBank] = useState<BankRes | null>(null);
 
     const [searchValue, setSearchValue] = useState<string>("");
-    const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+    const debouncedSearch = useDebounce(searchValue, 500);
     const [sortState, setSortState] = useState<{ field: string, dir: "asc" | "desc" } | null>(null);
     const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
 
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearch(searchValue);
-        }, 500);
-        return () => clearTimeout(handler);
-    }, [searchValue]);
+
 
     const fetchBanks = useCallback(async (page: number, size: number, search?: string, sortField?: string, sortDir?: "asc" | "desc", isActive?: boolean) => {
         try {
@@ -87,8 +85,8 @@ const BankPage: React.FC = () => {
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Quản lý ngân hàng</h1>
-                    <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý thông tin các ngân hàng, ví điện tử của bạn.</p>
+                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Quản lý Ngân hàng</h1>
+                    <p className="text-sm text-foreground-muted font-medium">Quản lý danh mục các ngân hàng và đối tác Napas được hỗ trợ.</p>
                 </div>
 
                 {/* Stats Cards */}
@@ -116,25 +114,25 @@ const BankPage: React.FC = () => {
                     <DataTable
                         loading={loading}
                         data={banks}
-                        sortState={sortState ? {
+                        sortState={useMemo(() => sortState ? {
                             index: ["bankCode", "shortName", "bankName", "Trạng thái"]
                                 .indexOf(sortState.field) + 1, dir: sortState.dir
-                        } : null}
-                        filterState={statusFilter !== undefined ? { 4: statusFilter } : {}}
-                        onSortChange={(index, dir) => {
+                        } : null, [sortState])}
+                        filterState={useMemo(() => statusFilter !== undefined ? { 4: statusFilter } : {}, [statusFilter])}
+                        onSortChange={useCallback((index: number, dir: "asc" | "desc" | null) => {
                             const columns = ["logo", "bankCode", "shortName", "bankName", "Trạng thái", "Thao tác"];
                             const field = columns[index];
                             if (!dir) setSortState(null);
                             else setSortState({ field, dir });
-                        }}
-                        onFilterChange={(index, value) => {
+                        }, [])}
+                        onFilterChange={useCallback((index: number, value: any) => {
                             if (index === 4) setStatusFilter(value);
-                        }}
-                        onResetPage={() => handlePageChange(1)}
+                        }, [])}
+                        onResetPage={useCallback(() => handlePageChange(1), [paging.totalPages])}
                         showIndex
                         pageNumber={paging.pageNumber}
                         pageSize={paging.pageSize}
-                        columns={[
+                        columns={useMemo<Column<BankRes>[]>(() => [
                             {
                                 header: "Logo",
                                 accessor: (bank) => bank.logoUrl,
@@ -179,7 +177,7 @@ const BankPage: React.FC = () => {
                                 cell: (bank) => (
                                     <StatusBadge
                                         status={bank.isActive}
-                                        activeText="ĐANG HOẠT ĐỘNG"
+                                        activeText="HOẠT ĐỘNG"
                                         inactiveText="BẢO TRÌ"
                                         activeColor="green"
                                         inactiveColor="red"
@@ -206,7 +204,7 @@ const BankPage: React.FC = () => {
                                     </div>
                                 )
                             }
-                        ]}
+                        ], [handleOpenEditModal])}
                     />
                 </div>
 
@@ -225,12 +223,16 @@ const BankPage: React.FC = () => {
                 </div>
             </div>
 
-            <BankModal
-                isOpen={isBankModalOpen}
-                onClose={() => setIsBankModalOpen(false)}
-                onSuccess={handleModalSuccess}
-                bank={selectedBank}
-            />
+            {isBankModalOpen && (
+                <Suspense fallback={null}>
+                    <BankModal
+                        isOpen={isBankModalOpen}
+                        onClose={() => setIsBankModalOpen(false)}
+                        onSuccess={handleModalSuccess}
+                        bank={selectedBank}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 };
