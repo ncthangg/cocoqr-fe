@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 interface ActionButtonProps {
@@ -25,13 +25,15 @@ const ActionButton: React.FC<ActionButtonProps> = ({
         gray: "bg-surface-muted text-foreground-muted hover:bg-foreground hover:text-bg border-border"
     };
 
+    const handleButtonClick = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        onClick();
+    }, [onClick]);
+
     return (
         <button
             type="button"
-            onClick={(e) => {
-                e.stopPropagation();
-                onClick();
-            }}
+            onClick={handleButtonClick}
             title={title}
             disabled={disabled}
             className={cn(

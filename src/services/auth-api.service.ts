@@ -1,6 +1,7 @@
 import { ApiConstant } from "../constants/api.constant";
-import type { UserRes } from "../models/entity.model";
-import { axiosPrivate } from "../api/axios.instance";
+import type { SwitchRoleRes, UserRes } from "../models/entity.model";
+import { axiosPrivate, axiosPublic } from "../api/axios.instance";
+import type { SwitchRoleReq } from "@/models/entity.request.model";
 
 export const authApi = {
     me: async (): Promise<UserRes> => {
@@ -11,4 +12,8 @@ export const authApi = {
         const response = await axiosPrivate.post(ApiConstant.AUTH.SIGN_OUT);
         return response.data;
     },
+    switchRole: async (data: SwitchRoleReq): Promise<SwitchRoleRes> => {
+        const response = await axiosPublic.post(ApiConstant.AUTH.SWITCH_ROLE, data);
+        return response.data;
+    }
 };

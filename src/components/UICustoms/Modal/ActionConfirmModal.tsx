@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Info, X } from "lucide-react";
 import Button from "../Button";
 
@@ -37,16 +37,22 @@ const ActionConfirmModal: React.FC<ActionConfirmModalProps> = ({
                 : "btn-amber"
     );
 
+    const handleOverlayClick = useCallback((e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) onClose();
+    }, [onClose]);
+
+    const handleStopPropagation = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
+
     if (!isOpen) return null;
 
     return (
         <div
             className="modal-overlay"
-            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+            onClick={handleOverlayClick}
         >
             <div
                 className="modal-content max-w-modal-lg relative flex flex-col overflow-hidden rounded-2xl p-lg md:p-xl shadow-lg bg-surface"
-                onClick={e => e.stopPropagation()}
+                onClick={handleStopPropagation}
             >
                 <div className="flex justify-between items-center pb-md border-b border-border">
                     <div className="flex items-center gap-sm text-primary">
@@ -85,4 +91,4 @@ const ActionConfirmModal: React.FC<ActionConfirmModalProps> = ({
     );
 };
 
-export default ActionConfirmModal;
+export default React.memo(ActionConfirmModal);

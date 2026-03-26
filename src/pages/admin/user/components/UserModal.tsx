@@ -234,8 +234,8 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, onStatusCh
                                                     <StatusBadge
                                                         icon={<ShieldCheck className="w-3 h-3" />}
                                                         status={!isLocked}
-                                                        activeText="Status: TRUE"
-                                                        inactiveText="Status: FALSE"
+                                                        activeText="Status: ACTIVE"
+                                                        inactiveText="Status: INACTIVE"
                                                     />
                                                 </span>
                                                 <ActionButton

@@ -1,11 +1,12 @@
 import Button from "../../../components/UICustoms/Button"
-import { useAppDispatch } from "../../../store/redux.hooks"
+import { useAppDispatch, useAppSelector } from "../../../store/redux.hooks"
 import { openAuthModal } from "../../../store/slices/auth.slice"
 import ThemeToggle from "../../../components/UICustoms/ThemeToggle"
 import Logo from "../../../components/UICustoms/Logo"
 
 export function Header() {
     const dispatch = useAppDispatch()
+    const { isRoleSelectionModalOpen } = useAppSelector((state) => state.auth)
 
     return (
         <header className="sticky top-0 z-50 border-b border-border bg-surface/80 backdrop-blur-md">
@@ -14,7 +15,7 @@ export function Header() {
                     <a href="#hero" className="flex items-center shrink-0 gap-sm">
                         <Logo />
                     </a>
-                    <nav className="hidden items-center gap-lg md:flex">
+                    <nav className={`hidden items-center gap-lg md:flex ${isRoleSelectionModalOpen ? 'pointer-events-none opacity-50' : ''}`}>
                         <a
                             href="#features"
                             className="text-sm font-bold text-foreground transition-colors hover:text-primary"
@@ -35,8 +36,9 @@ export function Header() {
                     <div className="hidden md:block">
                         <Button
                             size="large"
-                            className="btn-primary transition-all duration-300"
+                            variant="primary"
                             onClick={() => dispatch(openAuthModal())}
+                            disabled={isRoleSelectionModalOpen}
                         >
                             Đăng nhập
                         </Button>

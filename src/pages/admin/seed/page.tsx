@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { ShieldCheck, Landmark, Layers, ChevronRight, AlertTriangle } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
-import BankSyncPreviewModal from "./components/BankSyncPreviewModal";
-import RoleSyncPreviewModal from "./components/RoleSyncPreviewModal";
-import ProviderSyncPreviewModal from "./components/ProviderSyncPreviewModal";
+
+const BankSyncPreviewModal = lazy(() => import("./components/BankSyncPreviewModal"));
+const RoleSyncPreviewModal = lazy(() => import("./components/RoleSyncPreviewModal"));
+const ProviderSyncPreviewModal = lazy(() => import("./components/ProviderSyncPreviewModal"));
 
 const SeedPage: React.FC = () => {
     // Modal states
@@ -15,8 +16,8 @@ const SeedPage: React.FC = () => {
         <div className="flex flex-col gap-8 flex-1 min-h-0">
             {/* Header Section */}
             <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-extrabold text-foreground tracking-tight uppercase">Cấu hình & Khởi tạo dữ liệu</h1>
-                <p className="text-foreground-muted font-medium">Hệ thống đồng bộ dữ liệu gốc từ API Service hoặc các nguồn dữ liệu tin cậy.</p>
+                <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Cấu hình & Khởi tạo dữ liệu</h1>
+                <p className="text-sm text-foreground-muted font-medium">Hệ thống đồng bộ dữ liệu gốc từ API Service hoặc các nguồn dữ liệu tin cậy.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -139,21 +140,33 @@ const SeedPage: React.FC = () => {
             </div>
 
             {/* Sync Preview Modals */}
-            <BankSyncPreviewModal
-                isOpen={isBankPreviewOpen}
-                onClose={() => setIsBankPreviewOpen(false)}
-                onSyncSuccess={() => setIsBankPreviewOpen(false)}
-            />
-            <RoleSyncPreviewModal
-                isOpen={isRolePreviewOpen}
-                onClose={() => setIsRolePreviewOpen(false)}
-                onSyncSuccess={() => setIsRolePreviewOpen(false)}
-            />
-            <ProviderSyncPreviewModal
-                isOpen={isProviderPreviewOpen}
-                onClose={() => setIsProviderPreviewOpen(false)}
-                onSyncSuccess={() => setIsProviderPreviewOpen(false)}
-            />
+            {isBankPreviewOpen && (
+                <Suspense fallback={null}>
+                    <BankSyncPreviewModal
+                        isOpen={isBankPreviewOpen}
+                        onClose={() => setIsBankPreviewOpen(false)}
+                        onSyncSuccess={() => setIsBankPreviewOpen(false)}
+                    />
+                </Suspense>
+            )}
+            {isRolePreviewOpen && (
+                <Suspense fallback={null}>
+                    <RoleSyncPreviewModal
+                        isOpen={isRolePreviewOpen}
+                        onClose={() => setIsRolePreviewOpen(false)}
+                        onSyncSuccess={() => setIsRolePreviewOpen(false)}
+                    />
+                </Suspense>
+            )}
+            {isProviderPreviewOpen && (
+                <Suspense fallback={null}>
+                    <ProviderSyncPreviewModal
+                        isOpen={isProviderPreviewOpen}
+                        onClose={() => setIsProviderPreviewOpen(false)}
+                        onSyncSuccess={() => setIsProviderPreviewOpen(false)}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 };

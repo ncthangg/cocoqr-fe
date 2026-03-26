@@ -1,13 +1,15 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { roleApi } from "../../../services/role-api.service";
-import type { RoleRes } from "../../../models/entity.model";
+import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
+import { roleApi } from "@/services/role-api.service";
+import type { RoleRes } from "@/models/entity.model";
 import { Eye, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
-import RoleModal from "./components/RoleModal";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
+import type { Column } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { StatCard } from "@/components/UICustoms/StatCard";
+
+const RoleModal = lazy(() => import("./components/RoleModal"));
 
 const RolePage: React.FC = () => {
     const [allRoles, setAllRoles] = useState<RoleRes[]>([]);
@@ -40,12 +42,16 @@ const RolePage: React.FC = () => {
         setIsRoleModalOpen(true);
     };
 
+    const handleUpdateRoleSuccess = (updatedRole: RoleRes) => {
+        setAllRoles(prev => prev.map(r => r.id === updatedRole.id ? updatedRole : r));
+    };
+
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Role Management</h1>
-                    <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý thông tin các ngân hàng, ví điện tử của bạn.</p>
+                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Quản lý Role</h1>
+                    <p className="text-sm text-foreground-muted font-medium">Quản lý các vai trò và quyền hạn truy cập của người dùng trong hệ thống.</p>
                 </div>
 
                 {/* Stats Cards */}
@@ -69,7 +75,7 @@ const RolePage: React.FC = () => {
                         onSortChange={() => { }}
                         onFilterChange={() => { }}
                         showIndex
-                        columns={[
+                        columns={useMemo<Column<RoleRes>[]>(() => [
                             {
                                 header: "Role Code",
                                 accessor: (role) => role.nameUpperCase,
@@ -109,16 +115,21 @@ const RolePage: React.FC = () => {
                                     </div>
                                 )
                             }
-                        ]}
+                        ], [handleOpenViewModal])}
                     />
                 </div>
             </div>
 
-            <RoleModal
-                isOpen={isRoleModalOpen}
-                onClose={() => setIsRoleModalOpen(false)}
-                role={selectedRole}
-            />
+            {isRoleModalOpen && (
+                <Suspense fallback={null}>
+                    <RoleModal
+                        isOpen={isRoleModalOpen}
+                        onClose={() => setIsRoleModalOpen(false)}
+                        onSuccess={handleUpdateRoleSuccess}
+                        role={selectedRole}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 };

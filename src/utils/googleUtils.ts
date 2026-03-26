@@ -73,6 +73,7 @@ export const registerGoogleAuthListener = (
 
 type RawGoogleAuthResponse = {
   data?: {
+    userId: string;
     userRes: any;
     tokenRes: any;
     roleRes: any;
@@ -123,8 +124,8 @@ const normalizeGoogleAuthResponse = (
     return null;
   }
 
-  if (!rawData?.tokenRes || !rawData?.userRes) {
-    console.error("[GoogleAuth] Thiếu token hoặc user:", rawData);
+  if (!rawData?.userRes) {
+    console.error("[GoogleAuth] Thiếu user:", rawData);
     return null;
   }
 
@@ -133,9 +134,10 @@ const normalizeGoogleAuthResponse = (
     message: raw.message ?? null,
     additionalData: raw.additionalData ?? null,
     data: {
-      token: transformTokenRes(rawData.tokenRes),
-      user: transformUserRes(rawData.userRes),
-      roles: transformRoleRes(rawData.roleRes),
+      userId: rawData.userId ?? (rawData as any).UserId,
+      tokenRes: rawData.tokenRes ? transformTokenRes(rawData.tokenRes) : null,
+      userRes: transformUserRes(rawData.userRes),
+      roleRes: transformRoleRes(rawData.roleRes),
     },
   };
 

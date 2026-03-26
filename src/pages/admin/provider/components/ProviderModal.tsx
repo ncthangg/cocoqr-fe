@@ -7,6 +7,7 @@ import type { ProviderRes } from "@/models/entity.model";
 import type { PutProviderReq } from "@/models/entity.request.model";
 import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
+import StatusToggle from "@/components/UICustoms/Form/StatusToggle";
 
 interface ProviderModalProps {
     isOpen: boolean;
@@ -169,22 +170,12 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                                     />
                                 </div>
 
-                                <label className="flex items-center gap-sm py-sm px-md bg-surface-muted/30 rounded-xl border border-border cursor-pointer hover:bg-surface-muted/50 transition-all group">
-                                    <div className="relative h-6 w-11 flex-shrink-0">
-                                        <input
-                                            type="checkbox"
-                                            className="sr-only peer"
-                                            name="isActive"
-                                            id="isActive"
-                                            checked={formData.isActive}
-                                            onChange={handleInputChange}
-                                        />
-                                        <div className="w-11 h-6 bg-surface-muted peer-checked:bg-primary rounded-full transition-all border border-border after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                                    </div>
-                                    <span className="text-sm font-semibold text-foreground-secondary select-none group-hover:text-foreground transition-colors">
-                                        Đang hoạt động
-                                    </span>
-                                </label>
+                                <StatusToggle
+                                    checked={formData.isActive}
+                                    onChange={handleInputChange}
+                                    checkedLabel="Hoạt động"
+                                    uncheckedLabel="Bảo trì"
+                                />
                             </div>
 
                             {/* Logo Upload */}

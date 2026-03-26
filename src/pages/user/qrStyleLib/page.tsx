@@ -1,16 +1,19 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { qrStyleLibApi } from "../../../services/qrStyleLib-api.service";
+import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
+import { qrStyleLibApi } from "@/services/qrStyleLib-api.service";
 import { Edit, Palette, FileJson, Trash2, Pin, PinOff, AlertCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import ActionButton from "@/components/UICustoms/ActionButton";
-import QrStyleLibModal from "./components/QrStyleLibModal";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
+import type { Column } from "@/components/UICustoms/Table/data-table";
 
 import { StatCard } from "@/components/UICustoms/StatCard";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import { QRStyleType } from "@/models/enum";
 import type { QrStyleLibraryRes } from "@/models/entity.model";
+
+const QrStyleLibModal = lazy(() => import("./components/QrStyleLibModal"));
+import { useDebounce } from "@/hooks/useDebounce";
 
 const QrStyleLibPage: React.FC = () => {
     const [data, setData] = useState<QrStyleLibraryRes[]>([]);
@@ -23,13 +26,16 @@ const QrStyleLibPage: React.FC = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isPinning, setIsPinning] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<QrStyleLibraryRes | null>(null);
+    const [searchValue, setSearchValue] = useState("");
+    const debouncedSearch = useDebounce(searchValue, 500);
 
     const fetchItems = useCallback(async () => {
         try {
             setLoading(true);
             const res = await qrStyleLibApi.getAll({
                 isActive: true,
-                type: QRStyleType.USER
+                type: QRStyleType.USER,
+                name: debouncedSearch || null
             });
             if (res) {
                 setData(res || []);
@@ -40,7 +46,7 @@ const QrStyleLibPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [debouncedSearch]);
 
     useEffect(() => {
         fetchItems();
@@ -139,9 +145,9 @@ const QrStyleLibPage: React.FC = () => {
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
                 <div className="shrink-0 border-b border-border">
                     <TableToolbar
-                        value={""}
-                        onChange={() => { }}
-                        placeholder="Quản lý styles..."
+                        value={searchValue}
+                        onChange={setSearchValue}
+                        placeholder="Tìm kiếm style theo tên..."
                         handleOpenCreateModal={handleOpenCreateModal}
                     />
                 </div>
@@ -151,10 +157,10 @@ const QrStyleLibPage: React.FC = () => {
                         loading={loading}
                         data={data}
                         sortState={null}
-                        onSortChange={() => { }}
-                        onFilterChange={() => { }}
+                        onSortChange={useCallback(() => { }, [])}
+                        onFilterChange={useCallback(() => { }, [])}
                         showIndex
-                        columns={[
+                        columns={useMemo<Column<QrStyleLibraryRes>[]>(() => [
                             {
                                 header: "Tên Style",
                                 accessor: (item) => item.name,
@@ -220,17 +226,21 @@ const QrStyleLibPage: React.FC = () => {
                                     </div>
                                 )
                             }
-                        ]}
+                        ], [handlePin, isPinning, handleOpenEditModal, isDeleting])}
                     />
                 </div>
             </div>
 
-            <QrStyleLibModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSuccess={handleModalSuccess}
-                item={selectedItem}
-            />
+            {isModalOpen && (
+                <Suspense fallback={null}>
+                    <QrStyleLibModal
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        onSuccess={handleModalSuccess}
+                        item={selectedItem}
+                    />
+                </Suspense>
+            )}
 
             <ActionConfirmModal
                 isOpen={!!itemToDelete}

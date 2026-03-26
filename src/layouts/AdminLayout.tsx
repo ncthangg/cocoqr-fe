@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { Outlet, Link } from "react-router-dom";
-import { RouteConstant } from "../constants/route.constant";
-import { useAuthContext } from "../auth/AuthContext";
+import { RouteConstant } from "@/constants/route.constant";
+import { useAuthContext } from "@/auth/AuthContext";
 import { ChevronDown, LogOut, UserIcon } from "lucide-react";
-import ThemeToggle from "../components/UICustoms/ThemeToggle";
-import { authApi } from "../services/auth-api.service";
-import ProfileModal from "../components/UICustoms/Modal/ProfileModal";
+import ThemeToggle from "@/components/UICustoms/ThemeToggle";
+import { authApi } from "@/services/auth-api.service";
 import Logo from "@/components/UICustoms/Logo";
+
+const ProfileModal = lazy(() => import("@/components/UICustoms/Modal/ProfileModal"));
 
 const AdminLayout: React.FC = () => {
     const { logout, user, roles } = useAuthContext();
@@ -159,12 +160,16 @@ const AdminLayout: React.FC = () => {
                 </footer>
             </div>
 
-            <ProfileModal
-                isOpen={isProfileModalOpen}
-                onClose={() => setIsProfileModalOpen(false)}
-                user={user}
-                roles={roles}
-            />
+            {isProfileModalOpen && (
+                <Suspense fallback={null}>
+                    <ProfileModal
+                        isOpen={isProfileModalOpen}
+                        onClose={() => setIsProfileModalOpen(false)}
+                        user={user}
+                        roles={roles}
+                    />
+                </Suspense>
+            )}
         </>
     );
 };
