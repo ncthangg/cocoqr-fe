@@ -1,8 +1,8 @@
-# MyWallet.FE
+# COCOQR.FE
 
 ## Overview
 
-MyWallet.FE is a web application for creating payment QR codes and managing related wallet data. It includes:
+COCOQR.FE is a web application for creating payment QR codes and managing related wallet data. It includes:
 
 - A public QR creation page for anyone who wants to generate a payment QR quickly
 - A user area for managing saved accounts, QR history, and personal QR styles
@@ -10,19 +10,45 @@ MyWallet.FE is a web application for creating payment QR codes and managing rela
 
 The public-facing experience is branded as QR Pay. The application uses Google sign-in, cookie-based sessions, and role-based access for protected areas.
 
+## Key Features
+
+- Generate payment QR codes (VietQR available, MoMo / ZaloPay / VNPay integration in progress)
+- Manage multiple bank/payment accounts
+- Save and reuse QR configurations
+- Custom QR styling (colors, logo, layout)
+- Role-based admin dashboard
+- Google Sign-In authentication
+
 ## Tech Stack
 
+### Frontend Core
 - React 19
 - TypeScript
 - Vite 7
-- React Router
+
+### State & Data Fetching
 - Redux Toolkit
-- Axios
+- Axios (with interceptors)
+
+### Routing & Auth
+- React Router
+- Cookie-based authentication
+- Role-based access control (RBAC)
+
+### UI & Styling
 - Tailwind CSS v4
-- Radix-based UI utilities
-- `react-toastify`
-- `lucide-react`
-- `qr-code-styling`
+- Radix UI (headless components)
+- lucide-react (icons)
+- react-toastify (notifications)
+
+### QR & Utilities
+- qr-code-styling
+
+### DevOps & Tooling
+- Docker & Docker Compose (multi-stage build, Nginx serving)
+- Docker Hub (image registry)
+- VPS deployment (pull & run via docker-compose)
+- ESLint
 
 ## Project Structure
 
@@ -70,7 +96,7 @@ npm run build
 npm run preview
 ```
 
-### Mode-specific builds
+### Mode-specific builds (PRODUCTION-STAGING ONLY)
 
 ```bash
 npm run build -- --mode staging
@@ -102,8 +128,8 @@ Example:
 
 ```env
 VITE_DEV_API_URL=https://localhost:7234
-VITE_STAGING_API_URL=https://your-staging-api.example.com
-VITE_PRODUCTION_API_URL=https://your-production-api.example.com
+VITE_STAGING_API_URL=https://staging.be.cocoqr.cocome.online
+VITE_PRODUCTION_API_URL=https://example.com (hide)
 ```
 
 ## Architecture
