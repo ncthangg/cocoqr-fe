@@ -1,8 +1,8 @@
-# COCOQR.FE
+# CocoQR.FE
 
 ## Overview
 
-COCOQR.FE is a web application for creating payment QR codes and managing related wallet data. It includes:
+CocoQR.FE is a web application for creating payment QR codes and managing related wallet data. It includes:
 
 - A public QR creation page for anyone who wants to generate a payment QR quickly
 - A user area for managing saved accounts, QR history, and personal QR styles
