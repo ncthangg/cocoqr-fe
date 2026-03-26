@@ -1,4 +1,4 @@
-name: Release MyWallet FE
+name: Release CocoQR FE
 
 on:
   push:
@@ -15,6 +15,36 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate tag source
+        run: |
+          echo "Checking tag rules..."
+
+          # Lấy danh sách branch chứa commit này
+          BRANCHES=$(git branch -r --contains $GITHUB_SHA)
+
+          echo "Branches: $BRANCHES"
+
+          # Nếu là staging tag (-rc)
+          if [[ "${{ github.ref_name }}" == *"-rc"* ]]; then
+            echo "Detected STAGING tag"
+
+            echo "$BRANCHES" | grep "origin/dev" > /dev/null
+            if [ $? -ne 0 ]; then
+              echo "❌ Staging tag must come from dev branch"
+              exit 1
+            fi
+          else
+            echo "Detected PRODUCTION tag"
+
+            echo "$BRANCHES" | grep "origin/main" > /dev/null
+            if [ $? -ne 0 ]; then
+              echo "❌ Production tag must come from main branch"
+              exit 1
+            fi
+          fi
 
       - name: Extract version
         id: vars
@@ -44,6 +74,17 @@ jobs:
       - name: Push image
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/mywallet-fe:${{ steps.vars.outputs.VERSION }}
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-rc') }}
 
   deploy-staging:
     if: contains(github.ref_name, '-rc')
