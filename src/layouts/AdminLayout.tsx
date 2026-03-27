@@ -156,7 +156,7 @@ const AdminLayout: React.FC = () => {
                     <Outlet />
                 </main>
                 <footer className="shrink-0 p-4 border-t border-border text-center bg-surface text-foreground">
-                    <p>&copy; 2026 MyWallet - Administration</p>
+                    <p>&copy; 2026 CocoQR - Administration</p>
                 </footer>
             </div>
 

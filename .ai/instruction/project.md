@@ -1,7 +1,7 @@
 # Project Instruction
 
 ## Purpose & Scope
-This document is the source of truth for AI and developers working on MyWallet.FE.
+This document is the source of truth for AI and developers working on CocoQR.FE.
 Changes must follow the current architecture and avoid regression in:
 - Authentication
 - Routing

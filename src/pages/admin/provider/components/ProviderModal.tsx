@@ -5,9 +5,9 @@ import Button from "@/components/UICustoms/Button";
 import { providerApi } from "@/services/provider-api.service";
 import type { ProviderRes } from "@/models/entity.model";
 import type { PutProviderReq } from "@/models/entity.request.model";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import StatusToggle from "@/components/UICustoms/Form/StatusToggle";
+import BrandLogo from "@/components/UICustoms/BrandLogo";
 
 interface ProviderModalProps {
     isOpen: boolean;
@@ -28,7 +28,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
         if (isOpen) {
             if (provider) {
                 setFormData({ code: provider.code || "", name: provider.name || "", isActive: provider.isActive ?? true });
-                setPreviewUrl(resolveAvatarPreview(provider.logoUrl ?? null));
+                setPreviewUrl(provider.logoUrl ?? null);
             } else {
                 setFormData({ code: "", name: "", isActive: true });
                 setPreviewUrl(null);
@@ -187,14 +187,16 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                                 >
                                     {previewUrl ? (
                                         <>
-                                            <div className="relative">
-                                                <img
-                                                    src={previewUrl}
-                                                    alt="Logo preview"
-                                                    className="w-24 h-24 object-contain rounded-xl bg-bg p-xs border border-border"
+                                            <div className="relative group/logo">
+                                                <BrandLogo 
+                                                    logoUrl={previewUrl}
+                                                    name={formData.name}
+                                                    code={formData.code}
+                                                    size="lg"
+                                                    shadow="md"
                                                 />
                                                 <div
-                                                    className="absolute inset-0 bg-foreground/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl cursor-pointer"
+                                                    className="absolute inset-0 bg-foreground/40 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-opacity rounded-2xl cursor-pointer"
                                                     onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
                                                 >
                                                     <Upload className="w-6 h-6 text-bg" />

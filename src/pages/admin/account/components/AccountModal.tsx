@@ -7,10 +7,10 @@ import ModalLoading from "@/components/UICustoms/Modal/ModalLoading";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import Button from "@/components/UICustoms/Button";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import { formatDateTime } from "@/utils/dateTimeUtils";
 import { cn } from "@/lib/utils";
 import ActionButton from "@/components/UICustoms/ActionButton";
+import BrandLogo from "@/components/UICustoms/BrandLogo";
 
 interface AccountModalProps {
     isOpen: boolean;
@@ -211,33 +211,23 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                                             ? "bg-surface-muted/20 border-border"
                                             : "bg-surface-muted/10 border-border/50"
                                     )}>
-                                        {detail?.bankLogoUrl || detail?.providerLogoUrl ? (
-                                            <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300 w-full">
-                                                <div className="w-32 h-32 bg-white rounded-2xl shadow-md p-md border border-border flex items-center justify-center">
-                                                    <img
-                                                        src={resolveAvatarPreview(detail?.bankLogoUrl || detail?.providerLogoUrl || "")}
-                                                        alt="Logo"
-                                                        className="w-full h-full object-contain"
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col gap-xs">
-                                                    <p className="font-bold text-foreground text-lg">
-                                                        {isBank ? detail.bankCode : detail.providerCode}
-                                                    </p>
-                                                    <p className="text-xs text-foreground-secondary line-clamp-2 px-sm leading-relaxed">
-                                                        {isBank ? (detail.bankName || detail.bankShortName) : detail.providerName}
-                                                    </p>
-                                                </div>
+                                        <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300 w-full">
+                                            <BrandLogo 
+                                                logoUrl={detail?.bankLogoUrl || detail?.providerLogoUrl}
+                                                name={isBank ? (detail.bankName || detail.bankShortName) : detail.providerName}
+                                                code={isBank ? detail.bankCode : detail.providerCode}
+                                                size="xl"
+                                                shadow="md"
+                                            />
+                                            <div className="flex flex-col gap-xs">
+                                                <p className="font-bold text-foreground text-lg">
+                                                    {isBank ? detail.bankCode : detail.providerCode}
+                                                </p>
+                                                <p className="text-xs text-foreground-secondary line-clamp-2 px-sm leading-relaxed">
+                                                    {isBank ? (detail.bankName || detail.bankShortName) : detail.providerName}
+                                                </p>
                                             </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center gap-md text-center text-foreground-muted">
-                                                <Landmark className="w-16 h-16 opacity-10" />
-                                                <div className="flex flex-col gap-xs">
-                                                    <p className="font-bold">Chưa có Logo</p>
-                                                    <p className="text-xs px-md uppercase tracking-widest opacity-80">No Logo Data</p>
-                                                </div>
-                                            </div>
-                                        )}
+                                        </div>
 
                                         <div className="absolute top-md right-md text-primary opacity-20">
                                             <ShieldCheck className="w-6 h-6" />

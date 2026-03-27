@@ -15,11 +15,11 @@ import { toast } from "react-toastify";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import QRDisplay from "@/components/UICustoms/QRDisplay";
 import AccountProviderSelector from "@/components/UICustoms/Form/AccountProviderSelector";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import { ProviderCode } from "@/models/enum";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
+import BrandLogo from "@/components/UICustoms/BrandLogo";
 
 const CreatePaymentPage: React.FC = () => {
     // API State
@@ -342,19 +342,12 @@ const CreatePaymentPage: React.FC = () => {
                                 type: "string",
                                 cell: (acc) => (
                                     <div className="flex items-center gap-md">
-                                        <div className="w-10 h-10 bg-white rounded-xl border border-border flex items-center justify-center p-xs shadow-sm shrink-0">
-                                            {(acc.bankLogoUrl || acc.providerLogoUrl) ? (
-                                                <img
-                                                    src={resolveAvatarPreview(acc.bankLogoUrl ?? acc.providerLogoUrl ?? null)}
-                                                    alt={acc.bankShortName || acc.providerName}
-                                                    className="w-full h-full object-contain"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[10px] font-black text-primary uppercase">
-                                                    {acc.bankCode?.substring(0, 3) || acc.providerCode?.substring(0, 3)}
-                                                </div>
-                                            )}
-                                        </div>
+                                        <BrandLogo 
+                                            logoUrl={acc.bankLogoUrl ?? acc.providerLogoUrl}
+                                            name={acc.bankShortName || acc.providerName}
+                                            code={acc.bankCode || acc.providerCode}
+                                            size="sm"
+                                        />
                                         <div className="flex flex-col min-w-0">
                                             <span className="font-semibold text-foreground text-base leading-tight uppercase truncate">
                                                 {acc.accountHolder}

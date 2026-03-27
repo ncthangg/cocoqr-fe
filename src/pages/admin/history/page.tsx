@@ -8,11 +8,11 @@ import { DataTable } from "@/components/UICustoms/Table/data-table";
 import type { Column } from "@/components/UICustoms/Table/data-table";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
-import { formatDateTime } from "@/utils/dateTimeUtils";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import ActionButton from "@/components/UICustoms/ActionButton";
+import { formatDateTime } from "@/utils/dateTimeUtils";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import { useDebounce } from "@/hooks/useDebounce";
+import BrandLogo from "@/components/UICustoms/BrandLogo";
 
 const HistoryDetailModal = lazy(() => import("../../user/history/components/HistoryDetailModal"));
 
@@ -145,21 +145,17 @@ const AdminHistoryPage: React.FC = () => {
                                 accessor: (r) => r.bankCodeSnapshot || r.providerName,
                                 type: "string",
                                 cell: (r) => {
-                                    const logoUrl = r.bankLogoUrl || r.providerLogoUrl;
                                     return (
                                         <div className="flex items-center gap-2">
-                                            {logoUrl ? (
-                                                <img
-                                                    src={resolveAvatarPreview(logoUrl)}
-                                                    alt={r.bankShortName || r.providerName}
-                                                    className="w-8 h-8 object-contain rounded bg-white p-0.5 border border-border"
-                                                />
-                                            ) : (
-                                                <div className="w-8 h-8 bg-surface-muted border border-border rounded flex items-center justify-center text-[10px] font-bold text-foreground-secondary">
-                                                    {r.bankCodeSnapshot || r.providerCode}
-                                                </div>
-                                            )}
-                                            <span className="font-semibold">{(r.bankCodeSnapshot && r.bankNameSnapshot) ? r.bankNameSnapshot : r.providerName}</span>
+                                            <BrandLogo
+                                                logoUrl={r.bankLogoUrl || r.providerLogoUrl}
+                                                name={r.bankShortName || r.providerName}
+                                                code={r.bankCodeSnapshot || r.providerCode}
+                                                size="sm"
+                                            />
+                                            <span className="font-semibold text-sm leading-tight truncate">
+                                                {(r.bankCodeSnapshot && r.bankNameSnapshot) ? r.bankNameSnapshot : r.providerName}
+                                            </span>
                                         </div>
                                     );
                                 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { X, Landmark, User, CreditCard, ChevronRight, PlusCircle, Pencil } from "lucide-react";
 import { toast } from "react-toastify";
 import Button from "@/components/UICustoms/Button";
@@ -10,8 +10,9 @@ import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal"
 import ModalLoading from "@/components/UICustoms/Modal/ModalLoading";
 import BankSelectionModal from "@/components/UICustoms/Modal/BankSelectionModal";
 import { ProviderCode } from "@/models/enum";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import { cn } from "@/lib/utils";
+import StatusToggle from "@/components/UICustoms/Form/StatusToggle";
+import BrandLogo from "@/components/UICustoms/BrandLogo";
 
 interface AccountModalProps {
     isOpen: boolean;
@@ -39,7 +40,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
     const [bankLogoUrl, setBankLogoUrl] = useState<string | null>(null);
 
-    const selectedProvider = allProviders.find(p => p.id === formData.providerId) || null;
+    const selectedProvider = useMemo(() => allProviders.find(p => p.id === formData.providerId) || null, [allProviders, formData.providerId]);
     const isBankType = selectedProvider?.code === ProviderCode.BANK;
 
     const fetchProviders = useCallback(async () => {
@@ -110,21 +111,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
         setBankLogoUrl(null);
     }, []);
 
-    const handleFormSubmit = (e?: React.FormEvent) => {
-        e?.preventDefault();
-        const isBank = selectedProvider?.code === ProviderCode.BANK;
-        if (!formData.providerId || (isBank && !formData.bankCode) || !formData.accountHolder || (!formData.accountNumber && isBank)) {
-            toast.warning("Vui lòng điền đầy đủ các trường bắt buộc.");
-            return;
-        }
-        if (accountId) {
-            executeSave();
-        } else {
-            setIsConfirmOpen(true);
-        }
-    };
-
-    const executeSave = async () => {
+    const executeSave = useCallback(async () => {
         try {
             setLoading(true);
             const isBank = selectedProvider?.code === ProviderCode.BANK;
@@ -163,7 +150,21 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
             setLoading(false);
             setIsConfirmOpen(false);
         }
-    };
+    }, [accountId, formData, selectedProvider, bankLogoUrl, onSuccess, onClose]);
+
+    const handleFormSubmit = useCallback((e?: React.FormEvent) => {
+        e?.preventDefault();
+        const isBank = selectedProvider?.code === ProviderCode.BANK;
+        if (!formData.providerId || (isBank && !formData.bankCode) || !formData.accountHolder || (!formData.accountNumber && isBank)) {
+            toast.warning("Vui lòng điền đầy đủ các trường bắt buộc.");
+            return;
+        }
+        if (accountId) {
+            executeSave();
+        } else {
+            setIsConfirmOpen(true);
+        }
+    }, [accountId, executeSave, formData, selectedProvider]);
 
     const handleSelectBank = useCallback((napasBin: string, code: string, shortName: string, bankName: string, logoUrl: string | null, isActive: boolean) => {
         setFormData(prev => ({ ...prev, napasBin, bankCode: code, bankName: bankName, bankShortName: shortName, bankLogoUrl: logoUrl, isBankInactive: !isActive }));
@@ -171,13 +172,25 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
         setIsBankModalOpen(false);
     }, []);
 
+    const toggleActive = useCallback((checked: boolean) => {
+        setFormData(prev => ({ ...prev, isActive: checked }));
+    }, []);
+
+    const updateAccountHolder = useCallback((val: string) => {
+        setFormData(prev => ({ ...prev, accountHolder: val }));
+    }, []);
+
+    const updateAccountNumber = useCallback((val: string) => {
+        setFormData(prev => ({ ...prev, accountNumber: val }));
+    }, []);
+
+    const openBankModal = useCallback(() => setIsBankModalOpen(true), []);
+
     if (!isOpen) return null;
 
     return (
         <>
-            <div
-                className="modal-overlay"
-            >
+            <div className="modal-overlay">
                 <div
                     className="modal-content max-w-modal-lg flex flex-col overflow-hidden"
                     role="dialog"
@@ -187,7 +200,6 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
                 >
                     <ModalLoading loading={modalLoading} />
 
-                    {/* Header */}
                     <div className="flex items-center justify-between px-lg py-md border-b border-border bg-surface-muted/30 shrink-0">
                         <h2 className="text-lg font-bold text-foreground flex items-center gap-sm">
                             <PlusCircle className="w-5 h-5 text-primary" />
@@ -204,167 +216,30 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
                         </button>
                     </div>
 
-                    {/* Body */}
                     <form onSubmit={handleFormSubmit} className="overflow-y-auto flex-1">
                         <div className="p-lg">
                             <div className="grid grid-cols-1 md:grid-cols-5 gap-xl">
-
-                                {/* LEFT COLUMN: Inputs (3/5) */}
-                                <div className="md:col-span-3 flex flex-col gap-lg">
-
-                                    {/* Provider Selection */}
-                                    <div className="flex flex-col gap-sm">
-                                        <label className="text-sm font-semibold text-foreground-secondary flex items-center gap-sm">
-                                            <Landmark className="w-4 h-4 text-primary" />
-                                            Loại tài khoản
-                                        </label>
-                                        <select
-                                            className="input focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer h-11"
-                                            value={formData.providerId}
-                                            onChange={(e) => handleProviderChange(e.target.value)}
-                                        >
-                                            <option value="" disabled hidden>Chọn loại tài khoản...</option>
-                                            {allProviders.map(p => (
-                                                <option key={p.id} value={p.id}>{p.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    {/* Account Holder */}
-                                    <div className="flex flex-col gap-sm">
-                                        <label className="text-sm font-semibold text-foreground-secondary flex items-center gap-sm">
-                                            <User className="w-4 h-4 text-primary" />
-                                            Tên tài khoản
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="accountHolder"
-                                            className="input uppercase tracking-wider h-11 focus:ring-2 focus:ring-primary/20 transition-all"
-                                            value={formData.accountHolder}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, accountHolder: e.target.value }))}
-                                            placeholder="NGUYEN VAN A"
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Account Number */}
-                                    <div className="flex flex-col gap-sm">
-                                        <label className="text-sm font-semibold text-foreground-secondary flex items-center gap-sm">
-                                            <CreditCard className="w-4 h-4 text-primary" />
-                                            {isBankType ? "Số tài khoản" : "Số điện thoại / ID ví"}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="accountNumber"
-                                            className="input h-11 focus:ring-2 focus:ring-primary/20 transition-all font-mono tracking-tight"
-                                            value={formData.accountNumber}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, accountNumber: e.target.value }))}
-                                            placeholder={isBankType ? "0123456789" : "09xxxxxxxx"}
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* IsActive Toggle */}
-                                    <label className="flex items-center gap-sm py-sm px-md bg-surface-muted/30 rounded-xl border border-border cursor-pointer hover:bg-surface-muted/50 transition-all group">
-                                        <div className="relative inline-flex h-6 w-11 items-center">
-                                            <input
-                                                type="checkbox"
-                                                className="sr-only peer"
-                                                checked={!!formData.isActive}
-                                                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                                                id="isActive-toggle"
-                                            />
-                                            <div className="w-11 h-6 bg-surface-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary transition-all border border-border"></div>
-                                        </div>
-                                        <span className="text-sm font-semibold text-foreground-secondary select-none group-hover:text-foreground transition-colors">
-                                            Đang hoạt động (Cho phép tạo QR)
-                                        </span>
-                                    </label>
-                                </div>
-
-                                {/* RIGHT COLUMN: Preview / Avatar Box (2/5) */}
-                                <div className="md:col-span-2 flex flex-col items-center">
-                                    <div
-                                        className={cn(
-                                            "relative w-full aspect-square max-w-[240px] rounded-3xl border-2 border-dashed flex flex-col items-center justify-center p-lg transition-all duration-300 group",
-                                            isBankType
-                                                ? "cursor-pointer hover:border-primary hover:bg-primary/5 bg-surface-muted/20 border-border"
-                                                : "border-border/50 bg-surface-muted/10 cursor-default"
-                                        )}
-                                        onClick={() => isBankType && setIsBankModalOpen(true)}
-                                    >
-                                        {isBankType ? (
-                                            <>
-                                                {(formData.bankCode || bankLogoUrl) ? (
-                                                    <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300 w-full">
-                                                        <div className="w-32 h-32 bg-white rounded-2xl shadow-md p-md border border-border flex items-center justify-center">
-                                                            {bankLogoUrl ? (
-                                                                <img src={resolveAvatarPreview(bankLogoUrl)} alt={formData.bankName || "Bank"} className="w-full h-full object-contain" />
-                                                            ) : (
-                                                                <div className="w-full h-full bg-primary/10 rounded-xl flex items-center justify-center">
-                                                                    <span className="text-2xl font-bold text-primary">{formData.bankCode?.substring(0, 2) || "BK"}</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div className="flex flex-col gap-xs">
-                                                            <p className="font-bold text-foreground text-lg">{formData.bankCode}</p>
-                                                            <p className="text-xs text-foreground-secondary line-clamp-2 px-sm leading-relaxed">{formData.bankName}</p>
-                                                        </div>
-                                                        <div className="absolute top-md right-md bg-primary text-white p-xs rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <Pencil className="w-4 h-4" />
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex flex-col items-center gap-md text-center text-foreground-muted group-hover:text-primary transition-colors">
-                                                        <div className="w-24 h-24 bg-surface-elevated rounded-2xl border border-border shadow-sm flex items-center justify-center">
-                                                            <Landmark className="w-10 h-10" />
-                                                        </div>
-                                                        <div className="flex flex-col gap-xs">
-                                                            <p className="font-bold">Chọn ngân hàng</p>
-                                                            <p className="text-xs px-md uppercase tracking-widest opacity-80">Bank Selection Required</p>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </>
-                                        ) : selectedProvider ? (
-                                            <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300">
-                                                <div className="w-32 h-32 bg-white rounded-2xl shadow-md p-md border border-border flex items-center justify-center">
-                                                    {selectedProvider.logoUrl ? (
-                                                        <img src={resolveAvatarPreview(selectedProvider.logoUrl)} alt={selectedProvider.name} className="w-full h-full object-contain" />
-                                                    ) : (
-                                                        <div className="w-full h-full bg-primary/10 rounded-xl flex items-center justify-center">
-                                                            <span className="text-2xl font-bold text-primary">{selectedProvider.code.substring(0, 2)}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="flex flex-col gap-xs">
-                                                    <p className="font-bold text-foreground text-lg">{selectedProvider.name}</p>
-                                                    <p className="text-xs text-foreground-muted uppercase tracking-widest leading-relaxed">{selectedProvider.code}</p>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center gap-sm text-foreground-muted text-center">
-                                                <p className="text-xs font-medium">Vui lòng chọn "LOẠI TÀI KHOẢN"</p>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {isBankType && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsBankModalOpen(true)}
-                                            className="mt-lg flex items-center gap-sm text-sm font-bold text-primary hover:text-primary-dark transition-colors group px-md py-sm hover:bg-primary/5 rounded-full"
-                                        >
-                                            {formData.bankCode ? "Thay đổi ngân hàng" : "Chọn ngân hàng"}
-                                            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                        </button>
-                                    )}
-                                </div>
+                                <FormSection
+                                    formData={formData}
+                                    providers={allProviders}
+                                    isBankType={isBankType}
+                                    onProviderChange={handleProviderChange}
+                                    onAccountHolderChange={updateAccountHolder}
+                                    onAccountNumberChange={updateAccountNumber}
+                                    onActiveToggle={toggleActive}
+                                />
+                                <PreviewSection
+                                    isBankType={isBankType}
+                                    bankCode={formData.bankCode}
+                                    bankName={formData.bankName}
+                                    bankLogoUrl={bankLogoUrl}
+                                    selectedProvider={selectedProvider}
+                                    onOpenBankModal={openBankModal}
+                                />
                             </div>
                         </div>
                     </form>
 
-                    {/* Footer */}
                     <div className="px-lg py-md border-t border-border bg-surface-muted/20 flex justify-end gap-sm shrink-0">
                         <Button
                             type="button"
@@ -404,5 +279,183 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
         </>
     );
 };
+
+// --- Subcomponents ---
+
+interface FormSectionProps {
+    formData: PutAccountReq;
+    providers: ProviderRes[];
+    isBankType: boolean;
+    onProviderChange: (id: string) => void;
+    onAccountHolderChange: (val: string) => void;
+    onAccountNumberChange: (val: string) => void;
+    onActiveToggle: (checked: boolean) => void;
+}
+
+const FormSection: React.FC<FormSectionProps> = React.memo(({
+    formData,
+    providers,
+    isBankType,
+    onProviderChange,
+    onAccountHolderChange,
+    onAccountNumberChange,
+    onActiveToggle
+}) => (
+    <div className="md:col-span-3 flex flex-col gap-lg">
+        <div className="flex flex-col gap-sm">
+            <label className="text-sm font-semibold text-foreground-secondary flex items-center gap-sm">
+                <Landmark className="w-4 h-4 text-primary" />
+                Loại tài khoản
+            </label>
+            <select
+                className="input focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer h-11"
+                value={formData.providerId}
+                onChange={(e) => onProviderChange(e.target.value)}
+            >
+                <option value="" disabled hidden>Chọn loại tài khoản...</option>
+                {providers.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+            </select>
+        </div>
+
+        <div className="flex flex-col gap-sm">
+            <label className="text-sm font-semibold text-foreground-secondary flex items-center gap-sm">
+                <User className="w-4 h-4 text-primary" />
+                Tên tài khoản
+            </label>
+            <input
+                type="text"
+                className="input uppercase tracking-wider h-11 focus:ring-2 focus:ring-primary/20 transition-all"
+                value={formData.accountHolder}
+                onChange={(e) => onAccountHolderChange(e.target.value)}
+                placeholder="NGUYEN VAN A"
+                required
+            />
+        </div>
+
+        <div className="flex flex-col gap-sm">
+            <label className="text-sm font-semibold text-foreground-secondary flex items-center gap-sm">
+                <CreditCard className="w-4 h-4 text-primary" />
+                {isBankType ? "Số tài khoản" : "Số điện thoại / ID ví"}
+            </label>
+            <input
+                type="text"
+                className="input h-11 focus:ring-2 focus:ring-primary/20 transition-all font-mono tracking-tight"
+                value={formData.accountNumber}
+                onChange={(e) => onAccountNumberChange(e.target.value)}
+                placeholder={isBankType ? "0123456789" : "09xxxxxxxx"}
+                required
+            />
+        </div>
+
+        <StatusToggle
+            checked={!!formData.isActive}
+            onChange={(e) => onActiveToggle(e.target.checked)}
+            id="isActive-toggle"
+            checkedLabel="Đang hoạt động (Cho phép tạo QR)"
+            uncheckedLabel="Không hoạt động"
+        />
+    </div>
+));
+
+interface PreviewSectionProps {
+    isBankType: boolean;
+    bankCode?: string | null;
+    bankName?: string | null;
+    bankLogoUrl: string | null;
+    selectedProvider: ProviderRes | null;
+    onOpenBankModal: () => void;
+}
+
+const PreviewSection: React.FC<PreviewSectionProps> = React.memo(({
+    isBankType,
+    bankCode,
+    bankName,
+    bankLogoUrl,
+    selectedProvider,
+    onOpenBankModal
+}) => (
+    <div className="md:col-span-2 flex flex-col items-center">
+        <div
+            className={cn(
+                "relative w-full aspect-square max-w-[240px] rounded-3xl border-2 border-dashed flex flex-col items-center justify-center p-lg transition-all duration-300 group",
+                isBankType
+                    ? "cursor-pointer hover:border-primary hover:bg-primary/[0.03] bg-surface-muted/50 dark:bg-surface-muted/20 border-border shadow-inner"
+                    : "border-border/50 bg-surface-muted/10 cursor-default"
+            )}
+            onClick={() => isBankType && onOpenBankModal()}
+        >
+            {isBankType ? (
+                <>
+                    {(bankCode || bankLogoUrl) ? (
+                        <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300 w-full">
+                            <BrandLogo 
+                                logoUrl={bankLogoUrl}
+                                name={bankName ?? undefined}
+                                code={bankCode ?? undefined}
+                                size="xl"
+                                shadow="lg"
+                                className="group-hover:scale-105"
+                            />
+                            <div className="flex flex-col gap-xs">
+                                <p className="font-bold text-foreground text-lg tracking-tight">{bankCode}</p>
+                                <p className="text-[11px] text-foreground-secondary font-medium line-clamp-2 px-sm leading-relaxed uppercase opacity-80">{bankName}</p>
+                            </div>
+                            <div className="absolute top-md right-md bg-primary text-primary-foreground p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                                <Pencil className="w-3.5 h-3.5" />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center gap-md text-center text-foreground-muted group-hover:text-primary transition-all duration-300">
+                            <div className="w-24 h-24 bg-surface-elevated rounded-2xl border border-border shadow-sm flex items-center justify-center group-hover:shadow-md group-hover:border-primary/30 transition-all">
+                                <Landmark className="w-10 h-10 opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" />
+                            </div>
+                            <div className="flex flex-col gap-xs">
+                                <p className="font-bold text-sm">Chọn ngân hàng</p>
+                                <p className="text-[10px] px-md uppercase tracking-[0.2em] font-black opacity-40 group-hover:opacity-100 transition-opacity">Required</p>
+                            </div>
+                        </div>
+                    )}
+                </>
+            ) : selectedProvider ? (
+                <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300 w-full">
+                    <BrandLogo 
+                        logoUrl={selectedProvider.logoUrl}
+                        name={selectedProvider.name}
+                        code={selectedProvider.code}
+                        size="xl"
+                        shadow="lg"
+                        className="group-hover:scale-105"
+                    />
+                    <div className="flex flex-col gap-xs">
+                        <p className="font-bold text-foreground text-lg tracking-tight">{selectedProvider.name}</p>
+                        <p className="text-[11px] text-foreground-muted uppercase tracking-[0.2em] font-black leading-relaxed">{selectedProvider.code}</p>
+                    </div>
+                </div>
+            ) : (
+                <div className="flex flex-col items-center gap-sm text-foreground-muted text-center p-md">
+                    <div className="w-12 h-12 rounded-full bg-surface-muted flex items-center justify-center mb-2">
+                        <PlusCircle className="w-6 h-6 opacity-20" />
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-widest leading-normal">
+                        Vui lòng chọn<br />"LOẠI TÀI KHOẢN"
+                    </p>
+                </div>
+            )}
+        </div>
+
+        {isBankType && (
+            <button
+                type="button"
+                onClick={onOpenBankModal}
+                className="mt-lg flex items-center gap-sm text-sm font-bold text-primary hover:text-primary-dark transition-colors group px-md py-sm hover:bg-primary/5 rounded-full"
+            >
+                {bankCode ? "Thay đổi ngân hàng" : "Chọn ngân hàng"}
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+        )}
+    </div>
+));
 
 export default AccountModal;

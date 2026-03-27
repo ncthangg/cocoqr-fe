@@ -1,15 +1,50 @@
-const Logo = ({ className = "h-9 w-9" }) => {
+import { cn } from "@/lib/utils";
+
+interface LogoProps {
+    className?: string;
+    size?: number | string;
+    variant?: "auto" | "dark" | "light";
+}
+
+const Logo = ({ className = "h-9 w-9", size, variant = "auto" }: LogoProps) => {
+    const dimension = typeof size === "number" ? `${size}px` : size;
+    const style = dimension ? { width: dimension, height: dimension } : undefined;
+
+    if (variant === "dark") {
+        return (
+            <img
+                src="/qr-code-dark.svg"
+                alt="CocoQR"
+                className={cn(className)}
+                style={style}
+            />
+        );
+    }
+
+    if (variant === "light") {
+        return (
+            <img
+                src="/qr-code-light.svg"
+                alt="CocoQR"
+                className={cn(className)}
+                style={style}
+            />
+        );
+    }
+
     return (
         <>
             <img
                 src="/qr-code-dark.svg"
                 alt="CocoQR"
-                className={`${className} dark:hidden`}
+                className={cn(className, "dark:hidden")}
+                style={style}
             />
             <img
                 src="/qr-code-light.svg"
                 alt="CocoQR"
-                className={`${className} hidden dark:block`}
+                className={cn(className, "hidden dark:block")}
+                style={style}
             />
         </>
     );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Copy, QrCode, Palette, Image as ImageIcon, Sliders, Maximize, Check, RefreshCw, SlidersHorizontal, ChevronUp, Trash2, Upload } from 'lucide-react';
+import { Download, Copy, Palette, Image as ImageIcon, Sliders, Maximize, Check, RefreshCw, SlidersHorizontal, ChevronUp, Trash2, Upload } from 'lucide-react';
 import Button from './Button';
 import ActionConfirmModal from './Modal/ActionConfirmModal';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,7 @@ import { qrStyleLibApi } from "@/services/qrStyleLib-api.service";
 import type { QrStyleLibraryRes } from "@/models/entity.model";
 import { QRStyleType } from "@/models/enum";
 import { toast } from "react-toastify";
+import Logo from '@/components/UICustoms/Logo';
 
 interface QRDisplayProps {
     type: 'public' | 'private';
@@ -97,7 +98,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
         } else {
             const userDefault = qrStyles.find(s => s.type === QRStyleType.USER && s.isDefault);
             const sysDefault = qrStyles.find(s => s.type === QRStyleType.SYSTEM && s.isDefault);
-            
+
             if (userDefault) {
                 setStyle(parseStyleJson(userDefault.styleJson));
                 setSelectedStyleId(userDefault.id);
@@ -131,11 +132,11 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
 
     useEffect(() => {
         if (!qrData && !qrImageUrl) return;
-        
+
         const opts = {
             width: style.fileSize,
             height: style.fileSize,
-            data: qrData || qrImageUrl || "https://mywallet.vn",
+            data: qrData || qrImageUrl || "https://cocoqr.vn",
             dotsOptions: { color: style.pointColor, type: patternToDotType(style.pattern) },
             backgroundOptions: { color: style.bgColor },
             cornersSquareOptions: { color: style.eyeColor, type: patternToEyeType(style.pattern) },
@@ -229,23 +230,22 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                         "flex flex-col items-center justify-center py-sm",
                         isLayoutTwoColumns ? "flex-[40%] min-w-[280px]" : "flex-1 w-full gap-sm md:flex-[50%]"
                     )}>
-                    <div 
-                        className="w-56 h-56 lg:w-48 lg:h-48 xl:w-56 xl:h-56 bg-surface-muted rounded-3xl flex items-center justify-center border border-border-strong border-dashed overflow-hidden relative shadow-inner group hover:border-primary/40 transition-all duration-500 shrink-0"
-                        style={{ backgroundColor: style.borderColor, padding: 8 }}
-                    >
-                        {qrData || qrImageUrl ? (
-                            <div 
-                                ref={qrPreviewRef}
-                                className="w-full h-full flex items-center justify-center animate-in fade-in zoom-in duration-700 hover:scale-[1.05] transition-transform [&>canvas]:max-w-full [&>svg]:max-w-full [&>canvas]:max-h-full [&>svg]:max-h-full"
-                            />
-                        ) : (
-                            <div className="flex flex-col items-center gap-sm text-foreground-muted animate-in fade-in duration-500">
-                                <QrCode className="w-16 h-16 opacity-20" />
-                                <p className="text-xs font-medium uppercase tracking-widest opacity-40">Chờ tạo mã</p>
-                            </div>
-                        )}
+                        <div
+                            className="w-56 h-56 lg:w-48 lg:h-48 xl:w-56 xl:h-56 bg-surface-muted rounded-3xl flex items-center justify-center border border-border-strong border-dashed overflow-hidden relative shadow-inner group hover:border-primary/40 transition-all duration-500 shrink-0"
+                            style={{ backgroundColor: style.borderColor, padding: 8 }}
+                        >
+                            {qrData || qrImageUrl ? (
+                                <div
+                                    ref={qrPreviewRef}
+                                    className="w-full h-full flex items-center justify-center animate-in fade-in zoom-in duration-700 hover:scale-[1.05] transition-transform [&>canvas]:max-w-full [&>svg]:max-w-full [&>canvas]:max-h-full [&>svg]:max-h-full"
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center gap-sm text-foreground-muted animate-in fade-in duration-500">
+                                    <Logo className='w-20 h-20' variant='dark' />
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
 
                     {/* Right/Bottom: Customization panel & Buttons */}
                     <div className={cn(
@@ -254,205 +254,205 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                         (qrData || qrImageUrl) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
                     )}>
 
-                    {/* Private Customization Panel */}
-                    {type === 'private' && showCustom && (qrData || qrImageUrl) && (
-                        <div className="w-full grid grid-cols-3 gap-sm p-sm bg-surface-muted/40 rounded-xl border border-border/50 animate-in slide-in-from-bottom-4 duration-500 mb-xs mt-auto">
-                            
-                            <div className="col-span-3 flex flex-col gap-xs mb-xs">
-                                <label htmlFor="my-style" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
-                                    <Sliders className="w-3.5 h-3.5" /> Phong cách của tôi (My Style)
-                                </label>
-                                <select
-                                    id="my-style"
-                                    className="select text-xs h-9 bg-surface border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
-                                    value={selectedStyleId}
-                                    onChange={(e) => {
-                                        const id = e.target.value;
-                                        setSelectedStyleId(id);
-                                        const found = qrStyles.find(s => s.id === id);
-                                        if (found && found.styleJson) {
-                                            setStyle(parseStyleJson(found.styleJson));
-                                        }
-                                    }}
-                                >
-                                    <option value="">-- Tùy chỉnh tự do --</option>
-                                    {qrStyles.map(s => (
-                                        <option key={s.id} value={s.id}>
-                                            {s.name} {s.type === QRStyleType.SYSTEM ? "(Hệ thống)" : "(Của tôi)"}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                        {/* Private Customization Panel */}
+                        {type === 'private' && showCustom && (qrData || qrImageUrl) && (
+                            <div className="w-full grid grid-cols-3 gap-sm p-sm bg-surface-muted/40 rounded-xl border border-border/50 animate-in slide-in-from-bottom-4 duration-500 mb-xs mt-auto">
 
-                            {/* Row 2: Pattern, Size, Logo */}
-                            {/* Pattern */}
-                            <div className="flex flex-col gap-xs">
-                                <label htmlFor="qr-pattern" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
-                                    <Sliders className="w-3.5 h-3.5" /> Mẫu
-                                </label>
-                                <select
-                                    id="qr-pattern"
-                                    name="pattern"
-                                    className="select text-xs h-9 bg-surface border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
-                                    value={style.pattern}
-                                    onChange={(e) => updateStyle("pattern", e.target.value)}
-                                >
-                                    <option value="default">Square</option>
-                                    <option value="rounded">Rounded</option>
-                                    <option value="dots">Dots</option>
-                                </select>
-                            </div>
-                            {/* Size */}
-                            <div className="flex flex-col gap-xs">
-                                <label htmlFor="qr-size" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
-                                    <Maximize className="w-3.5 h-3.5" /> Size (px)
-                                </label>
-                                <select
-                                    id="qr-size"
-                                    name="fileSize"
-                                    className="select text-xs h-9 bg-surface border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
-                                    value={style.fileSize}
-                                    onChange={(e) => updateStyle("fileSize", parseInt(e.target.value))}
-                                >
-                                    <option value={256}>256</option>
-                                    <option value={512}>512</option>
-                                    <option value={1024}>1024</option>
-                                    <option value={2048}>2048</option>
-                                </select>
-                            </div>
-                            {/* Logo */}
-                            <div className="flex flex-col gap-xs">
-                                <label htmlFor="qr-logo" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
-                                    <ImageIcon className="w-3.5 h-3.5" /> Logo
-                                </label>
-                                {style.logo ? (
-                                    <div className="flex items-center gap-sm">
-                                        <img src={style.logo} alt="logo" className="w-8 h-8 rounded object-contain border border-border bg-white" />
+                                <div className="col-span-3 flex flex-col gap-xs mb-xs">
+                                    <label htmlFor="my-style" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
+                                        <Sliders className="w-3.5 h-3.5" /> Phong cách của tôi (My Style)
+                                    </label>
+                                    <select
+                                        id="my-style"
+                                        className="select text-xs h-9 bg-surface border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
+                                        value={selectedStyleId}
+                                        onChange={(e) => {
+                                            const id = e.target.value;
+                                            setSelectedStyleId(id);
+                                            const found = qrStyles.find(s => s.id === id);
+                                            if (found && found.styleJson) {
+                                                setStyle(parseStyleJson(found.styleJson));
+                                            }
+                                        }}
+                                    >
+                                        <option value="">-- Tùy chỉnh tự do --</option>
+                                        {qrStyles.map(s => (
+                                            <option key={s.id} value={s.id}>
+                                                {s.name} {s.type === QRStyleType.SYSTEM ? "(Hệ thống)" : "(Của tôi)"}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Row 2: Pattern, Size, Logo */}
+                                {/* Pattern */}
+                                <div className="flex flex-col gap-xs">
+                                    <label htmlFor="qr-pattern" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
+                                        <Sliders className="w-3.5 h-3.5" /> Mẫu
+                                    </label>
+                                    <select
+                                        id="qr-pattern"
+                                        name="pattern"
+                                        className="select text-xs h-9 bg-surface border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
+                                        value={style.pattern}
+                                        onChange={(e) => updateStyle("pattern", e.target.value)}
+                                    >
+                                        <option value="default">Square</option>
+                                        <option value="rounded">Rounded</option>
+                                        <option value="dots">Dots</option>
+                                    </select>
+                                </div>
+                                {/* Size */}
+                                <div className="flex flex-col gap-xs">
+                                    <label htmlFor="qr-size" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
+                                        <Maximize className="w-3.5 h-3.5" /> Size (px)
+                                    </label>
+                                    <select
+                                        id="qr-size"
+                                        name="fileSize"
+                                        className="select text-xs h-9 bg-surface border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
+                                        value={style.fileSize}
+                                        onChange={(e) => updateStyle("fileSize", parseInt(e.target.value))}
+                                    >
+                                        <option value={256}>256</option>
+                                        <option value={512}>512</option>
+                                        <option value={1024}>1024</option>
+                                        <option value={2048}>2048</option>
+                                    </select>
+                                </div>
+                                {/* Logo */}
+                                <div className="flex flex-col gap-xs">
+                                    <label htmlFor="qr-logo" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
+                                        <ImageIcon className="w-3.5 h-3.5" /> Logo
+                                    </label>
+                                    {style.logo ? (
+                                        <div className="flex items-center gap-sm">
+                                            <img src={style.logo} alt="logo" className="w-8 h-8 rounded object-contain border border-border bg-white" />
+                                            <button
+                                                type="button"
+                                                onClick={() => { updateStyle("logo", null); if (logoInputRef.current) logoInputRef.current.value = ""; }}
+                                                className="p-1 rounded text-danger hover:bg-danger/10 transition-colors"
+                                                aria-label="Xóa logo"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    ) : (
                                         <button
                                             type="button"
-                                            onClick={() => { updateStyle("logo", null); if (logoInputRef.current) logoInputRef.current.value = ""; }}
-                                            className="p-1 rounded text-danger hover:bg-danger/10 transition-colors"
-                                            aria-label="Xóa logo"
+                                            onClick={() => logoInputRef.current?.click()}
+                                            className="flex items-center justify-center gap-xs text-[10px] h-9 w-full bg-surface border border-border/60 rounded-md hover:border-primary/40 text-foreground-muted hover:text-primary transition-colors"
                                         >
-                                            <Trash2 className="w-3.5 h-3.5" />
+                                            <Upload className="w-3.5 h-3.5" /> Tải lên
                                         </button>
+                                    )}
+                                    <input
+                                        ref={logoInputRef}
+                                        id="qr-logo"
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                reader.onload = (ev) => updateStyle("logo", ev.target?.result as string);
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }}
+                                    />
+                                </div>
+
+                                {/* Row 3: Colors */}
+                                {/* Bg Color */}
+                                <div className="flex flex-col gap-xs">
+                                    <label htmlFor="qr-bg-color" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
+                                        <Palette className="w-3.5 h-3.5" /> Màu nền
+                                    </label>
+                                    <div className="flex items-center gap-sm">
+                                        <input
+                                            id="qr-bg-color"
+                                            type="color"
+                                            value={style.bgColor}
+                                            onChange={(e) => updateStyle("bgColor", e.target.value)}
+                                            className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
+                                        />
+                                        <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.bgColor}</span>
                                     </div>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={() => logoInputRef.current?.click()}
-                                        className="flex items-center justify-center gap-xs text-[10px] h-9 w-full bg-surface border border-border/60 rounded-md hover:border-primary/40 text-foreground-muted hover:text-primary transition-colors"
-                                    >
-                                        <Upload className="w-3.5 h-3.5" /> Tải lên
-                                    </button>
+                                </div>
+                                {/* Point Color */}
+                                <div className="flex flex-col gap-xs">
+                                    <label htmlFor="qr-point-color" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
+                                        <Palette className="w-3.5 h-3.5" /> Màu điểm
+                                    </label>
+                                    <div className="flex items-center gap-sm">
+                                        <input
+                                            id="qr-point-color"
+                                            type="color"
+                                            value={style.pointColor}
+                                            onChange={(e) => updateStyle("pointColor", e.target.value)}
+                                            className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
+                                        />
+                                        <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.pointColor}</span>
+                                    </div>
+                                </div>
+                                {/* Eye Color */}
+                                <div className="flex flex-col gap-xs">
+                                    <label htmlFor="qr-eye-color" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
+                                        <Palette className="w-3.5 h-3.5" /> Màu mắt
+                                    </label>
+                                    <div className="flex items-center gap-sm">
+                                        <input
+                                            id="qr-eye-color"
+                                            type="color"
+                                            value={style.eyeColor}
+                                            onChange={(e) => updateStyle("eyeColor", e.target.value)}
+                                            className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
+                                        />
+                                        <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.eyeColor}</span>
+                                    </div>
+                                </div>
+
+                                {/* Row 4: Border Color */}
+                                {/* Border Color */}
+                                <div className="flex flex-col gap-xs">
+                                    <label htmlFor="qr-border-color" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
+                                        <Palette className="w-3.5 h-3.5" /> Màu viền
+                                    </label>
+                                    <div className="flex items-center gap-sm">
+                                        <input
+                                            id="qr-border-color"
+                                            type="color"
+                                            value={style.borderColor}
+                                            onChange={(e) => updateStyle("borderColor", e.target.value)}
+                                            className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
+                                        />
+                                        <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.borderColor}</span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        )}
+
+                        {/* Custom toggle button */}
+                        <div className="flex justify-end shrink-0">
+                            <button
+                                onClick={handleCustomClick}
+                                className={cn(
+                                    "flex items-center gap-1.5 px-sm py-1.5 rounded-full text-[11px] font-bold border transition-all duration-300 shadow-sm",
+                                    showCustom
+                                        ? "bg-primary/10 border-primary/40 text-primary"
+                                        : "bg-surface-muted border-border/60 text-foreground-secondary hover:border-primary/40 hover:text-primary hover:scale-[1.02]"
                                 )}
-                                <input
-                                    ref={logoInputRef}
-                                    id="qr-logo"
-                                    type="file"
-                                    className="hidden"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) {
-                                            const reader = new FileReader();
-                                            reader.onload = (ev) => updateStyle("logo", ev.target?.result as string);
-                                            reader.readAsDataURL(file);
-                                        }
-                                    }}
-                                />
-                            </div>
-
-                            {/* Row 3: Colors */}
-                            {/* Bg Color */}
-                            <div className="flex flex-col gap-xs">
-                                <label htmlFor="qr-bg-color" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
-                                    <Palette className="w-3.5 h-3.5" /> Màu nền
-                                </label>
-                                <div className="flex items-center gap-sm">
-                                    <input
-                                        id="qr-bg-color"
-                                        type="color"
-                                        value={style.bgColor}
-                                        onChange={(e) => updateStyle("bgColor", e.target.value)}
-                                        className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
-                                    />
-                                    <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.bgColor}</span>
-                                </div>
-                            </div>
-                            {/* Point Color */}
-                            <div className="flex flex-col gap-xs">
-                                <label htmlFor="qr-point-color" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
-                                    <Palette className="w-3.5 h-3.5" /> Màu điểm
-                                </label>
-                                <div className="flex items-center gap-sm">
-                                    <input
-                                        id="qr-point-color"
-                                        type="color"
-                                        value={style.pointColor}
-                                        onChange={(e) => updateStyle("pointColor", e.target.value)}
-                                        className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
-                                    />
-                                    <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.pointColor}</span>
-                                </div>
-                            </div>
-                            {/* Eye Color */}
-                            <div className="flex flex-col gap-xs">
-                                <label htmlFor="qr-eye-color" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
-                                    <Palette className="w-3.5 h-3.5" /> Màu mắt
-                                </label>
-                                <div className="flex items-center gap-sm">
-                                    <input
-                                        id="qr-eye-color"
-                                        type="color"
-                                        value={style.eyeColor}
-                                        onChange={(e) => updateStyle("eyeColor", e.target.value)}
-                                        className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
-                                    />
-                                    <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.eyeColor}</span>
-                                </div>
-                            </div>
-
-                            {/* Row 4: Border Color */}
-                            {/* Border Color */}
-                            <div className="flex flex-col gap-xs">
-                                <label htmlFor="qr-border-color" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
-                                    <Palette className="w-3.5 h-3.5" /> Màu viền
-                                </label>
-                                <div className="flex items-center gap-sm">
-                                    <input
-                                        id="qr-border-color"
-                                        type="color"
-                                        value={style.borderColor}
-                                        onChange={(e) => updateStyle("borderColor", e.target.value)}
-                                        className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
-                                    />
-                                    <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.borderColor}</span>
-                                </div>
-                            </div>
-
+                                disabled={!qrData && !qrImageUrl}
+                                aria-label={showCustom ? "Thu gọn tùy chỉnh" : "Mở tùy chỉnh mã QR"}
+                            >
+                                {showCustom
+                                    ? <><ChevronUp className="w-3.5 h-3.5" /> Thu gọn</>
+                                    : <><SlidersHorizontal className="w-3.5 h-3.5" /> Tùy chỉnh QR theo phong cách của bạn</>
+                                }
+                            </button>
                         </div>
-                    )}
-
-                    {/* Custom toggle button */}
-                    <div className="flex justify-end shrink-0">
-                        <button
-                            onClick={handleCustomClick}
-                            className={cn(
-                                "flex items-center gap-1.5 px-sm py-1.5 rounded-full text-[11px] font-bold border transition-all duration-300 shadow-sm",
-                                showCustom
-                                    ? "bg-primary/10 border-primary/40 text-primary"
-                                    : "bg-surface-muted border-border/60 text-foreground-secondary hover:border-primary/40 hover:text-primary hover:scale-[1.02]"
-                            )}
-                            disabled={!qrData && !qrImageUrl}
-                            aria-label={showCustom ? "Thu gọn tùy chỉnh" : "Mở tùy chỉnh mã QR"}
-                        >
-                            {showCustom
-                                ? <><ChevronUp className="w-3.5 h-3.5" /> Thu gọn</>
-                                : <><SlidersHorizontal className="w-3.5 h-3.5" /> Tùy chỉnh QR theo phong cách của bạn</>
-                            }
-                        </button>
-                    </div>
 
                     </div>
                 </div>

@@ -9,12 +9,12 @@ import { DataTable } from "@/components/UICustoms/Table/data-table";
 import type { Column } from "@/components/UICustoms/Table/data-table";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import { formatDate } from "@/utils/dateTimeUtils";
 import { useDebounce } from "@/hooks/useDebounce";
+import BrandLogo from "@/components/UICustoms/BrandLogo";
 
 const AccountModal = lazy(() => import("./components/AccountModal"));
 
@@ -194,23 +194,22 @@ const AccountsPage: React.FC = () => {
                                 cell: (acc) => (
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-2">
-                                            {(acc.bankLogoUrl || acc.providerLogoUrl) ? (
-                                                <img
-                                                    src={resolveAvatarPreview(acc.bankLogoUrl ?? acc.providerLogoUrl ?? null)}
-                                                    alt={acc.bankShortName || acc.providerName}
-                                                    className="w-10 h-10 object-contain rounded bg-white p-1 border border-border"
-                                                />
-                                            ) : (
-                                                <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-foreground-secondary">
-                                                    {acc.bankCode}
-                                                </div>
-                                            )}
-                                            {(acc.bankCode && acc.bankName) ? acc.bankName : acc.providerName}
-                                            {(acc.bankIsActive === false || acc.providerIsActive === false) && (
-                                                <span className="text-danger font-bold text-xs animate-pulse">
-                                                    (Đang bảo trì)
+                                            <BrandLogo 
+                                                logoUrl={acc.bankLogoUrl ?? acc.providerLogoUrl}
+                                                name={acc.bankShortName || acc.providerName}
+                                                code={acc.bankCode || acc.providerCode}
+                                                size="sm"
+                                            />
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="font-bold text-foreground text-sm leading-tight truncate">
+                                                    {(acc.bankCode && acc.bankName) ? acc.bankName : acc.providerName}
                                                 </span>
-                                            )}
+                                                {(acc.bankIsActive === false || acc.providerIsActive === false) && (
+                                                    <span className="text-danger font-bold text-[10px] animate-pulse uppercase tracking-wider">
+                                                        (Đang bảo trì)
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 )
