@@ -7,10 +7,10 @@ const AdminDashboardPage: React.FC = () => {
         <div className="flex flex-col gap-xl">
             <div className="flex items-center justify-between">
                 <div>
-                <div className="space-y-1">
-                    <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Tổng quan hệ thống</h1>
-                    <p className="text-sm text-foreground-muted font-medium">Chào mừng trở lại với bảng điều khiển quản trị MyWallet.</p>
-                </div>
+                    <div className="space-y-1">
+                        <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Tổng quan hệ thống</h1>
+                        <p className="text-sm text-foreground-muted font-medium">Chào mừng trở lại với bảng điều khiển quản trị CocoQR.</p>
+                    </div>
                 </div>
             </div>
 

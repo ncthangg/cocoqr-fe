@@ -81,7 +81,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
         }
     }, [isOpen, item]);
 
-    const SAMPLE_QR_VALUE = "https://mywallet.vn/qr/sample-preview";
+    const SAMPLE_QR_VALUE = "https://cocoqr.vn/qr/sample-preview";
 
     const patternToDotType = (p: string): DotType => {
         if (p === "dots") return "dots";

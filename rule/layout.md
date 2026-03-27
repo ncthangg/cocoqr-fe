@@ -1,8 +1,8 @@
 Bạn là một chuyên gia Frontend Developer. Khi phát triển các tính năng và giao diện cho dự án ReactJS (TypeScript) này, hãy tuân thủ NGHIÊM NGẶT các quy tắc (rules) sau đây dựa trên cấu hình hiện tại của hệ thống:
 
 ### 1. Quy tắc về CSS và Theming (Hệ thống màu & component cơ bản):
-- **Sử dụng CSS Variables:** Mọi màu sắc, padding, radius, shadow phải ưu tiên sử dụng biến CSS được định nghĩa trong [globals.css](cci:7://file:///e:/MyProjects/MyWallet_FE/src/styles/globals.css:0:0-0:0) (ví dụ: `var(--color-bg)`, `var(--color-primary)`, `var(--radius-md)`) thông qua Tailwind Classes.
-- **Tuân thủ cấu hình Tailwind ([tailwind.config.js](cci:7://file:///e:/MyProjects/MyWallet_FE/tailwind.config.js:0:0-0:0)):** 
+- **Sử dụng CSS Variables:** Mọi màu sắc, padding, radius, shadow phải ưu tiên sử dụng biến CSS được định nghĩa trong [globals.css](cci:7://file:///e:/MyProjects/CocoQR_FE/src/styles/globals.css:0:0-0:0) (ví dụ: `var(--color-bg)`, `var(--color-primary)`, `var(--radius-md)`) thông qua Tailwind Classes.
+- **Tuân thủ cấu hình Tailwind ([tailwind.config.js](cci:7://file:///e:/MyProjects/CocoQR_FE/tailwind.config.js:0:0-0:0)):** 
   - Màu nền: Dùng `bg-bg`, `text-text`, `bg-primary`, `text-primary`.
   - Border radius: Đã cấu hình `DEFAULT` là 8px, dùng các class `rounded`, custom max-width (ví dụ: `max-w-modal-md`).
   - Font chữ: Dùng font `font-primary` (Inter) làm mặc định.
@@ -15,7 +15,7 @@ Bạn là một chuyên gia Frontend Developer. Khi phát triển các tính nă
   - Modal: Kết hợp `.modal-overlay` và `.modal-content` cùng với các animation (`.fade-in`).
 
 ### 2. Quy tắc về Layout & Component:
-- **Cấu trúc Layout chính:** Bất kỳ layout nào ([PublicLayout](cci:1://file:///e:/MyProjects/MyWallet_FE/src/layouts/PublicLayout.tsx:10:0-152:2), [AdminLayout](cci:1://file:///e:/MyProjects/MyWallet_FE/src/layouts/AdminLayout.tsx:8:0-133:2), [UserLayout](cci:1://file:///e:/MyProjects/MyWallet_FE/src/layouts/UserLayout.tsx:8:0-131:2)) đều cần phải tuân theo khung sườn Flexbox chiều dọc:
+- **Cấu trúc Layout chính:** Bất kỳ layout nào ([PublicLayout](cci:1://file:///e:/MyProjects/CocoQR_FE/src/layouts/PublicLayout.tsx:10:0-152:2), [AdminLayout](cci:1://file:///e:/MyProjects/CocoQR_FE/src/layouts/AdminLayout.tsx:8:0-133:2), [UserLayout](cci:1://file:///e:/MyProjects/CocoQR_FE/src/layouts/UserLayout.tsx:8:0-131:2)) đều cần phải tuân theo khung sườn Flexbox chiều dọc:
   - Thẻ bao ngoài cùng: `min-h-screen flex flex-col`.
   - `<header>` để chứa thanh điều hướng và thông tin User (Profile menu).
   - `<main>` phải có `flex: 1` hoặc class `flex-1` và chứa `<Outlet />` ở trung tâm.
