@@ -10,7 +10,7 @@ import type { QrRes } from "@/models/entity.model";
 import ModalLoading from "@/components/UICustoms/Modal/ModalLoading";
 import Button from "@/components/UICustoms/Button";
 import { formatDateTime } from "@/utils/dateTimeUtils";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
+import BrandLogo from "@/components/UICustoms/BrandLogo";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface HistoryDetailModalProps {
@@ -222,17 +222,12 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
 
                             {/* Provider / Bank card */}
                             <div className="flex items-center gap-sm bg-surface-muted/40 p-sm rounded-xl border border-border">
-                                {logoUrl ? (
-                                    <img
-                                        src={resolveAvatarPreview(logoUrl)}
-                                        alt={detail.bankShortName ?? detail.providerName}
-                                        className="w-12 h-12 object-contain rounded-lg bg-white p-xs border border-border flex-shrink-0"
-                                    />
-                                ) : (
-                                    <div className="w-12 h-12 bg-primary/10 border border-border rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <Landmark className="w-6 h-6 text-primary" />
-                                    </div>
-                                )}
+                                <BrandLogo 
+                                    logoUrl={logoUrl}
+                                    name={detail.bankShortName ?? detail.providerName}
+                                    code={detail.bankCodeSnapshot ?? detail.providerCode}
+                                    size="md"
+                                />
                                 <div className="flex flex-col gap-xs">
                                     <p className="font-semibold text-foreground leading-tight">
                                         {detail.bankNameSnapshot || detail.providerName || "—"}

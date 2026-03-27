@@ -8,9 +8,9 @@ import { DataTable } from "@/components/UICustoms/Table/data-table";
 import type { Column } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { StatCard } from "@/components/UICustoms/StatCard";
+import BrandLogo from "@/components/UICustoms/BrandLogo";
 
 const ProviderModal = lazy(() => import("./components/ProviderModal"));
 
@@ -88,12 +88,13 @@ const ProviderPage: React.FC = () => {
                             {
                                 header: "Logo",
                                 accessor: (provider) => provider.logoUrl,
-                                cell: (provider) => provider.logoUrl ? (
-                                    <img src={resolveAvatarPreview(provider.logoUrl ?? null)} alt={provider.name} className="w-10 h-10 object-contain rounded bg-white p-1 border border-border" />
-                                ) : (
-                                    <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-foreground-secondary">
-                                        {provider.code}
-                                    </div>
+                                cell: (provider) => (
+                                    <BrandLogo 
+                                        logoUrl={provider.logoUrl}
+                                        name={provider.name}
+                                        code={provider.code}
+                                        size="sm"
+                                    />
                                 )
                             },
                             {

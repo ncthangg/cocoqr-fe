@@ -5,9 +5,9 @@ import Button from "@/components/UICustoms/Button";
 import { bankApi } from "@/services/bank-api.service";
 import type { BankRes } from "@/models/entity.model";
 import type { PutBankInfoReq } from "@/models/entity.request.model";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import StatusToggle from "@/components/UICustoms/Form/StatusToggle";
+import BrandLogo from "@/components/UICustoms/BrandLogo";
 
 interface BankModalProps {
     isOpen: boolean;
@@ -42,7 +42,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                     shortName: bank.shortName,
                     isActive: bank.isActive,
                 });
-                setPreviewUrl(resolveAvatarPreview(bank.logoUrl ?? null));
+                setPreviewUrl(bank.logoUrl ?? null);
             } else {
                 setFormData({ bankCode: "", napasBin: "", swiftCode: "", bankName: "", shortName: "", isActive: true });
                 setPreviewUrl(null);
@@ -242,14 +242,16 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                 >
                                     {previewUrl ? (
                                         <>
-                                            <div className="relative">
-                                                <img
-                                                    src={previewUrl}
-                                                    alt="Logo preview"
-                                                    className="w-40 h-40 object-contain rounded-xl bg-bg p-1 border border-border"
+                                            <div className="relative group/logo">
+                                                <BrandLogo 
+                                                    logoUrl={previewUrl}
+                                                    name={formData.shortName || formData.bankName}
+                                                    code={formData.bankCode}
+                                                    size="xl"
+                                                    shadow="md"
                                                 />
                                                 <div
-                                                    className="absolute inset-0 bg-foreground/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl cursor-pointer"
+                                                    className="absolute inset-0 bg-foreground/40 flex items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-opacity rounded-xl cursor-pointer"
                                                     onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
                                                 >
                                                     <Upload className="w-6 h-6 text-bg" />

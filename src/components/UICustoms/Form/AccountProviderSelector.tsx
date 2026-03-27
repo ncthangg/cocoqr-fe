@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide-react';
 import type { BankRes, ProviderRes } from "@/models/entity.model";
 import { ProviderCode } from '@/models/enum';
 import { bankApi } from '@/services/bank-api.service';
-import { resolveAvatarPreview } from '@/utils/imageConvertUtils';
+import BrandLogo from '@/components/UICustoms/BrandLogo';
 
 const BankSelectionModal = lazy(() => import("@/components/UICustoms/Modal/BankSelectionModal"));
 
@@ -148,13 +148,12 @@ const BankFieldModal: React.FC<BankFieldModalProps> = ({
                     {
                         bankCode ? (
                             <div className="flex items-center gap-md">
-                                {logoUrl ? (
-                                    <img src={resolveAvatarPreview(logoUrl ?? null)} alt={bankShortName} className="w-10 h-10 object-contain rounded bg-bg p-xs border border-border" />
-                                ) : (
-                                    <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-foreground-secondary">
-                                        {bankCode}
-                                    </div>
-                                )}
+                                <BrandLogo 
+                                    logoUrl={logoUrl}
+                                    name={bankShortName}
+                                    code={bankCode}
+                                    size="sm"
+                                />
                                 <span className="truncate">
                                     ({napasBin}) {bankShortName}
                                 </span>
@@ -261,13 +260,12 @@ const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
                     {
                         napasBin ? (
                             <div className="flex items-center gap-md">
-                                {logoUrl ? (
-                                    <img src={resolveAvatarPreview(logoUrl ?? null)} alt={bankShortName} className="w-8 h-8 object-contain rounded bg-bg border border-border" />
-                                ) : (
-                                    <div className="w-8 h-8 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-foreground-secondary">
-                                        {bankCode}
-                                    </div>
-                                )}
+                                <BrandLogo 
+                                    logoUrl={logoUrl}
+                                    name={bankShortName}
+                                    code={bankCode}
+                                    size="sm"
+                                />
                                 <span className="truncate">
                                     ({napasBin}) {bankShortName}
                                 </span>
