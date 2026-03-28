@@ -5,6 +5,8 @@ on:
     tags:
       - "v*.*.*"
       - "v*.*.*-rc*"
+      - "v*.*.*-pre"
+      - "v*.*.*-no-release"
 
 concurrency:
   group: release-${{ github.ref_name }}
@@ -19,6 +21,7 @@ jobs:
     outputs:
       version: ${{ steps.meta.outputs.version }}
       channel: ${{ steps.meta.outputs.channel }}
+      release_type: ${{ steps.meta.outputs.release_type }}
 
     steps:
       - name: Checkout
@@ -40,12 +43,26 @@ jobs:
           if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+$ ]]; then
             CHANNEL="staging"
             TARGET_BRANCH="origin/dev"
+            RELEASE_TYPE="none"
+          elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-pre$ ]]; then
+            CHANNEL="production"
+            TARGET_BRANCH="origin/main"
+            RELEASE_TYPE="pre-release"
+          elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-no-release$ ]]; then
+            CHANNEL="production"
+            TARGET_BRANCH="origin/main"
+            RELEASE_TYPE="none"
           elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             CHANNEL="production"
             TARGET_BRANCH="origin/main"
+            RELEASE_TYPE="release"
           else
             echo "❌ Invalid tag format: $TAG"
-            echo "Allowed: vX.Y.Z (production) or vX.Y.Z-rcN (staging)"
+            echo "Allowed formats:"
+            echo "  vX.Y.Z - production release"
+            echo "  vX.Y.Z-rcN - staging"
+            echo "  vX.Y.Z-pre - production pre-release"
+            echo "  vX.Y.Z-no-release - production tag only"
             exit 1
           fi
 
@@ -58,6 +75,7 @@ jobs:
 
           echo "version=$TAG" >> "$GITHUB_OUTPUT"
           echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+          echo "release_type=$RELEASE_TYPE" >> "$GITHUB_OUTPUT"
 
       - name: Login Docker Hub
         uses: docker/login-action@v3
@@ -87,6 +105,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/cocoqr-fe:${{ steps.meta.outputs.version }}
 
   create-release:
+    if: needs.build.outputs.channel == 'production' && needs.build.outputs.release_type != 'none'
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -97,7 +116,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          prerelease: ${{ contains(github.ref_name, '-rc') }}
+          prerelease: ${{ needs.build.outputs.release_type == 'pre-release' }}
+          generate_release_notes: true
 
   deploy-staging:
     if: needs.build.outputs.channel == 'staging'
@@ -113,15 +133,15 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
             docker pull ${{ secrets.DOCKER_USERNAME }}/cocoqr-fe:${{ needs.build.outputs.version }}
             cd /opt/cocoqr-fe-staging
-            export IMAGE_TAG=${{ needs.build.outputs.version }}
+            echo "IMAGE_TAG=${{ needs.build.outputs.version }}" > .env
             docker compose up -d cocoqr-fe-staging
             docker image prune -f
 
   deploy-production:
-    if: needs.build.outputs.channel == 'production'
+    if: needs.build.outputs.channel == 'production' 
     needs: build
     runs-on: ubuntu-latest
     environment: PRODUCTION
@@ -132,6 +152,7 @@ jobs:
           fetch-depth: 0
 
       - name: Check if RC exists
+        if: needs.build.outputs.release_type == 'release'
         shell: bash
         run: |
           set -euo pipefail
@@ -154,9 +175,9 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
             docker pull ${{ secrets.DOCKER_USERNAME }}/cocoqr-fe:${{ needs.build.outputs.version }}
             cd /opt/cocoqr-fe-production
-            export IMAGE_TAG=${{ needs.build.outputs.version }}
+            echo "IMAGE_TAG=${{ needs.build.outputs.version }}" > .env
             docker compose up -d cocoqr-fe-production
             docker image prune -f
