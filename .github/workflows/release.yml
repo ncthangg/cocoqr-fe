@@ -178,6 +178,6 @@ jobs:
             echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
             docker pull ${{ secrets.DOCKER_USERNAME }}/cocoqr-fe:${{ needs.build.outputs.version }}
             cd /opt/cocoqr-fe-production
-            echo "IMAGE_TAG=${{ needs.build.outputs.version }}" > .env
+            grep -q "^IMAGE_TAG=" .env && sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${{ needs.build.outputs.version }}/" .env || echo "IMAGE_TAG=${{ needs.build.outputs.version }}" >> .env
             docker compose up -d cocoqr-fe-production
             docker image prune -f
