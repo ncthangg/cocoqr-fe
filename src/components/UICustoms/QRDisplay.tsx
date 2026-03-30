@@ -66,7 +66,6 @@ const patternToEyeType = (p: string): CornerSquareType => {
 
 const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJson, transactionRef, onDownload, onCopyLink, isWide = false }) => {
     const dispatch = useAppDispatch();
-    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isDownloadConfirmOpen, setIsDownloadConfirmOpen] = useState(false);
     const [showCustom, setShowCustom] = useState(false);
 
@@ -166,7 +165,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
 
     const handleCustomClick = () => {
         if (type === 'public') {
-            setIsLoginModalOpen(true);
+            dispatch(openAuthModal());
         } else {
             setShowCustom(!showCustom);
         }
@@ -515,19 +514,6 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                 cancelText="Hủy"
             />
 
-            <ActionConfirmModal
-                isOpen={isLoginModalOpen}
-                onClose={() => setIsLoginModalOpen(false)}
-                onConfirm={() => {
-                    setIsLoginModalOpen(false);
-                    setShowCustom(false);
-                    dispatch(openAuthModal());
-                }}
-                title="Yêu cầu đăng nhập"
-                description="Vui lòng đăng nhập để có thể sử dụng tính năng tùy chỉnh mã QR của riêng bạn."
-                confirmText="Đồng ý"
-                cancelText="Hủy"
-            />
         </div>
     );
 };
