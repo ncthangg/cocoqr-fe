@@ -1,15 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect } from "react";
 import Button from "../UICustoms/Button";
-import type { SignInGoogleRes } from "../../models/entity.model";
-import { buildGoogleAuthUrl, getBackendOrigin, GOOGLE_AUTH_TIMEOUT_MS, openGooglePopup, parseGoogleAuthPayload, registerGoogleAuthListener } from "../../utils/googleUtils";
-import type { ApiSuccessResponse } from "../../models/system.model";
-import { ApiConstant } from "../../constants/api.constant";
 import { useAppDispatch, useAppSelector } from "../../store/redux.hooks";
-import { closeAuthModal, openRoleSelectionModal, setCredentials } from "../../store/slices/auth.slice";
-import { setCookie } from "../../utils/storage";
-import { toast } from "react-toastify";
-import { RouteConstant } from "../../constants/route.constant";
+import { closeAuthModal } from "../../store/slices/auth.slice";
+import { useGoogleAuth } from "../../hooks/useGoogleAuth";
+import Logo from "@/components/UICustoms/Logo";
 
 const googleColors = {
     blue: "#4285F4",
@@ -19,7 +13,7 @@ const googleColors = {
 };
 
 const GoogleIcon: React.FC = () => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="transition-transform group-hover:scale-110">
         <path d="M21.35 11.1H12v2.91h5.35c-.23 1.24-.94 2.29-2 2.99v2.47h3.23c1.89-1.74 2.97-4.31 2.97-7.31 0-.7-.06-1.37-.2-2.06Z" fill={googleColors.blue} />
         <path d="M12 22c2.7 0 4.97-.89 6.62-2.44l-3.23-2.47c-.9.61-2.06.97-3.39.97-2.61 0-4.82-1.76-5.61-4.12H2.99v2.57C4.63 19.98 8.04 22 12 22Z" fill={googleColors.green} />
         <path d="M6.39 13.94c-.2-.61-.31-1.26-.31-1.94s.11-1.33.31-1.94V7.49H2.99A9.97 9.97 0 0 0 2 12c0 1.62.38 3.15.99 4.51l3.4-2.57Z" fill={googleColors.yellow} />
@@ -29,55 +23,19 @@ const GoogleIcon: React.FC = () => (
 
 const AuthenModal: React.FC = () => {
     const dispatch = useAppDispatch();
-    const navigate = useNavigate();
     const { isAuthModalOpen } = useAppSelector((state) => state.auth);
 
-    const [isLoading, setIsLoading] = useState(false);
-    const popupRef = useRef<Window | null>(null);
-    const timeoutRef = useRef<number | null>(null);
-    const popupWatcherRef = useRef<number | null>(null);
-    const listenerCleanupRef = useRef<(() => void) | null>(null);
-    const backendOrigin = getBackendOrigin();
+    const handleCloseModal = useCallback(() => {
+        dispatch(closeAuthModal());
+    }, [dispatch]);
 
-    // Thu gom tất cả side-effects liên quan đến popup / listener / timeout
-    const cleanupSideEffects = useCallback(() => {
-        if (listenerCleanupRef.current) {
-            listenerCleanupRef.current();
-            listenerCleanupRef.current = null;
-        }
-        if (timeoutRef.current) {
-            window.clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-        }
-        if (popupWatcherRef.current) {
-            window.clearInterval(popupWatcherRef.current);
-            popupWatcherRef.current = null;
-        }
-        if (popupRef.current) {
-            try {
-                popupRef.current.close();
-            } catch (error) {
-                console.debug(
-                    "[GoogleAuth] Không thể đóng popup do COOP policy:",
-                    error
-                );
-            }
-
-            popupRef.current = null;
-        }
-    }, []);
-
-    useEffect(() => {
-        return () => {
-            cleanupSideEffects();
-        };
-    }, [cleanupSideEffects]);
+    const { isLoading, handleLoginWithGoogle, cleanupSideEffects } = useGoogleAuth(handleCloseModal);
 
     const handleClose = useCallback(() => {
         if (isLoading) return;
         cleanupSideEffects();
-        dispatch(closeAuthModal());
-    }, [isLoading, cleanupSideEffects, dispatch]);
+        handleCloseModal();
+    }, [isLoading, cleanupSideEffects, handleCloseModal]);
 
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {
@@ -87,179 +45,78 @@ const AuthenModal: React.FC = () => {
         return () => window.removeEventListener("keydown", handleEsc);
     }, [handleClose]);
 
-    const handleLoginWithGoogle = async () => {
-        setIsLoading(true);
-
-        // 1. Chuẩn bị URL và cấu hình
-        const frontendOrigin = window.location.origin;
-        const authUrl = buildGoogleAuthUrl(ApiConstant.AUTH.SIGN_IN, frontendOrigin);
-
-        // 2. Định nghĩa handler xử lý message từ backend
-        const handleMessage = async (event: MessageEvent<ApiSuccessResponse<SignInGoogleRes>>) => {
-
-            const parsedPayload = parseGoogleAuthPayload(event.data);
-            if (!parsedPayload) {
-                toast.error("Dữ liệu Google không hợp lệ.");
-                setIsLoading(false);
-                cleanupSideEffects();
-                return;
-            }
-
-            if (parsedPayload.code === "SUCCESS" && parsedPayload.data) {
-                const { userRes: user, tokenRes: token, roleRes: roles } = parsedPayload.data;
-
-                if (roles.length > 1) {
-                    // Cần chọn role
-                    dispatch(openRoleSelectionModal(parsedPayload.data));
-                    cleanupSideEffects();
-                } else if (roles.length === 1 && token) {
-                    // Đăng nhập thành công
-                    // Lưu token vào cookies
-                    setCookie("accessToken", token.accessToken ?? "", 60);
-                    setCookie("refreshToken", token.refreshToken ?? "", 60 * 24 * 7);
-
-                    // Cập nhật Redux store
-                    dispatch(setCredentials({
-                        user,
-                        token,
-                        roles,
-                    }));
-
-                    // Redirection logic
-                    if (roles[0].name === "admin") {
-                        navigate(RouteConstant.ADMIN);
-                    } else {
-                        navigate(RouteConstant.USER);
-                    }
-
-                    toast.success(`Chào mừng ${user.fullName}!`);
-                    cleanupSideEffects();
-                } else {
-                    toast.error("Không có thông tin xác thực hoặc không có quyền truy cập.");
-                    cleanupSideEffects();
-                }
-            } else {
-                // Đăng nhập thất bại
-                toast.error(parsedPayload.message || "Đăng nhập thất bại");
-                cleanupSideEffects();
-            }
-
-            setIsLoading(false);
-        };
-
-        // 3. Đăng ký listener cho postMessage
-        listenerCleanupRef.current = registerGoogleAuthListener(backendOrigin, handleMessage);
-
-        // 4. Mở popup OAuth
-        const popup = openGooglePopup(authUrl);
-        if (!popup) {
-            toast.error("Vui lòng bật popup để tiếp tục.");
-            cleanupSideEffects();
-            setIsLoading(false);
-            return;
-        }
-        popupRef.current = popup;
-
-        // 5. Thiết lập các listener để theo dõi popup
-        const setupPopupWatchers = () => {
-            // Listener cho window focus (phát hiện khi user quay lại từ popup)
-            const handleWindowFocus = () => {
-                setTimeout(() => {
-                    try {
-                        if (popupRef.current && popupRef.current.closed) {
-                            cleanupSideEffects();
-                            setIsLoading(false);
-                        }
-                    } catch (error) {
-                        console.debug("[GoogleAuth] Không thể kiểm tra popup qua focus event:", error);
-                    }
-                }, 100);
-            };
-            window.addEventListener('focus', handleWindowFocus);
-
-            // Interval checker để theo dõi trạng thái popup
-            popupWatcherRef.current = window.setInterval(() => {
-                try {
-                    if (popupRef.current && popupRef.current.closed) {
-                        window.removeEventListener('focus', handleWindowFocus);
-                        cleanupSideEffects();
-                        setIsLoading(false);
-                    }
-                } catch (error) {
-                    console.debug("[GoogleAuth] Không thể kiểm tra trạng thái popup do COOP policy:", error);
-                }
-            }, 500);
-
-            // Timeout để tự động đóng sau thời gian quy định
-            timeoutRef.current = window.setTimeout(() => {
-                console.warn("[GoogleAuth] Đăng nhập quá thời gian, đóng popup.");
-                toast.error("Hết thời gian đăng nhập. Vui lòng thử lại.");
-                window.removeEventListener('focus', handleWindowFocus);
-                cleanupSideEffects();
-                setIsLoading(false);
-            }, GOOGLE_AUTH_TIMEOUT_MS);
-        };
-
-        setupPopupWatchers();
-    };
-
     const handleStopPropagation = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
 
     if (!isAuthModalOpen) {
         return null;
     }
+
     return (
         <div
-            className="modal-overlay px-md py-lg"
+            className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-8 backdrop-blur-sm transition-all duration-300"
             onClick={handleClose}
         >
             <div
-                className="modal-content max-w-modal-md relative flex flex-col overflow-hidden rounded-2xl p-0 md:flex-row shadow-lg"
+                className="modal-content max-w-modal-md relative flex flex-col overflow-hidden rounded-2xl bg-surface p-0 shadow-2xl duration-200 animate-in zoom-in-95"
                 onClick={handleStopPropagation}
             >
-                <button
-                    type="button"
-                    onClick={handleClose}
-                    className="absolute right-4 top-4 text-foreground-muted transition hover:text-foreground"
-                    aria-label="Đóng"
-                >
-                    ✕
-                </button>
+                <div className="relative flex w-full flex-col items-center justify-center gap-6 p-8 text-center sm:p-12">
+                    <button
+                        type="button"
+                        onClick={handleClose}
+                        className="absolute right-4 top-4 rounded-full p-2 text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+                        aria-label="Đóng"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                    </button>
 
-                <div className="hidden w-1/2 items-center justify-center bg-gradient-to-br from-primary to-primary/80 p-lg text-white md:flex">
-                    <div className="space-y-md text-center">
-                        <div className="rounded-full bg-surface/20 px-md py-1 text-sm font-medium">Secret Sharing</div>
-                        <h3 className="text-3xl font-semibold leading-tight">Bảo vệ bí mật của bạn</h3>
-                        <p className="text-sm text-white/80">
-                            Kết nối với Gmail để đồng bộ hoá dữ liệu, đảm bảo mọi secrets luôn được mã hoá và chỉ bạn mới có quyền giải mã.
-                        </p>
-                        <img
-                            src="https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=700&q=80"
-                            alt="Secure sharing illustration"
-                            className="rounded-xl border border-white/10 object-cover shadow-lg"
+                    {/* Icon image */}
+                    <div className="mb-2 flex items-center justify-center">
+                        <Logo
+                            size="100px"
                         />
                     </div>
-                </div>
 
-                <div className="flex w-full flex-col justify-center gap-lg p-lg md:w-1/2">
-                    <div>
-                        <h3 className="text-2xl font-semibold">Đăng nhập với Google</h3>
+                    {/* Name */}
+                    <div className="space-y-1">
+                        <h3 className="text-3xl font-bold tracking-tight text-foreground">CocoQR</h3>
                     </div>
 
-                    <Button
-                        type="button"
-                        icon={<GoogleIcon />}
-                        onClick={handleLoginWithGoogle}
-                        loading={isLoading}
-                        size="large"
-                        width="w-full h-12"
-                        className="btn-outline font-semibold shadow-sm"
-                    >
-                        <span className="text-lg font-bold text-foreground">Login Google</span>
-                    </Button>
+                    {/* Short text describe */}
+                    <p className="mx-auto text-sm text-foreground-muted">
+                        <span className="text-primary">
+                            Tạo mã QR thanh toán nhanh chóng.
+                        </span>
+                        <br />
+                        <span className="text-primary">
+                            Tạo phong cách mã QR của riêng bạn.
+                        </span>
+                    </p>
+
+                    {/* Button signin */}
+                    <div>
+                        <Button
+                            type="button"
+                            icon={<GoogleIcon />}
+                            onClick={handleLoginWithGoogle}
+                            loading={isLoading}
+                            size="large"
+                            width="w-full h-12"
+                            className="btn-outline group relative overflow-hidden rounded-xl font-semibold shadow-sm transition-all duration-300 hover:border-primary/40 hover:bg-surface hover:shadow-md hover:shadow-primary/10 active:scale-[0.98]"
+                        >
+                            <span className="text-base font-bold text-foreground transition-transform group-hover:scale-[1.02]">
+                                Tiếp tục với Google
+                            </span>
+                        </Button>
+                    </div>
+
+                    {/* Term of use and Privacy policy */}
+                    <p className="mt-2 text-center text-xs leading-relaxed text-foreground-muted">
+                        Nếu tiếp tục, bạn đã đồng ý với <br /> <a href="#" className="font-medium text-primary transition-colors hover:text-primary-hover hover:underline">Điều khoản sử dụng</a> và <a href="#" className="font-medium text-primary transition-colors hover:text-primary-hover hover:underline">Chính sách bảo mật</a> của chúng tôi.
+                    </p>
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 

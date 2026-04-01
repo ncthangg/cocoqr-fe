@@ -6,7 +6,7 @@ import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { bankApi } from "@/services/bank-api.service";
 import type { BankRes } from "@/models/entity.model";
-import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
+import BrandLogo from "@/components/UICustoms/BrandLogo";
 import Button from "@/components/UICustoms/Button";
 
 interface BankSelectionModalProps {
@@ -128,12 +128,15 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                                     {
                                         header: "Logo",
                                         accessor: (bank) => bank.logoUrl,
-                                        cell: (bank) => bank.logoUrl ? (
-                                            <img src={resolveAvatarPreview(bank.logoUrl ?? null)} alt={bank.shortName} className="w-10 h-10 object-contain rounded bg-bg p-xs border border-border" />
-                                        ) : (
-                                            <div className="w-10 h-10 bg-surface-muted border border-border rounded flex items-center justify-center text-xs font-bold text-foreground-secondary">
-                                                {bank.bankCode}
-                                            </div>
+                                        width: "100px",
+                                        minWidth: "100px",
+                                        cell: (bank) => (
+                                            <BrandLogo
+                                                logoUrl={bank.logoUrl}
+                                                name={bank.bankName}
+                                                code={bank.bankCode}
+                                                size="sm"
+                                            />
                                         )
                                     },
                                     {

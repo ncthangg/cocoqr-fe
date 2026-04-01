@@ -342,8 +342,8 @@ const CreatePaymentPage: React.FC = () => {
                                 type: "string",
                                 cell: (acc) => (
                                     <div className="flex items-center gap-md">
-                                        <BrandLogo 
-                                            logoUrl={acc.bankLogoUrl ?? acc.providerLogoUrl}
+                                        <BrandLogo
+                                            logoUrl={(acc.bankLogoUrl ?? acc.providerLogoUrl)}
                                             name={acc.bankShortName || acc.providerName}
                                             code={acc.bankCode || acc.providerCode}
                                             size="sm"

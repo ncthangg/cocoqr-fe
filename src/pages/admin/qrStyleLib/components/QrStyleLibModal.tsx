@@ -186,7 +186,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
     };
 
     return (
-        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+        <div className="modal-overlay">
             <div
                 className="modal-content max-w-modal-2xl bg-surface-elevated relative flex flex-col overflow-hidden"
                 role="dialog"
