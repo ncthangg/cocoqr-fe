@@ -58,4 +58,29 @@ export const ApiConstant = {
         PUT: (id: string) => `/qrstylelibraries/${id}`,
         DELETE: (id: string) => `/qrstylelibraries/${id}`,
     },
+    CONTACT: {
+        POST: "/contacts",
+    },
+    ADMIN_CONTACT: {
+        GET_ALL: "/admin/admincontacts",
+        GET_BY_ID: (id: string) => `/admin/admincontacts/${id}`,
+        POST: "/admin/admincontacts",
+    },
+    EMAIL_LOG: {
+        GET_ALL: "/admin/emaillogs",
+        GET_BY_ID: (id: string) => `/admin/emaillogs/${id}`,
+    },
+    SMTP_SETTING: {
+        GET: "/admin/smtpsettings",
+        PUT: "/admin/smtpsettings",
+        TEST: "/admin/smtpsettings/test",
+        DELETE: (id: string) => `/admin/smtpsettings/${id}`,
+    },
+    EMAIL_TEMPLATE: {
+        GET_ALL: "/admin/emailtemplates",
+        GET_BY_ID: (id: string) => `/admin/emailtemplates/${id}`,
+        POST: "/admin/emailtemplates",
+        PUT: (id: string) => `/admin/emailtemplates/${id}`,
+        DELETE: (id: string) => `/admin/emailtemplates/${id}`,
+    },
 };

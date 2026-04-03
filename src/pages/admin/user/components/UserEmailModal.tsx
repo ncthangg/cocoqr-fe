@@ -1,0 +1,495 @@
+import React, { useState, useEffect, useCallback } from "react";
+import type { GetUserBaseRes, GetEmailLogRes, GetEmailLogByIdRes, PagingVM, EmailTemplateRes } from "@/models/entity.model";
+import { emailLogApi } from "@/services/email-log-api.service";
+import { adminContactApi } from "@/services/admin-contact-api.service";
+import { emailTemplateApi } from "@/services/email-template-api.service";
+import type { AdminPostContactReq } from "@/models/entity.request.model";
+import { SmtpSettingType } from "@/models/enum";
+import { toast } from "react-toastify";
+import {
+    X,
+    Mail,
+    Plus,
+    History,
+    Send,
+    Calendar,
+    User,
+    CheckCircle2,
+    AlertCircle,
+    Loader2,
+    Search,
+    Info,
+    Settings
+} from "lucide-react";
+import { formatDateTime } from "@/utils/dateTimeUtils";
+import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
+import { useDebounce } from "@/hooks/useDebounce";
+import { StatusBadge } from "@/components/UICustoms/StatusBadge";
+import { EmailLogStatus } from "@/models/enum";
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+
+interface UserEmailModalProps {
+    isOpen: boolean;
+    onClose: void | (() => void);
+    user: GetUserBaseRes | null;
+}
+
+const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }) => {
+    const [loading, setLoading] = useState(false);
+    const [fetchingDetailId, setFetchingDetailId] = useState<string | null>(null);
+    const [logs, setLogs] = useState<GetEmailLogRes[]>([]);
+    const [isFormView, setIsFormView] = useState(false);
+    const [selectedLog, setSelectedLog] = useState<GetEmailLogByIdRes | null>(null);
+
+    // Paging & Search
+    const [subjectFilter, setSubjectFilter] = useState("");
+    const debouncedSubject = useDebounce(subjectFilter, 500);
+    const [paging, setPaging] = useState<PagingVM<GetEmailLogRes>>({
+        list: [],
+        pageSize: 10,
+        pageNumber: 1,
+        totalPages: 1,
+        totalItems: 0
+    });
+
+    // Form state
+    const [subject, setSubject] = useState("");
+    const [content, setContent] = useState("");
+    const [smtpType, setSmtpType] = useState<keyof typeof SmtpSettingType | "">("");
+    const [submitting, setSubmitting] = useState(false);
+
+    // Template states
+    const [templates, setTemplates] = useState<EmailTemplateRes[]>([]);
+    const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>("");
+
+    useEffect(() => {
+        if (isOpen) {
+            emailTemplateApi.getAll().then(res => setTemplates(Array.isArray(res) ? res : []));
+        }
+    }, [isOpen]);
+
+    const fetchHistory = useCallback(async (page: number, size: number, subj: string) => {
+        if (!user) return;
+        try {
+            setLoading(true);
+            const res = await emailLogApi.getAll({
+                pageNumber: page,
+                pageSize: size,
+                recipientUserId: user.id,
+                subject: subj || null,
+                sortField: "sentAt",
+                sortDirection: "desc"
+            });
+            if (res) {
+                setLogs(res.list || []);
+                setPaging(res);
+            }
+        } catch (error) {
+            console.error("Error fetching email history", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (isOpen && user) {
+            fetchHistory(paging.pageNumber, paging.pageSize, debouncedSubject);
+        }
+    }, [isOpen, user, fetchHistory, paging.pageNumber, paging.pageSize, debouncedSubject]);
+
+    // Initial reset when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setIsFormView(false);
+            setSelectedLog(null);
+            setSubjectFilter("");
+            setSmtpType("");
+            setSelectedTemplateKey("");
+            setPaging(prev => ({ ...prev, pageNumber: 1 }));
+        }
+    }, [isOpen]);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= paging.totalPages) {
+            setPaging(prev => ({ ...prev, pageNumber: newPage }));
+        }
+    };
+
+    const handleViewDetail = async (id: string) => {
+        if (selectedLog?.id === id) {
+            setIsFormView(false);
+            return;
+        }
+        if (fetchingDetailId === id) return;
+
+        try {
+            setFetchingDetailId(id);
+            const detail = await emailLogApi.getById(id);
+            setSelectedLog(detail);
+            setIsFormView(false);
+        } catch (error) {
+            toast.error("Không thể lấy chi tiết email");
+        } finally {
+            setFetchingDetailId(null);
+        }
+    };
+
+    const handleSendEmail = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user) return;
+
+        try {
+            setSubmitting(true);
+            const payload: AdminPostContactReq = {
+                fullName: user.fullName,
+                email: user.email,
+                subject,
+                content,
+                smtpType: smtpType || null,
+                templateKey: selectedTemplateKey || null,
+            };
+
+            await adminContactApi.post(payload);
+            toast.success("Email đã được gửi thành công!");
+
+            // Reset form and refresh history at page 1
+            setSubject("");
+            setContent("");
+            setSmtpType("");
+            setIsFormView(false);
+            setPaging(prev => ({ ...prev, pageNumber: 1 }));
+            fetchHistory(1, paging.pageSize, debouncedSubject);
+        } catch (error) {
+            console.error("Error sending email", error);
+            toast.error("Gửi email thất bại. Vui lòng thử lại.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    if (!isOpen || !user) return null;
+
+    const handleOnClose = typeof onClose === 'function' ? onClose : () => { };
+
+    return (
+        <div className="modal-overlay" onClick={handleOnClose}>
+            <div className="modal-content max-w-modal-4xl h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div className="p-5 border-b border-border flex justify-between items-center bg-bg/50">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-primary/10 rounded-xl">
+                            <Mail className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-foreground">Email cho {user.fullName}</h3>
+                            <p className="text-xs text-foreground-muted font-medium">{user.email}</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleOnClose}
+                        className="p-2 hover:bg-border rounded-full transition-colors text-foreground-muted hover:text-foreground"
+                    >
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Left Panel: Email History Table (Full width or split) */}
+                    <div className={`${isFormView ? 'hidden lg:flex' : 'flex'} flex-col w-full lg:w-1/3 border-r border-border bg-bg/30`}>
+                        <div className="p-4 border-b border-border flex justify-between items-center bg-surface/50">
+                            <div className="flex items-center gap-2 font-bold text-foreground overflow-hidden">
+                                <History className="w-4 h-4 text-primary shrink-0" />
+                                <span className="truncate">Lịch sử Email</span>
+                            </div>
+                            <button
+                                onClick={() => { setIsFormView(true); setSelectedLog(null); }}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground text-xs font-bold rounded-lg hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/20"
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                                Tạo Mail
+                            </button>
+                        </div>
+
+                        <div className="p-3 border-b border-border/50 bg-bg/50">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted pointer-events-none" />
+                                <input
+                                    type="text"
+                                    placeholder="Tìm theo tiêu đề..."
+                                    value={subjectFilter}
+                                    onChange={(e) => {
+                                        setSubjectFilter(e.target.value);
+                                        setPaging(prev => ({ ...prev, pageNumber: 1 }));
+                                    }}
+                                    className="w-full bg-surface border border-border rounded-lg pl-9 pr-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-0 flex flex-col">
+                            {loading ? (
+                                <div className="h-full flex items-center justify-center">
+                                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                </div>
+                            ) : logs.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-foreground-muted gap-3 p-8 text-center">
+                                    <div className="p-4 bg-border/20 rounded-full">
+                                        <Mail className="w-12 h-12 opacity-20" />
+                                    </div>
+                                    <p className="font-medium">Chưa có lịch sử gửi email cho người dùng này.</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-border flex-1">
+                                    {logs.map((log) => (
+                                        <div
+                                            key={log.id}
+                                            onClick={() => handleViewDetail(log.id)}
+                                            className={`p-4 hover:bg-primary/5 transition-colors group cursor-pointer ${selectedLog?.id === log.id ? 'bg-primary/5 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'}`}
+                                        >
+                                            <div className="flex justify-between items-start mb-1 gap-2">
+                                                <span className="text-sm font-bold text-foreground line-clamp-2">{log.subject}</span>
+                                                <div className="shrink-0 mt-0.5">
+                                                    {fetchingDetailId === log.id ? (
+                                                        <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                                                    ) : (log.status === EmailLogStatus.SUCCESS || log.status === 'SENT') ? (
+                                                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                                                    ) : (
+                                                        <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3 text-[10px] text-foreground-muted font-bold mt-2">
+                                                <span className="flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3" />
+                                                    {formatDateTime(log.createdAt)}
+                                                </span>
+                                                <span className="px-1.5 py-0.5 bg-border/50 rounded text-foreground uppercase border border-border/20">
+                                                    {log.smtpType}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-3 border-t border-border bg-surface shrink-0">
+                            <TablePagination pageNumber={paging.pageNumber} pageSize={paging.pageSize} totalItems={paging.totalItems} totalPages={paging.totalPages} onPageChange={handlePageChange} />
+                        </div>
+                    </div>
+
+                    {/* Right Panel: Send Email Form / Details */}
+                    <div className={`${isFormView || selectedLog ? 'flex' : 'hidden lg:flex'} flex-col flex-1 bg-surface relative`}>
+                        {!isFormView && !selectedLog ? (
+                            <div className="flex-1 flex flex-col justify-center items-center text-foreground-muted gap-3 p-8 text-center bg-surface-muted/20">
+                                <Mail className="w-16 h-16 opacity-10" />
+                                <p className="font-medium text-sm max-w-[250px]">Chọn một email bên trái để xem chi tiết, hoặc tạo thư mới.</p>
+                            </div>
+                        ) : isFormView ? (
+                            <>
+                                <div className="p-4 border-b border-border flex justify-between items-center bg-bg/10">
+                                    <div className="flex items-center gap-2 font-bold text-foreground">
+                                        <Send className="w-4 h-4 text-primary" />
+                                        <span>Gửi Email Mới</span>
+                                    </div>
+                                    <button onClick={() => setIsFormView(false)} className="px-3 py-1.5 lg:hidden text-xs btn-ghost">Đóng</button>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+                                    <form onSubmit={handleSendEmail} className="space-y-6 max-w-full mx-auto">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-2">
+                                                    <User className="w-3 h-3 text-primary" /> Người nhận
+                                                </label>
+                                                <div className="px-4 py-3 bg-bg/50 border border-border rounded-xl text-foreground font-semibold">
+                                                    {user.fullName}
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-2">
+                                                    <Mail className="w-3 h-3 text-primary" /> Email
+                                                </label>
+                                                <div className="px-4 py-3 bg-bg/50 border border-border rounded-xl text-foreground font-semibold">
+                                                    {user.email}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label htmlFor="smtpType" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-2">
+                                                <Settings className="w-3 h-3 text-primary" /> Loại SMTP (Người gửi)
+                                            </label>
+                                            <select
+                                                id="smtpType"
+                                                value={smtpType}
+                                                onChange={(e) => setSmtpType(e.target.value as keyof typeof SmtpSettingType | "")}
+                                                className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                                            >
+                                                <option value="">Mặc định (hệ thống tự chọn)</option>
+                                                {Object.keys(SmtpSettingType).map(key => (
+                                                    <option key={key} value={key}>{key}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex justify-between">
+                                                Chọn Mẫu Email (Template)
+                                                <span className="text-[10px] font-medium opacity-60 normal-case">(Tùy chọn)</span>
+                                            </label>
+                                            <select
+                                                value={selectedTemplateKey}
+                                                onChange={e => {
+                                                    const val = e.target.value;
+                                                    setSelectedTemplateKey(val);
+                                                    if (val) {
+                                                        const tpl = templates.find(t => t.templateKey === val);
+                                                        if (tpl) {
+                                                            setSubject(tpl.subject);
+                                                            setContent(tpl.body);
+                                                        }
+                                                    }
+                                                }}
+                                                className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground font-medium outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none"
+                                            >
+                                                <option value="">Không sử dụng mẫu</option>
+                                                {templates.filter(t => t.isActive).map(t => (
+                                                    <option key={t.id} value={t.templateKey}>{t.subject} ({t.templateKey})</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label htmlFor="subject" className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
+                                                Tiêu đề
+                                            </label>
+                                            <input
+                                                id="subject"
+                                                type="text"
+                                                required
+                                                placeholder="Nhập tiêu đề email..."
+                                                value={subject}
+                                                onChange={(e) => setSubject(e.target.value)}
+                                                className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground placeholder:text-foreground-muted outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2 email-editor-container">
+                                            <label className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
+                                                Nội dung
+                                            </label>
+                                            <ReactQuill
+                                                theme="snow"
+                                                value={content}
+                                                onChange={setContent}
+                                                placeholder="Nhập nội dung email..."
+                                                modules={{
+                                                    toolbar: [
+                                                        [{ 'header': [1, 2, 3, false] }],
+                                                        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                                        ['link', 'clean']
+                                                    ]
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div className="pt-4 flex justify-end gap-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsFormView(false)}
+                                                className="px-6 py-2.5 border border-border text-foreground font-bold rounded-xl hover:bg-border/50 transition-all lg:hidden"
+                                            >
+                                                Hủy
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={submitting}
+                                                className="flex items-center gap-3 px-8 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                                            >
+                                                {submitting ? (
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                ) : (
+                                                    <Send className="w-5 h-5" />
+                                                )}
+                                                Gửi Email
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </>
+                        ) : selectedLog ? (
+                            <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-300">
+                                <div className="p-4 border-b border-border flex justify-between items-center bg-bg/10">
+                                    <div className="flex items-center gap-2 font-bold text-foreground">
+                                        <Mail className="w-4 h-4 text-primary" />
+                                        <span>Chi tiết Email</span>
+                                    </div>
+                                    <button onClick={() => setSelectedLog(null)} className="p-1.5 lg:hidden hover:bg-border rounded-full text-foreground-muted">
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-muted/30 p-5 rounded-2xl border border-border">
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><Settings className="w-3 h-3 text-primary" />Người gửi (SMTP)</p>
+                                            <p className="text-sm font-bold text-foreground">{selectedLog?.smtpType}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><User className="w-3 h-3 text-primary" />Người nhận</p>
+                                            <p className="text-sm font-bold text-foreground truncate">{selectedLog?.recipientFullName || "Khách"} ({selectedLog?.toEmail})</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><Calendar className="w-3 h-3 text-primary" />Thời gian gửi</p>
+                                            <p className="text-sm font-bold text-foreground">{selectedLog?.createdAt ? formatDateTime(selectedLog.createdAt) : ''}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><Info className="w-3 h-3 text-primary" />Trạng thái</p>
+                                            <div className="flex items-center gap-2">
+                                                <StatusBadge
+                                                    status={selectedLog?.status === EmailLogStatus.SUCCESS || selectedLog?.status === 'SENT'}
+                                                    activeText={selectedLog?.status || "Success"}
+                                                    inactiveText={selectedLog?.status || "Failed"}
+                                                    size="md"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider pl-1">Tiêu đề</p>
+                                        <div className="p-4 bg-bg rounded-xl border border-border font-extrabold text-foreground shadow-sm">
+                                            {selectedLog?.subject}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2 flex-1 flex flex-col">
+                                        <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider pl-1">Nội dung</p>
+                                        <div
+                                            className="flex-1 p-5 bg-bg rounded-xl border border-border text-sm text-foreground leading-relaxed shadow-sm min-h-[250px] overflow-auto prose-content"
+                                            dangerouslySetInnerHTML={{ __html: selectedLog?.body || '' }}
+                                        />
+                                    </div>
+
+                                    {selectedLog?.errorMessage && (
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-bold text-red-500 uppercase tracking-wider flex items-center gap-1.5 pl-1">
+                                                <AlertCircle className="w-3 h-3" /> Lỗi gửi Email
+                                            </p>
+                                            <div className="p-4 bg-red-500/5 rounded-xl border border-red-500/20 text-sm text-red-500 font-medium">
+                                                {selectedLog?.errorMessage}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : null}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default UserEmailModal;

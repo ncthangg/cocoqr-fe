@@ -11,6 +11,10 @@ export const RouteConstant = {
     ADMIN_PROVIDERS: "providers",
     ADMIN_SEED: "seed",
     ADMIN_QR_STYLE_LIB: "qr-style-lib",
+    ADMIN_EMAIL_LOG: "email-logs",
+    ADMIN_SMTP_SETTINGS: "smtp-settings",
+    ADMIN_EMAIL_TEMPLATES: "email-templates",
+    ADMIN_CONTACT_MESSAGES: "contact-messages",
 
     CREATE_QR: "create-qr",
     ACCOUNTS: "accounts",

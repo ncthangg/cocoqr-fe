@@ -1,4 +1,4 @@
-import type { QRStyleType } from "./enum";
+import type { QRStyleType, SmtpSettingType } from "./enum";
 
 export interface PutRoleReq {
     name: string;
@@ -87,5 +87,81 @@ export interface UpdateQrStyleLibraryReq {
     styleJson: string;
     isDefault: boolean;
     type: QRStyleType;
+    isActive: boolean;
+}
+
+/** Public endpoint — user sends to system */
+export interface PostContactReq {
+    fullName: string;
+    email: string;
+    subject: string;
+    content: string;
+}
+
+/** Admin endpoint — system/admin sends to user/guest */
+export interface AdminPostContactReq {
+    fullName: string;
+    email: string;
+    subject: string;
+    content: string;
+    smtpType?: SmtpSettingType | null;
+    templateKey?: string | null;
+}
+
+export interface GetEmailLogReq {
+    pageNumber: number;
+    pageSize: number;
+    sortField?: string | null;
+    sortDirection?: "asc" | "desc" | null;
+    type?: SmtpSettingType | null;
+    recipientUserId?: string | null;
+    toEmail?: string | null;
+    recipientFullName?: string | null;
+    subject?: string | null;
+    fromDate?: string | null;
+    toDate?: string | null;
+    status?: string | null;
+    direction?: string | null;
+    templateKey?: string | null;
+}
+
+export interface GetSmtpSettingReq {
+    type?: SmtpSettingType | null;
+}
+
+export interface PutSmtpSettingReq {
+    type: SmtpSettingType;
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    enableSSL: boolean;
+    fromEmail: string;
+    fromName: string;
+    isActive: boolean;
+}
+
+export interface TestSmtpSettingReq {
+    type: SmtpSettingType;
+    toEmail: string;
+    subject?: string;
+    body?: string;
+    templateKey?: string;
+    variables?: Record<string, string>;
+}
+
+export interface PostEmailTemplateReq {
+    templateKey: string;
+    subject: string;
+    body: string;
+    description?: string | null;
+    isActive: boolean;
+}
+
+export interface PutEmailTemplateReq {
+    templateKey: string;
+    subject: string;
+    body: string;
+    description?: string | null;
     isActive: boolean;
 }

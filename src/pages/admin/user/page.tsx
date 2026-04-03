@@ -18,6 +18,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 const UserRolesModal = lazy(() => import("./components/UserRolesModal"));
 const UserAccountsModal = lazy(() => import("./components/UserAccountsModal"));
 const UserModal = lazy(() => import("./components/UserModal"));
+const UserEmailModal = lazy(() => import("./components/UserEmailModal"));
 
 const UserPage: React.FC = () => {
     const [users, setUsers] = useState<GetUserBaseRes[]>([]);
@@ -33,6 +34,7 @@ const UserPage: React.FC = () => {
     const [isViewRolesModalOpen, setIsViewRolesModalOpen] = useState(false);
     const [isViewAccountsModalOpen, setIsViewAccountsModalOpen] = useState(false);
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+    const [isUserEmailModalOpen, setIsUserEmailModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<GetUserBaseRes | null>(null);
 
     // Filter states
@@ -63,8 +65,6 @@ const UserPage: React.FC = () => {
             console.error("Error fetching roles", error);
         }
     }, [hasFetchedRoles]);
-
-
 
     const fetchUsers = useCallback(async (page: number, size: number, sortField?: string, sortDir?: "asc" | "desc", search?: string, status?: boolean, roleId?: string) => {
         try {
@@ -253,6 +253,15 @@ const UserPage: React.FC = () => {
                                             title="Chi tiết & Khóa/Mở"
                                         />
                                         <button
+                                            onClick={() => {
+                                                setSelectedUser(user);
+                                                setIsUserEmailModalOpen(true);
+                                            }}
+                                            className="text-primary hover:text-primary/80 transition-colors font-medium text-sm"
+                                        >
+                                            Email
+                                        </button>
+                                        <button
                                             onClick={() => handleOpenViewAccountsModal(user)}
                                             className="text-primary hover:text-primary/80 transition-colors font-medium text-sm"
                                         >
@@ -293,6 +302,16 @@ const UserPage: React.FC = () => {
                         onClose={() => setIsUserModalOpen(false)}
                         user={selectedUser}
                         onStatusChanged={handleUserStatusChanged}
+                    />
+                </Suspense>
+            )}
+
+            {isUserEmailModalOpen && (
+                <Suspense fallback={null}>
+                    <UserEmailModal
+                        isOpen={isUserEmailModalOpen}
+                        onClose={() => setIsUserEmailModalOpen(false)}
+                        user={selectedUser}
                     />
                 </Suspense>
             )}

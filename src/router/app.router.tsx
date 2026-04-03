@@ -27,6 +27,10 @@ const HistoryPage = lazy(() => import("@/pages/admin/history/page"))
 const ProviderPage = lazy(() => import("@/pages/admin/provider/page"))
 const SeedPage = lazy(() => import("@/pages/admin/seed/page"))
 const AdminQrStyleLibPage = lazy(() => import("@/pages/admin/qrStyleLib/page"))
+const EmailLogPage = lazy(() => import("@/pages/admin/emailLog/page"))
+const SmtpSettingsPage = lazy(() => import("@/pages/admin/smtpSettings/page"))
+const EmailTemplatePage = lazy(() => import("@/pages/admin/emailTemplate/page"))
+const ContactMessagePage = lazy(() => import("@/pages/admin/contactMessage/page"))
 
 const RootWrapper = () => (
     <>
@@ -85,6 +89,10 @@ export const router = createBrowserRouter([
                     { path: RouteConstant.ADMIN_PROVIDERS, element: <ProviderPage /> },
                     { path: RouteConstant.ADMIN_SEED, element: <SeedPage /> },
                     { path: RouteConstant.ADMIN_QR_STYLE_LIB, element: <AdminQrStyleLibPage /> },
+                    { path: RouteConstant.ADMIN_EMAIL_LOG, element: <EmailLogPage /> },
+                    { path: RouteConstant.ADMIN_SMTP_SETTINGS, element: <SmtpSettingsPage /> },
+                    { path: RouteConstant.ADMIN_EMAIL_TEMPLATES, element: <EmailTemplatePage /> },
+                    { path: RouteConstant.ADMIN_CONTACT_MESSAGES, element: <ContactMessagePage /> },
                 ],
             },
 
