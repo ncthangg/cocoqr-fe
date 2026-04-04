@@ -15,6 +15,7 @@ import { StatCard } from "@/components/UICustoms/StatCard";
 import { formatDate } from "@/utils/dateTimeUtils";
 import { useDebounce } from "@/hooks/useDebounce";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const AccountModal = lazy(() => import("./components/AccountModal"));
 
@@ -120,12 +121,17 @@ const AccountsPage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 shrink-0">
+                <div className="flex items-center gap-3">
                     <StatCard
                         label="Tổng tài khoản"
                         value={paging.totalItems}
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
+                    />
+                    <RefreshButton 
+                        onRefresh={() => fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter, false, statusFilter)}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
@@ -241,8 +247,7 @@ const AccountsPage: React.FC = () => {
                                         status={acc.isActive}
                                         activeText="ĐANG HOẠT ĐỘNG"
                                         inactiveText="KHÔNG HOẠT ĐỘNG"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                                 )
                             },
@@ -257,8 +262,7 @@ const AccountsPage: React.FC = () => {
                                         status={acc.status}
                                         activeText="ACTIVE"
                                         inactiveText="INACTIVE"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                                 )
                             },

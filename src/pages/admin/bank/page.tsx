@@ -12,6 +12,7 @@ import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import { useDebounce } from "@/hooks/useDebounce";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const BankModal = lazy(() => import("./components/BankModal"));
 
@@ -90,12 +91,17 @@ const BankPage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 shrink-0">
+                <div className="flex items-center gap-3">
                     <StatCard
                         label="Tổng ngân hàng"
                         value={paging.totalItems}
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
+                    />
+                    <RefreshButton 
+                        onRefresh={() => fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter)}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
@@ -180,8 +186,7 @@ const BankPage: React.FC = () => {
                                         status={bank.isActive}
                                         activeText="HOẠT ĐỘNG"
                                         inactiveText="BẢO TRÌ"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                                 )
                             },

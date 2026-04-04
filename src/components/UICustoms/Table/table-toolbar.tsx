@@ -1,4 +1,4 @@
-import { Plus, Search } from "lucide-react"
+import { Plus, Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import Button from "@/components/UICustoms/Button"
 
@@ -33,17 +33,31 @@ export function TableToolbar({
         <div className="p-md border-b border-border flex items-center justify-between gap-md">
             {showSearch ? (
                 <div className="relative w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground-muted" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground-muted z-10" />
 
                     <Input
-                        value={value}
+                        value={value ?? ""}
                         placeholder={placeholder || "Search..."}
                         onChange={(e) => {
                             if (onChange) onChange(e.target.value)
                             if (onResetPage) onResetPage()
                         }}
-                        className="h-12 pl-10 w-full text-base bg-surface text-foreground"
+                        className="input h-12 !pl-12 !pr-10 w-full text-base"
                     />
+
+                    {value && onChange && (
+                         <button
+                            type="button"
+                            onClick={() => {
+                                onChange("");
+                                if (onResetPage) onResetPage();
+                            }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-surface-muted text-foreground-muted hover:text-foreground transition-all duration-200 z-10"
+                            title="Xóa tìm kiếm"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div className="flex-1"></div>
@@ -52,7 +66,7 @@ export function TableToolbar({
             {filterOptions && onFilterChange && (
                 <div className="shrink-0 flex items-center gap-2">
                     <select
-                        className="h-12 w-[180px] px-sm text-base rounded-md border border-border-strong bg-surface text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 cursor-pointer"
+                        className="select h-12 w-[180px] px-md text-base rounded-md border border-border-strong shadow-sm focus-visible:ring-1 focus-visible:ring-primary/40 cursor-pointer"
                         value={filterValue ?? ""}
                         onMouseDown={() => onFetchOptions?.()}
                         onChange={(e) => {

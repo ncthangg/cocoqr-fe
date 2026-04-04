@@ -18,6 +18,7 @@ import ActionButton from "@/components/UICustoms/ActionButton";
 import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
 import { useDebounce } from "@/hooks/useDebounce";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const AccountModal = lazy(() => import("./components/AccountModal"));
 
@@ -325,6 +326,8 @@ const AccountsPage: React.FC = () => {
                 totalItems={stats.totalItems}
                 activeCount={stats.activeCount}
                 pinnedCount={stats.pinnedCount}
+                onRefresh={() => fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, activeFilter, providerFilter)}
+                loading={loading}
             />
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
@@ -409,32 +412,45 @@ const AccountsPage: React.FC = () => {
 
 // --- Subcomponents ---
 
-const PageHeader: React.FC<{ totalItems: number, activeCount: number, pinnedCount: number }> = React.memo(({ totalItems, activeCount, pinnedCount }) => (
+const PageHeader: React.FC<{ 
+    totalItems: number, 
+    activeCount: number, 
+    pinnedCount: number, 
+    onRefresh: () => void, 
+    loading: boolean 
+}> = React.memo(({ totalItems, activeCount, pinnedCount, onRefresh, loading }) => (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
         <div className="space-y-1">
             <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Quản lý Tài khoản</h1>
             <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý danh sách các tài khoản ngân hàng, ví điện tử cá nhân của bạn.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
-            <StatCard
-                label="Tổng tài khoản"
-                value={totalItems}
-                icon={<Wallet className="w-5 h-5 text-primary" />}
-                color="blue"
-            />
-            <StatCard
-                label="Đang hoạt động"
-                value={activeCount}
-                icon={<ShieldCheck className="w-5 h-5 text-green-500" />}
-                color="green"
-            />
-            <StatCard
-                label="Tài khoản đã ghim"
-                value={pinnedCount}
-                prefix="/5"
-                icon={<Pin className="w-5 h-5 text-amber-500 fill-amber-500" />}
-                color="amber"
+        <div className="flex items-center gap-3 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
+                <StatCard
+                    label="Tổng tài khoản"
+                    value={totalItems}
+                    icon={<Wallet className="w-5 h-5 text-primary" />}
+                    color="blue"
+                />
+                <StatCard
+                    label="Đang hoạt động"
+                    value={activeCount}
+                    icon={<ShieldCheck className="w-5 h-5 text-green-500" />}
+                    color="green"
+                />
+                <StatCard
+                    label="Tài khoản đã ghim"
+                    value={pinnedCount}
+                    prefix="/5"
+                    icon={<Pin className="w-5 h-5 text-amber-500 fill-amber-500" />}
+                    color="amber"
+                />
+            </div>
+            <RefreshButton
+                onRefresh={onRefresh}
+                loading={loading}
+                className="rounded-full"
             />
         </div>
     </div>

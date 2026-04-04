@@ -13,6 +13,7 @@ import { formatDateTime } from "@/utils/dateTimeUtils";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import { useDebounce } from "@/hooks/useDebounce";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const HistoryDetailModal = lazy(() => import("../../user/history/components/HistoryDetailModal"));
 
@@ -84,12 +85,17 @@ const AdminHistoryPage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid md:grid-cols-1 gap-6 shrink-0">
+                <div className="flex items-center gap-3">
                     <StatCard
-                        label="Tổng tài khoản"
+                        label="Tổng"
                         value={paging.totalItems}
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
+                    />
+                    <RefreshButton
+                        onRefresh={() => fetchRecords(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, providerFilter)}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>

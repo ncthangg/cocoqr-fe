@@ -3,7 +3,6 @@ import { HeroSection } from "./components/hero-section";
 import { FeaturesSection } from "./components/features-section";
 import { ContactSection } from "./components/contact-section";
 import { Header } from "./components/header";
-import { Footer } from "./components/footer";
 
 const HomePage: React.FC = () => {
     return (
@@ -15,9 +14,6 @@ const HomePage: React.FC = () => {
                 <HeroSection />
                 <FeaturesSection />
                 <ContactSection />
-                <div className="w-full snap-start border-t border-border shadow-sm relative">
-                    <Footer />
-                </div>
             </main>
         </div>
     );

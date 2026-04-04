@@ -65,6 +65,7 @@ export const ApiConstant = {
         GET_ALL: "/admin/admincontacts",
         GET_BY_ID: (id: string) => `/admin/admincontacts/${id}`,
         POST: "/admin/admincontacts",
+        PATCH_IGNORE: (id: string) => `/admin/admincontacts/${id}/ignore`,
     },
     EMAIL_LOG: {
         GET_ALL: "/admin/emaillogs",

@@ -4,14 +4,27 @@ import type { ContactMessageRes } from "@/models/entity.model";
 import { toast } from "react-toastify";
 import { DataTable, type Column } from "@/components/UICustoms/Table/data-table";
 import { formatDateTime } from "@/utils/dateTimeUtils";
-import { Mail, RefreshCw, Eye, Inbox, MailOpen, Search, X, Reply } from "lucide-react";
+import { Mail, Eye, Inbox, MailOpen, Search, Reply, Trash2, CheckCircle2 } from "lucide-react";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import { useDebounce } from "@/hooks/useDebounce";
 import { ContactMessageStatus } from "@/models/enum";
 import ContactDetailModal from "./components/DetailModal";
 import ReplyModal from "./components/ReplyModal";
 import ActionButton from "@/components/UICustoms/ActionButton";
-import { StatusBadge } from "@/components/UICustoms/StatusBadge";
+import { TagBadge } from "@/components/UICustoms/TagBadge";
+import FilterField from "@/components/UICustoms/FilterField";
+import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
+
+/* ─── Static data ───────────────────────────────────────────── */
+
+const READ_FILTER_OPTIONS = [
+    { label: "Chưa trả lời", value: "unread" },
+    { label: "Đã trả lời", value: "read" },
+    { label: "Bỏ qua", value: "ignored" },
+];
+
+/* ─── Component ─────────────────────────────────────────────── */
 
 const ContactMessagePage: React.FC = () => {
     const [messages, setMessages] = useState<ContactMessageRes[]>([]);
@@ -20,7 +33,7 @@ const ContactMessagePage: React.FC = () => {
     // Filters
     const [searchName, setSearchName] = useState("");
     const [searchEmail, setSearchEmail] = useState("");
-    const [readFilter, setReadFilter] = useState<string>("");
+    const [readFilter, setReadFilter] = useState("");
 
     const debouncedName = useDebounce(searchName, 400);
     const debouncedEmail = useDebounce(searchEmail, 400);
@@ -34,6 +47,12 @@ const ContactMessagePage: React.FC = () => {
     const [replyMessage, setReplyMessage] = useState<ContactMessageRes | null>(null);
     const [isReplyOpen, setIsReplyOpen] = useState(false);
 
+    // Confirm ignore
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [ignoringId, setIgnoringId] = useState<string | null>(null);
+
+    /* ─── Data fetching ───────────────────────────────────────── */
+
     const fetchMessages = useCallback(async () => {
         try {
             setLoading(true);
@@ -46,103 +65,164 @@ const ContactMessagePage: React.FC = () => {
         }
     }, []);
 
-    useEffect(() => { fetchMessages(); }, [fetchMessages]);
+    useEffect(() => {
+        fetchMessages();
+    }, [fetchMessages]);
 
-    const handleView = useCallback(async (msg: ContactMessageRes) => {
-        try {
-            setFetchingId(msg.id);
-            const detail = await adminContactApi.getById(msg.id);
-            setDetailMessage(detail);
-            setIsDetailOpen(true);
-        } catch {
-            toast.error("Không thể tải chi tiết liên hệ.");
-        } finally {
-            setFetchingId(null);
-        }
+    /* ─── Handlers ────────────────────────────────────────────── */
+
+    const handleView = useCallback(
+        async (msg: ContactMessageRes) => {
+            try {
+                setFetchingId(msg.id);
+                const detail = await adminContactApi.getById(msg.id);
+                setDetailMessage(detail);
+                setIsDetailOpen(true);
+            } catch {
+                toast.error("Không thể tải chi tiết liên hệ.");
+            } finally {
+                setFetchingId(null);
+            }
+        },
+        []
+    );
+
+    const handleOpenReply = useCallback((msg: ContactMessageRes) => {
+        setReplyMessage(msg);
+        setIsReplyOpen(true);
     }, []);
 
-    // Client-side filtering
+    const handleIgnore = useCallback(async () => {
+        if (!ignoringId) return;
+        try {
+            await adminContactApi.patchIgnore(ignoringId);
+            toast.success("Đã bỏ qua liên hệ.");
+            fetchMessages();
+            setIsConfirmOpen(false);
+            setIgnoringId(null);
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message || "Lỗi khi cập nhật trạng thái.");
+            throw err;
+        }
+    }, [ignoringId, fetchMessages]);
+
+    const handleOpenConfirmIgnore = (id: string) => {
+        setIgnoringId(id);
+        setIsConfirmOpen(true);
+    }
+
+    const handleCloseDetail = useCallback(() => {
+        setIsDetailOpen(false);
+        setDetailMessage(null);
+    }, []);
+
+    const handleCloseReply = useCallback(() => {
+        setIsReplyOpen(false);
+        setReplyMessage(null);
+    }, []);
+
+    /* ─── Derived state ───────────────────────────────────────── */
+
     const filtered = useMemo(() => {
-        return messages.filter(m => {
+        return messages.filter((m) => {
             if (debouncedName && !m.fullName?.toLowerCase().includes(debouncedName.toLowerCase())) return false;
             if (debouncedEmail && !m.email?.toLowerCase().includes(debouncedEmail.toLowerCase())) return false;
             if (readFilter === "read" && m.status !== ContactMessageStatus.REPLIED) return false;
-            if (readFilter === "unread" && m.status === ContactMessageStatus.REPLIED) return false;
+            if (readFilter === "unread" && m.status !== ContactMessageStatus.NEW) return false;
+            if (readFilter === "ignored" && m.status !== ContactMessageStatus.IGNORED) return false;
             return true;
         });
     }, [messages, debouncedName, debouncedEmail, readFilter]);
 
     const totalCount = messages.length;
-    const newCount = useMemo(() => messages.filter(m => m.status === ContactMessageStatus.NEW).length, [messages]);
+    const newCount = useMemo(() => messages.filter((m) => m.status === ContactMessageStatus.NEW).length, [messages]);
 
-    const columns = useMemo<Column<ContactMessageRes>[]>(() => [
-        {
-            header: "Người gửi",
-            accessor: (m: ContactMessageRes) => m.fullName || "",
-            type: "string",
-            cell: (m: ContactMessageRes) => (
-                <div className="flex flex-col">
-                    <span className="font-semibold text-foreground">{m.fullName}</span>
-                    <span className="text-xs text-foreground-muted">{m.email}</span>
-                </div>
-            )
-        },
-        {
-            header: "Nội dung",
-            accessor: (m: ContactMessageRes) => m.content,
-            type: "string",
-            cell: (m: ContactMessageRes) => {
-                const plainText = m.content ? m.content.replace(/<[^>]+>/g, '') : '';
-                return <span className="line-clamp-2 text-sm text-foreground-muted max-w-sm" title={plainText}>{plainText || "—"}</span>;
-            }
-        },
-        {
-            header: "Trạng thái",
-            accessor: (m: ContactMessageRes) => m.status === ContactMessageStatus.REPLIED ? "read" : "unread",
-            type: "string",
-            cell: (m: ContactMessageRes) => (
-                <StatusBadge
-                    status={m.status === ContactMessageStatus.REPLIED}
-                    activeText="Đã trả lời"
-                    inactiveText="Chưa trả lời"
-                    size="sm"
-                />
-            )
-        },
-        {
-            header: "Thời gian",
-            accessor: (m: ContactMessageRes) => m.createdAt,
-            type: "string",
-            cell: (m: ContactMessageRes) => (
-                <span className="text-xs font-medium text-foreground-muted">{formatDateTime(m.createdAt)}</span>
-            )
-        },
-        {
-            header: "Thao tác",
-            accessor: (m: ContactMessageRes) => m.id,
-            type: "string",
-            cell: (m: ContactMessageRes) => (
-                <div className="flex items-center gap-2">
-                    <ActionButton
-                        icon={<Eye className="w-4 h-4" />}
-                        onClick={() => handleView(m)}
-                        color="blue"
-                        title="Xem chi tiết"
-                        disabled={fetchingId === m.id}
-                    />
-                    <ActionButton
-                        icon={<Reply className="w-4 h-4" />}
-                        onClick={() => {
-                            setReplyMessage(m);
-                            setIsReplyOpen(true);
-                        }}
-                        color="amber"
-                        title="Trả lời"
-                    />
-                </div>
-            )
-        }
-    ], [handleView, fetchingId]);
+    /* ─── Columns ─────────────────────────────────────────────── */
+
+    const columns = useMemo<Column<ContactMessageRes>[]>(
+        () => [
+            {
+                header: "Người gửi",
+                accessor: (m) => m.fullName || "",
+                type: "string",
+                cell: (m) => (
+                    <div className="flex flex-col">
+                        <span className="font-semibold text-foreground">{m.fullName}</span>
+                        <span className="text-xs text-foreground-muted">{m.email}</span>
+                    </div>
+                ),
+            },
+            {
+                header: "Nội dung",
+                accessor: (m) => m.content,
+                type: "string",
+                cell: (m) => {
+                    const plainText = m.content ? m.content.replace(/<[^>]+>/g, "") : "";
+                    return (
+                        <span className="line-clamp-2 text-sm text-foreground-muted max-w-sm" title={plainText}>
+                            {plainText || "—"}
+                        </span>
+                    );
+                },
+            },
+            {
+                header: "Trạng thái",
+                accessor: (m) => m.status,
+                type: "string",
+                cell: (m) => {
+                    switch (m.status) {
+                        case ContactMessageStatus.REPLIED:
+                            return <TagBadge label="Đã trả lời" color="green" size="sm" icon={<CheckCircle2 className="w-3 h-3" />} />;
+                        case ContactMessageStatus.IGNORED:
+                            return <TagBadge label="Bỏ qua" color="gray" size="sm" icon={<Trash2 className="w-3 h-3" />} />;
+                        default:
+                            return <TagBadge label="Mới" color="blue" size="sm" icon={<Mail className="w-3 h-3" />} />;
+                    }
+                },
+            },
+            {
+                header: "Thời gian",
+                accessor: (m) => m.createdAt,
+                type: "string",
+                cell: (m) => <span className="text-xs font-medium text-foreground-muted">{formatDateTime(m.createdAt)}</span>,
+            },
+            {
+                header: "Thao tác",
+                accessor: (m) => m.id,
+                type: "string",
+                cell: (m) => (
+                    <div className="flex items-center gap-2">
+                        <ActionButton
+                            icon={<Eye className="w-4 h-4" />}
+                            onClick={() => handleView(m)}
+                            color="blue"
+                            title="Xem chi tiết"
+                            disabled={fetchingId === m.id}
+                        />
+                        {m.status === ContactMessageStatus.NEW && (
+                            <>
+                                <ActionButton
+                                    icon={<Reply className="w-4 h-4" />}
+                                    onClick={() => handleOpenReply(m)}
+                                    color="amber"
+                                    title="Trả lời"
+                                />
+                                <ActionButton
+                                    icon={<Trash2 className="w-4 h-4" />}
+                                    onClick={() => handleOpenConfirmIgnore(m.id)}
+                                    color="gray"
+                                    title="Bỏ qua"
+                                />
+                            </>
+                        )}
+                    </div>
+                ),
+            },
+        ],
+        [handleView, handleOpenReply, fetchingId]
+    );
+
+    /* ─── Render ──────────────────────────────────────────────── */
 
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
@@ -153,17 +233,12 @@ const ContactMessagePage: React.FC = () => {
                     <p className="text-sm text-foreground-muted font-medium">Quản lý tin nhắn liên hệ từ người dùng.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <StatCard
-                        label="Tổng cộng"
-                        value={totalCount}
-                        icon={<Mail className="w-5 h-5 text-primary" />}
-                        color="blue"
-                    />
-                    <StatCard
-                        label="Chưa trả lời"
-                        value={newCount}
-                        icon={<Inbox className="w-5 h-5 text-amber-500" />}
-                        color="amber"
+                    <StatCard label="Tổng" value={totalCount} icon={<Mail className="w-5 h-5 text-primary" />} color="blue" />
+                    <StatCard label="Chưa trả lời" value={newCount} icon={<Inbox className="w-5 h-5 text-amber-500" />} color="amber" />
+                    <RefreshButton
+                        onRefresh={fetchMessages}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
@@ -172,109 +247,63 @@ const ContactMessagePage: React.FC = () => {
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 flex-1">
                 {/* Filters */}
                 <div className="p-4 border-b border-border">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        {/* Name search */}
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-foreground-muted uppercase flex items-center gap-2">
-                                <Search className="w-3 h-3" /> Tên
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="Lọc theo tên..."
-                                    className="w-full bg-surface border border-border rounded-md pl-3 pr-8 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-                                    value={searchName}
-                                    onChange={e => setSearchName(e.target.value)}
-                                />
-                                {searchName && (
-                                    <button onClick={() => setSearchName("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-primary p-0.5">
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Email search */}
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-foreground-muted uppercase flex items-center gap-2">
-                                <Mail className="w-3 h-3" /> Email
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="Lọc theo email..."
-                                    className="w-full bg-surface border border-border rounded-md pl-3 pr-8 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-                                    value={searchEmail}
-                                    onChange={e => setSearchEmail(e.target.value)}
-                                />
-                                {searchEmail && (
-                                    <button onClick={() => setSearchEmail("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-primary p-0.5">
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Read filter */}
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-foreground-muted uppercase flex items-center gap-2">
-                                <MailOpen className="w-3 h-3" /> Trạng thái
-                            </label>
-                            <div className="relative">
-                                <select
-                                    className="w-full bg-surface border border-border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all pr-8 appearance-none"
-                                    value={readFilter}
-                                    onChange={e => setReadFilter(e.target.value)}
-                                >
-                                    <option value="">Tất cả</option>
-                                    <option value="unread">Chưa trả lời</option>
-                                    <option value="read">Đã trả lời</option>
-                                </select>
-                                {readFilter && (
-                                    <button onClick={() => setReadFilter("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-primary p-0.5">
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Reload */}
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-foreground-muted uppercase">&nbsp;</label>
-                            <button
-                                onClick={fetchMessages}
-                                disabled={loading}
-                                className="flex items-center gap-2 px-4 py-2 rounded-md border border-border text-sm font-bold text-foreground-muted hover:text-foreground hover:bg-border/50 transition-colors w-full justify-center"
-                            >
-                                <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-                                Tải lại
-                            </button>
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <FilterField
+                            type="input"
+                            label="Tên"
+                            icon={<Search className="w-3 h-3" />}
+                            value={searchName}
+                            onChange={setSearchName}
+                            placeholder="Lọc theo tên..."
+                        />
+                        <FilterField
+                            type="input"
+                            label="Email"
+                            icon={<Mail className="w-3 h-3" />}
+                            value={searchEmail}
+                            onChange={setSearchEmail}
+                            placeholder="Lọc theo email..."
+                        />
+                        <FilterField
+                            type="select"
+                            label="Trạng thái"
+                            icon={<MailOpen className="w-3 h-3" />}
+                            value={readFilter}
+                            onChange={setReadFilter}
+                            options={READ_FILTER_OPTIONS}
+                            placeholder="Tất cả"
+                        />
                     </div>
                 </div>
 
                 {/* Table body */}
                 <div className="min-h-0 flex-1 overflow-hidden">
-                    <DataTable
-                        loading={loading}
-                        data={filtered}
-                        columns={columns}
-                        showIndex
-                    />
+                    <DataTable loading={loading} data={filtered} columns={columns} showIndex />
                 </div>
             </div>
 
             <ContactDetailModal
                 isOpen={isDetailOpen}
-                onClose={() => { setIsDetailOpen(false); setDetailMessage(null); }}
+                onClose={handleCloseDetail}
                 message={detailMessage}
+                onReply={handleOpenReply}
+                onIgnore={async (id) => {
+                    setIgnoringId(id);
+                    await adminContactApi.patchIgnore(id);
+                    fetchMessages();
+                }}
             />
-            {/* Reply Modal */}
-            <ReplyModal
-                isOpen={isReplyOpen}
-                onClose={() => { setIsReplyOpen(false); setReplyMessage(null); }}
-                message={replyMessage}
-                onSuccess={fetchMessages}
+            <ReplyModal isOpen={isReplyOpen} onClose={handleCloseReply} message={replyMessage} onSuccess={fetchMessages} />
+
+            <ActionConfirmModal
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={handleIgnore}
+                title="Bỏ qua liên hệ"
+                description="Bạn có chắc chắn muốn bỏ qua liên hệ này? Trạng thái sẽ được cập nhật thành đã bỏ qua."
+                variant="danger"
+                icon={<Trash2 className="w-5 h-5" />}
+                confirmText="Bỏ qua"
             />
         </div>
     );

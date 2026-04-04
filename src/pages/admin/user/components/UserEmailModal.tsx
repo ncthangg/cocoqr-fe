@@ -222,7 +222,7 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                                         setSubjectFilter(e.target.value);
                                         setPaging(prev => ({ ...prev, pageNumber: 1 }));
                                     }}
-                                    className="w-full bg-surface border border-border rounded-lg pl-9 pr-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                                    className="input pl-9 pr-3 py-2 text-xs rounded-lg"
                                 />
                             </div>
                         </div>
@@ -324,7 +324,7 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                                                 id="smtpType"
                                                 value={smtpType}
                                                 onChange={(e) => setSmtpType(e.target.value as keyof typeof SmtpSettingType | "")}
-                                                className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                                                className="select w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/50"
                                             >
                                                 <option value="">Mặc định (hệ thống tự chọn)</option>
                                                 {Object.keys(SmtpSettingType).map(key => (
@@ -351,7 +351,7 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                                                         }
                                                     }
                                                 }}
-                                                className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground font-medium outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none"
+                                                className="select w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/50 appearance-none"
                                             >
                                                 <option value="">Không sử dụng mẫu</option>
                                                 {templates.filter(t => t.isActive).map(t => (
@@ -371,7 +371,7 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                                                 placeholder="Nhập tiêu đề email..."
                                                 value={subject}
                                                 onChange={(e) => setSubject(e.target.value)}
-                                                className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground placeholder:text-foreground-muted outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                                                className="input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50"
                                             />
                                         </div>
 

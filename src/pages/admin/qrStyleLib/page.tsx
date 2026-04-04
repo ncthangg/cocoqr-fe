@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
 import { qrStyleLibApi } from "@/services/qrStyleLib-api.service";
 import { Edit, Layout, Shield, User, FileJson, Trash2, AlertCircle, ShieldCheck } from "lucide-react";
+import { TagBadge } from "@/components/UICustoms/TagBadge";
 import { toast } from "react-toastify";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
@@ -9,7 +10,6 @@ import type { Column } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
-import { cn } from "@/lib/utils";
 import type { QrStyleLibraryRes } from "@/models/entity.model";
 import { QRStyleType } from "@/models/enum";
 
@@ -146,15 +146,12 @@ const QrStyleLibPage: React.FC = () => {
                                 header: "Loại",
                                 accessor: (item) => item.type,
                                 cell: (item) => (
-                                    <div className={cn(
-                                        "flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold border w-fit",
-                                        item.type === QRStyleType.SYSTEM
-                                            ? "bg-blue-500/10 border-blue-500/20 text-blue-600"
-                                            : "bg-amber-500/10 border-amber-500/20 text-amber-600"
-                                    )}>
-                                        {item.type === QRStyleType.SYSTEM ? <Shield className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
-                                        {item.type === QRStyleType.SYSTEM ? "SYSTEM" : "USER"}
-                                    </div>
+                                    <TagBadge
+                                        label={item.type === QRStyleType.SYSTEM ? "SYSTEM" : "USER"}
+                                        color={item.type === QRStyleType.SYSTEM ? "blue" : "amber"}
+                                        size="sm"
+                                        icon={item.type === QRStyleType.SYSTEM ? <Shield className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
+                                    />
                                 )
                             },
                             {
@@ -177,8 +174,7 @@ const QrStyleLibPage: React.FC = () => {
                                         status={item.isActive}
                                         activeText="HOẠT ĐỘNG"
                                         inactiveText="BẢO TRÌ"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                                 )
                             },

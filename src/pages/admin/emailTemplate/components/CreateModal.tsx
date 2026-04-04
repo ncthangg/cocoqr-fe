@@ -118,7 +118,7 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
                         <select
                             value={templateKey}
                             onChange={(e) => setTemplateKey(e.target.value)}
-                            className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                            className="select w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/50"
                             required
                         >
                             {availableKeys.map(key => (
@@ -132,7 +132,7 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
                                 value={customKey}
                                 onChange={e => setCustomKey(e.target.value)}
                                 placeholder="vd: order_shipped"
-                                className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground placeholder:text-foreground-muted outline-none focus:ring-2 focus:ring-primary/50 transition-all font-mono text-sm mt-2"
+                                className="input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50 font-mono text-sm mt-2"
                                 required
                             />
                         )}
@@ -148,7 +148,7 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
                             value={subject}
                             onChange={e => setSubject(e.target.value)}
                             placeholder="Tiêu đề email..."
-                            className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground placeholder:text-foreground-muted outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                            className="input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50"
                             required
                         />
                     </div>
@@ -163,7 +163,7 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
                             value={description}
                             onChange={e => setDescription(e.target.value)}
                             placeholder="Mô tả ngắn về template này..."
-                            className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground placeholder:text-foreground-muted outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                            className="input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50"
                         />
                     </div>
 

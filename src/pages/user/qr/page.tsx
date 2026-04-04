@@ -1,25 +1,44 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Pin, QrCode, Eraser, BookUser, X, ChevronRight } from "lucide-react";
-import Button from "../../../components/UICustoms/Button";
+import React, { useState, useEffect, useCallback } from "react";
+import { QrCode, Eraser, BookUser, ChevronRight } from "lucide-react";
+import Button from "@/components/UICustoms/Button";
 import { accountApi } from "@/services/account-api.service";
 import { providerApi } from "@/services/provider-api.service";
 import { qrApi } from "@/services/qr-api.service";
 
 import type { AccountRes, PagingVM, PostQrRes, ProviderRes } from "@/models/entity.model";
 import type { PostQrReq, PutAccountReq } from "@/models/entity.request.model";
-import { DataTable } from "@/components/UICustoms/Table/data-table";
-import type { Column } from "@/components/UICustoms/Table/data-table";
-import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
-import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { toast } from "react-toastify";
+import { formatVNDInput, formatVNDDisplay } from "@/utils/currencyUtils";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import QRDisplay from "@/components/UICustoms/QRDisplay";
 import AccountProviderSelector from "@/components/UICustoms/Form/AccountProviderSelector";
 import { ProviderCode } from "@/models/enum";
-import ActionButton from "@/components/UICustoms/ActionButton";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
-import BrandLogo from "@/components/UICustoms/BrandLogo";
+import { useResizable } from "@/hooks/useResizable";
+import AccountDrawer from "./components/AccountDrawer";
+
+/* ─── Default form state (module-scope) ─────────────────────── */
+
+const DEFAULT_FORM = {
+    providerId: "",
+    providerCode: "",
+    providerName: "",
+    isProviderInactive: false,
+    napasBin: "" as string | null,
+    bankCode: "" as string | null,
+    bankShortName: "" as string | null,
+    bankName: "" as string | null,
+    bankLogoUrl: "" as string | null,
+    isBankInactive: null as boolean | null,
+    number: "",
+    amount: "",
+    note: "",
+};
+
+
+
+/* ─── Component ─────────────────────────────────────────────── */
 
 const CreatePaymentPage: React.FC = () => {
     // API State
@@ -32,7 +51,7 @@ const CreatePaymentPage: React.FC = () => {
         pageNumber: 1,
         pageSize: 10,
         totalItems: 0,
-        totalPages: 0
+        totalPages: 0,
     });
     const [searchValue, setSearchValue] = useState("");
     const debouncedSearch = useDebounce(searchValue, 500);
@@ -47,38 +66,13 @@ const CreatePaymentPage: React.FC = () => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [providerFilter, setProviderFilter] = useState<string | undefined>(undefined);
 
-
-
     const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
-    const [formData, setFormData] = useState<{
-        providerId: string,
-        providerCode: string,
-        providerName: string,
-        isProviderInactive: boolean,
-        napasBin?: string | null,
-        bankCode?: string | null,
-        bankShortName?: string | null,
-        bankName?: string | null,
-        bankLogoUrl?: string | null,
-        isBankInactive?: boolean | null,
-        number: string,
-        amount: string,
-        note: string
-    }>({
-        providerId: "",
-        providerCode: "",
-        providerName: "",
-        isProviderInactive: false,
-        napasBin: "",
-        bankCode: "",
-        bankShortName: "",
-        bankName: "",
-        bankLogoUrl: "",
-        isBankInactive: null,
-        number: "",
-        amount: "",
-        note: ""
-    });
+    const [formData, setFormData] = useState(DEFAULT_FORM);
+
+    // Resizable hook
+    const { containerRef, leftPercent, startResizing } = useResizable(40);
+
+    /* ─── Data fetching ───────────────────────────────────────── */
 
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
@@ -93,47 +87,49 @@ const CreatePaymentPage: React.FC = () => {
         }
     }, [hasFetchedProviders]);
 
-    const fetchAccounts = useCallback(async (
-        page: number,
-        size: number,
-        search?: string,
-        providerId?: string
-    ) => {
-        try {
-            setLoading(true);
-            const res = await accountApi.getAll(
-                page, size, null, null, providerId ?? null, search ?? null, true
-            );
-            if (res) {
-                setAccounts(res.list || []);
-                setPaging(res);
+    const fetchAccounts = useCallback(
+        async (page: number, size: number, search?: string, providerId?: string) => {
+            try {
+                setLoading(true);
+                const res = await accountApi.getAll(page, size, null, null, providerId ?? null, search ?? null, true);
+                if (res) {
+                    setAccounts(res.list || []);
+                    setPaging(res);
+                }
+            } catch (error) {
+                console.error("Error fetching accounts:", error);
+                toast.error("Không thể tải danh sách tài khoản.");
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error("Error fetching accounts:", error);
-            toast.error("Không thể tải danh sách tài khoản.");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+        },
+        []
+    );
 
     useEffect(() => {
         fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter);
     }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter]);
 
-    const handlePageChange = (newPage: number) => {
-        setPaging(prev => ({ ...prev, pageNumber: newPage }));
-    };
+    /* ─── Handlers ────────────────────────────────────────────── */
 
-    const handleOpenPin = (acc: AccountRes) => {
+    const handlePageChange = useCallback((newPage: number) => {
+        setPaging((prev) => ({ ...prev, pageNumber: newPage }));
+    }, []);
+
+    const handlePageSizeChange = useCallback((newSize: number) => {
+        setPaging((prev) => ({ ...prev, pageSize: newSize, pageNumber: 1 }));
+    }, []);
+
+    const handleOpenPin = useCallback((acc: AccountRes) => {
         setSelectedAccount(acc);
         setIsPinModalOpen(true);
-    };
+    }, []);
 
-    const handlePinAccount = async () => {
+    const handlePinAccount = useCallback(async () => {
         if (!selectedAccount) return;
         const isCurrentlyPinned = selectedAccount.isPinned;
         if (!isCurrentlyPinned) {
-            const currentPinnedCount = accounts.filter(acc => acc.isPinned).length;
+            const currentPinnedCount = accounts.filter((acc) => acc.isPinned).length;
             if (currentPinnedCount >= 5) {
                 toast.warning("Bạn chỉ có thể ghim tối đa 5 tài khoản.");
                 setIsPinModalOpen(false);
@@ -153,7 +149,7 @@ const CreatePaymentPage: React.FC = () => {
                 isActive: selectedAccount.isActive,
             };
             await accountApi.put(selectedAccount.id, req);
-            handleModalSuccess();
+            fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter);
             setIsPinModalOpen(false);
         } catch (error) {
             console.error("Error toggling pin status:", error);
@@ -162,17 +158,43 @@ const CreatePaymentPage: React.FC = () => {
             setLoading(false);
             setSelectedAccount(null);
         }
-    };
+    }, [selectedAccount, accounts, fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter]);
 
-    const handleModalSuccess = () => {
-        fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter);
-    };
+    const handleSelectAccount = useCallback(
+        (acc: AccountRes) => {
+            setSelectedAccount(acc);
+            const isBank = acc.providerCode === ProviderCode.BANK;
+            setFormData({
+                providerId: acc.providerId,
+                providerCode: acc.providerCode || "",
+                providerName: acc.providerName || "",
+                isProviderInactive: !acc.providerIsActive,
+                napasBin: acc.napasBin || "",
+                bankCode: acc.bankCode || "",
+                bankShortName: acc.bankShortName || "",
+                bankName: acc.bankName || "",
+                bankLogoUrl: acc.bankLogoUrl || "",
+                isBankInactive: isBank ? !acc.bankIsActive : null,
+                number: acc.accountNumber ?? "",
+                amount: "",
+                note: "",
+            });
+            setIsProviderMaintenance(!acc.providerIsActive);
+            setIsBankMaintenance(isBank ? !acc.bankIsActive : false);
+            setQrResult(null);
+            setIsDrawerOpen(false);
+        },
+        []
+    );
 
-    const prov = allProviders.find(p => p.id === formData.providerId);
-    const isProviderInactive = prov ? !prov.isActive : (formData.providerId ? isProviderMaintenance : false);
+    const handleOpenDrawer = useCallback(() => setIsDrawerOpen(true), []);
+    const handleCloseDrawer = useCallback(() => setIsDrawerOpen(false), []);
+
+    const prov = allProviders.find((p) => p.id === formData.providerId);
+    const isProviderInactive = prov ? !prov.isActive : formData.providerId ? isProviderMaintenance : false;
     const isBankInactive = isBankMaintenance;
 
-    const handleCreateQR = async () => {
+    const handleCreateQR = useCallback(async () => {
         if (!formData.providerId) {
             toast.warning("Vui lòng chọn loại tài khoản.");
             return;
@@ -198,12 +220,11 @@ const CreatePaymentPage: React.FC = () => {
         }
         try {
             setQrLoading(true);
-
             const req: PostQrReq = {
                 providerId: formData.providerId,
                 accountId: selectedAccount?.id ?? null,
                 accountNumber: selectedAccount ? null : formData.number,
-                bankCode: selectedAccount ? null : (isBank ? String(formData.bankCode) : null),
+                bankCode: selectedAccount ? null : isBank ? String(formData.bankCode) : null,
                 amount: formData.amount ? Number(formData.amount) : null,
                 description: formData.note || null,
                 isFixedAmount: !!formData.amount,
@@ -217,204 +238,116 @@ const CreatePaymentPage: React.FC = () => {
         } finally {
             setQrLoading(false);
         }
-    };
+    }, [formData, selectedAccount, isProviderInactive, isBankInactive]);
 
-    const handleSelectAccount = (acc: AccountRes) => {
-        setSelectedAccount(acc);
-        const isBank = acc.providerCode === ProviderCode.BANK;
-        setFormData({
-            providerId: acc.providerId,
-            providerCode: acc.providerCode || "",
-            providerName: acc.providerName || "",
-            isProviderInactive: !acc.providerIsActive,
-            napasBin: acc.napasBin || "",
-            bankCode: acc.bankCode || "",
-            bankShortName: acc.bankShortName || "",
-            bankName: acc.bankName || "",
-            bankLogoUrl: acc.bankLogoUrl || "",
-            isBankInactive: isBank ? !acc.bankIsActive : null,
-            number: acc.accountNumber ?? "",
-            amount: "",
-            note: ""
-        });
-        setIsProviderMaintenance(!acc.providerIsActive);
-        setIsBankMaintenance(isBank ? !acc.bankIsActive : false);
+    const handleClearForm = useCallback(() => {
+        setFormData(DEFAULT_FORM);
+        setSelectedAccount(null);
         setQrResult(null);
-        setIsDrawerOpen(false); // close drawer after selection
-    };
+        setIsProviderMaintenance(false);
+        setIsBankMaintenance(false);
+    }, []);
 
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [leftPercent, setLeftPercent] = useState<number>(40);
+    const handleProviderChange = useCallback(
+        (id: string) => {
+            if (selectedAccount && id !== selectedAccount.providerId) setSelectedAccount(null);
+            const p = allProviders.find((item) => item.id === id);
+            setFormData((prev) => ({
+                ...prev,
+                providerId: id,
+                providerCode: p?.code ?? "",
+                providerName: p?.name ?? "",
+                isProviderInactive: false,
+                napasBin: "",
+                bankCode: "",
+                bankShortName: "",
+                bankLogoUrl: "",
+                isBankInactive: false,
+            }));
+            setIsProviderMaintenance(p ? !p.isActive : false);
+            setIsBankMaintenance(false);
+        },
+        [allProviders, selectedAccount]
+    );
 
-    const startResizing = useCallback((mouseDownEvent: React.MouseEvent) => {
-        if (!containerRef.current) return;
-        mouseDownEvent.preventDefault();
-        const containerWidth = containerRef.current.offsetWidth;
-        const startX = mouseDownEvent.clientX;
-        const startPercent = leftPercent;
+    const handleBankSelect = useCallback(
+        (napasBin: string, code: string, shortName: string, bankName: string, logoUrl: string | null, isActive: boolean) => {
+            if (selectedAccount && code !== selectedAccount.bankCode) setSelectedAccount(null);
+            setFormData((prev) => ({
+                ...prev,
+                napasBin,
+                bankCode: code,
+                bankShortName: shortName,
+                bankName,
+                bankLogoUrl: logoUrl,
+                isBankInactive: !isActive,
+            }));
+            setIsBankMaintenance(!isActive);
+        },
+        [selectedAccount]
+    );
 
-        const onMouseMove = (mouseMoveEvent: MouseEvent) => {
-            const delta = mouseMoveEvent.clientX - startX;
-            const deltaPct = (delta / containerWidth) * 100;
-            const newPct = Math.max(30, Math.min(70, startPercent + deltaPct));
-            setLeftPercent(newPct);
-        };
+    const handleNumberChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            if (selectedAccount && e.target.value !== (selectedAccount.accountNumber ?? "")) setSelectedAccount(null);
+            setFormData((prev) => ({ ...prev, number: e.target.value }));
+        },
+        [selectedAccount]
+    );
 
-        const onMouseUp = () => {
-            document.removeEventListener("mousemove", onMouseMove);
-            document.removeEventListener("mouseup", onMouseUp);
-            document.body.style.cursor = 'default';
-        };
+    const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const raw = e.target.value.replace(/\D/g, "");
+        if (raw.length <= 15) {
+            setFormData((prev) => ({ ...prev, amount: raw }));
+        }
+    }, []);
 
-        document.addEventListener("mousemove", onMouseMove);
-        document.addEventListener("mouseup", onMouseUp);
-        document.body.style.cursor = 'col-resize';
-    }, [leftPercent]);
+    const handleNoteChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData((prev) => ({ ...prev, note: e.target.value }));
+    }, []);
+
+    /* ─── Render ──────────────────────────────────────────────── */
 
     return (
-        <div
-            ref={containerRef}
-            className="h-full w-full flex bg-bg flex-1 overflow-hidden relative qr-container"
-        >
+        <div ref={containerRef} className="h-full w-full flex bg-bg flex-1 overflow-hidden relative qr-container">
+            {/* Account Drawer */}
+            <AccountDrawer
+                isOpen={isDrawerOpen}
+                onClose={handleCloseDrawer}
+                accounts={accounts}
+                loading={loading}
+                paging={paging}
+                selectedAccountId={selectedAccount?.id ?? null}
+                searchValue={searchValue}
+                onSearchChange={setSearchValue}
+                providerFilter={providerFilter}
+                onProviderFilterChange={setProviderFilter}
+                allProviders={allProviders}
+                onFetchProviders={fetchProviders}
+                onSelectAccount={handleSelectAccount}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                onOpenPin={handleOpenPin}
+                onRefresh={() => fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter)}
+                refreshLoading={loading}
+            />
 
-            {/* Account Drawer Overlay */}
-            {isDrawerOpen && (
-                <div
-                    className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm animate-in fade-in duration-300"
-                    onClick={() => setIsDrawerOpen(false)}
-                />
-            )}
-
-            {/* Account Drawer Panel */}
-            <div className={cn(
-                "fixed left-0 top-0 h-full z-50 bg-surface shadow-lg flex flex-col transition-all duration-300 ease-in-out border-r border-border",
-                isDrawerOpen ? "w-[var(--drawer-width,480px)] translate-x-0 opacity-100" : "w-[var(--drawer-width,480px)] -translate-x-full opacity-0 pointer-events-none"
-            )}>
-                {/* Drawer Header */}
-                <div className="flex items-center justify-between p-lg border-b border-border/60 bg-surface-elevated shrink-0">
-                    <div className="flex items-center gap-md">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                            <BookUser className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-foreground text-base">Tài khoản của bạn</h3>
-                            <p className="text-xs text-foreground-muted">Chọn để điền nhanh thông tin</p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => setIsDrawerOpen(false)}
-                        className="p-sm rounded-lg hover:bg-surface-muted text-foreground-muted hover:text-foreground transition-colors"
-                        aria-label="Đóng danh sách"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Toolbar */}
-                <div className="shrink-0 p-md border-b border-border/40 bg-surface-muted/5">
-                    <TableToolbar
-                        value={searchValue}
-                        onChange={setSearchValue}
-                        placeholder="Tìm kiếm tài khoản..."
-                        onResetPage={() => handlePageChange(1)}
-                        filterValue={providerFilter !== undefined ? String(providerFilter) : ""}
-                        filterOptions={allProviders.map(p => ({
-                            label: p.name,
-                            value: p.id
-                        }))}
-                        filterPlaceholder="Chọn loại tài khoản..."
-                        onFilterChange={(val) => setProviderFilter(val === undefined ? undefined : String(val))}
-                        onFetchOptions={fetchProviders}
-                    />
-                </div>
-
-                {/* Table */}
-                <div className="min-h-0 flex-1 overflow-hidden relative">
-                    <DataTable
-                        loading={loading}
-                        data={accounts}
-                        onRowClick={handleSelectAccount}
-                        selectedRowPredicate={(acc) => selectedAccount?.id === acc.id}
-                        columns={useMemo<Column<AccountRes>[]>(() => [
-                            {
-                                header: "TÀI KHOẢN",
-                                accessor: (acc) => acc.accountHolder,
-                                type: "string",
-                                cell: (acc) => (
-                                    <div className="flex items-center gap-md">
-                                        <BrandLogo
-                                            logoUrl={(acc.bankLogoUrl ?? acc.providerLogoUrl)}
-                                            name={acc.bankShortName || acc.providerName}
-                                            code={acc.bankCode || acc.providerCode}
-                                            size="sm"
-                                        />
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="font-semibold text-foreground text-base leading-tight uppercase truncate">
-                                                {acc.accountHolder}
-                                            </span>
-                                            <span className="text-xs text-foreground-muted truncate">
-                                                {(acc.bankCode && acc.bankName) ? acc.bankName : acc.providerName}
-                                                {" · "}
-                                                {acc.accountNumber}
-                                            </span>
-                                        </div>
-                                        {(acc.bankIsActive === false || acc.providerIsActive === false) && (
-                                            <span className="px-sm py-2xs bg-danger/10 text-danger font-bold text-[9px] uppercase rounded-md animate-pulse ml-auto border border-danger/20 shrink-0">
-                                                Bảo trì
-                                            </span>
-                                        )}
-                                    </div>
-                                )
-                            },
-                            {
-                                header: "PIN",
-                                accessor: (acc) => acc.isPinned,
-                                type: "boolean",
-                                cell: (acc) =>
-                                    <ActionButton
-                                        icon={<Pin className={cn("w-4 h-4", acc.isPinned && "fill-amber-500")} />}
-                                        onClick={() => handleOpenPin(acc)}
-                                        color={acc.isPinned ? "amber" : "gray"}
-                                        title={acc.isPinned ? "Bỏ ghim" : "Ghim"}
-                                    />
-                            }
-                        ], [handleOpenPin])}
-                    />
-                </div>
-
-                {/* Pagination */}
-                <div className="shrink-0 border-t border-border/40">
-                    <TablePagination
-                        pageNumber={paging.pageNumber}
-                        pageSize={paging.pageSize}
-                        totalItems={paging.totalItems}
-                        totalPages={paging.totalPages}
-                        loading={loading}
-                        onPageChange={handlePageChange}
-                        onPageSizeChange={(newSize) => {
-                            setPaging(prev => ({ ...prev, pageSize: newSize, pageNumber: 1 }));
-                        }}
-                        pageSizeOptions={[5, 10, 20]}
-                    />
-                </div>
-            </div>
-
-            {/* Left Column: QR Form (Resizable) */}
+            {/* Left Column: QR Form */}
             <div
                 className="flex flex-col gap-lg h-full min-h-0 overflow-y-auto px-lg py-md relative scrollbar-hidden animate-in fade-in slide-in-from-left-4 duration-500"
                 style={{ width: `${leftPercent}%`, flexShrink: 0 }}
             >
-
-                {/* Top: Title + Open Drawer Tag + Clear */}
+                {/* Top: Title + Drawer Tag + Clear */}
                 <div className="flex items-center justify-between shrink-0 mb-sm">
                     <div className="flex flex-col gap-1">
                         <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Tạo QR</h1>
-                        <p className="text-sm text-foreground-muted font-medium">Nhập thông tin hoặc chọn từ danh sách để tạo mã QR thanh toán nhanh chóng.</p>
+                        <p className="text-sm text-foreground-muted font-medium">
+                            Nhập thông tin hoặc chọn từ danh sách để tạo mã QR thanh toán nhanh chóng.
+                        </p>
                     </div>
                     <div className="flex items-center gap-md">
-                        {/* Drawer Trigger Tag */}
                         <button
-                            onClick={() => setIsDrawerOpen(true)}
+                            onClick={handleOpenDrawer}
                             className={cn(
                                 "flex items-center gap-sm px-lg py-sm rounded-full text-xs font-bold border transition-all duration-300 hover:shadow-md",
                                 selectedAccount
@@ -427,35 +360,14 @@ const CreatePaymentPage: React.FC = () => {
                             <span className="truncate max-w-[180px]">
                                 {selectedAccount
                                     ? `${selectedAccount.accountHolder || selectedAccount.accountNumber}`
-                                    : "Chọn từ danh sách tài khoản của bạn"
-                                }
+                                    : "Chọn từ danh sách tài khoản của bạn"}
                             </span>
                             <ChevronRight className="w-3.5 h-3.5" />
                         </button>
                     </div>
                     <button
                         className="p-sm text-foreground-secondary hover:text-danger hover:bg-danger/5 rounded-md transition-all duration-300"
-                        onClick={() => {
-                            setFormData({
-                                providerId: "",
-                                providerCode: "",
-                                providerName: "",
-                                isProviderInactive: false,
-                                napasBin: "",
-                                bankCode: "",
-                                bankShortName: "",
-                                bankName: "",
-                                bankLogoUrl: "",
-                                isBankInactive: null,
-                                number: "",
-                                amount: "",
-                                note: ""
-                            });
-                            setSelectedAccount(null);
-                            setQrResult(null);
-                            setIsProviderMaintenance(false);
-                            setIsBankMaintenance(false);
-                        }}
+                        onClick={handleClearForm}
                         aria-label="Xóa thông tin"
                         title="Xóa thông tin"
                     >
@@ -475,29 +387,8 @@ const CreatePaymentPage: React.FC = () => {
                         bankLogoUrl={formData?.bankLogoUrl || ""}
                         allProviders={allProviders}
                         onFetchProviders={fetchProviders}
-                        onProviderChange={(id) => {
-                            if (selectedAccount && id !== selectedAccount.providerId) setSelectedAccount(null);
-                            const p = allProviders.find(item => item.id === id);
-                            setFormData({
-                                ...formData,
-                                providerId: id,
-                                providerCode: p?.code ?? "",
-                                providerName: p?.name ?? "",
-                                isProviderInactive: false,
-                                napasBin: "",
-                                bankCode: "",
-                                bankShortName: "",
-                                bankLogoUrl: "",
-                                isBankInactive: false,
-                            });
-                            setIsProviderMaintenance(p ? !p.isActive : false);
-                            setIsBankMaintenance(false);
-                        }}
-                        onBankSelect={(napasBin, code, shortName, bankName, logoUrl, isActive) => {
-                            if (selectedAccount && code !== selectedAccount.bankCode) setSelectedAccount(null);
-                            setFormData({ ...formData, napasBin, bankCode: code, bankShortName: shortName, bankName: bankName, bankLogoUrl: logoUrl, isBankInactive: !isActive });
-                            setIsBankMaintenance(!isActive);
-                        }}
+                        onProviderChange={handleProviderChange}
+                        onBankSelect={handleBankSelect}
                         isProviderInactive={isProviderInactive || false}
                         isBankInactive={isBankInactive || null}
                         allowInactiveSelection={false}
@@ -505,7 +396,9 @@ const CreatePaymentPage: React.FC = () => {
                     />
 
                     <div className="flex flex-col gap-sm">
-                        <label htmlFor="accountNumber" className="text-sm font-medium text-foreground-secondary">Số tài khoản / Số điện thoại</label>
+                        <label htmlFor="accountNumber" className="text-sm font-medium text-foreground-secondary">
+                            Số tài khoản / Số điện thoại
+                        </label>
                         <input
                             id="accountNumber"
                             name="accountNumber"
@@ -513,28 +406,41 @@ const CreatePaymentPage: React.FC = () => {
                             className="input"
                             placeholder="Nhập số tài khoản hoặc SĐT"
                             value={formData.number}
-                            onChange={(e) => {
-                                if (selectedAccount && e.target.value !== (selectedAccount.accountNumber ?? "")) setSelectedAccount(null);
-                                setFormData({ ...formData, number: e.target.value });
-                            }}
+                            onChange={handleNumberChange}
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
                         <div className="flex flex-col gap-sm">
-                            <label htmlFor="amount" className="text-sm font-medium text-foreground-secondary">Số tiền (VNĐ)</label>
-                            <input
-                                id="amount"
-                                name="amount"
-                                type="number"
-                                className="input"
-                                placeholder="Nhập số tiền"
-                                value={formData.amount}
-                                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                            />
+                            <label htmlFor="amount" className="text-sm font-medium text-foreground-secondary">
+                                Số tiền
+                            </label>
+                            <div className="relative group/amount">
+                                <input
+                                    id="amount"
+                                    name="amount"
+                                    type="text"
+                                    inputMode="numeric"
+                                    className="input font-mono pr-12"
+                                    placeholder="Nhập số tiền"
+                                    autoComplete="off"
+                                    value={formatVNDInput(formData.amount)}
+                                    onChange={handleAmountChange}
+                                />
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-foreground-muted select-none group-focus-within/amount:text-primary transition-colors border border-border/60 px-1.5 py-0.5 rounded bg-surface-muted/50">
+                                    VND
+                                </div>
+                            </div>
+                            {formData.amount && (
+                                <p className="text-[10px] font-bold text-foreground-muted/70 px-1 italic animate-in fade-in slide-in-from-top-1 duration-300">
+                                    = {formatVNDDisplay(formData.amount)}
+                                </p>
+                            )}
                         </div>
                         <div className="flex flex-col gap-sm">
-                            <label htmlFor="note" className="text-sm font-medium text-foreground-secondary">Ghi chú (Tùy chọn)</label>
+                            <label htmlFor="note" className="text-sm font-medium text-foreground-secondary">
+                                Ghi chú (Tùy chọn)
+                            </label>
                             <input
                                 id="note"
                                 name="note"
@@ -542,12 +448,10 @@ const CreatePaymentPage: React.FC = () => {
                                 className="input"
                                 placeholder="Nhập nội dung chuyển khoản"
                                 value={formData.note}
-                                onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                                onChange={handleNoteChange}
                             />
                         </div>
                     </div>
-
-
 
                     {(isProviderInactive || isBankInactive) && (
                         <div className="p-md bg-danger/5 border border-danger/20 rounded-lg animate-in fade-in duration-300">
@@ -567,7 +471,7 @@ const CreatePaymentPage: React.FC = () => {
                             disabled={qrLoading || isBankInactive || isProviderInactive}
                         >
                             <QrCode className="w-5 h-5" />
-                            {qrLoading ? "Đang tạo..." : (isBankInactive || isProviderInactive) ? "ĐANG BẢO TRÌ" : "TẠO QR"}
+                            {qrLoading ? "Đang tạo..." : isBankInactive || isProviderInactive ? "ĐANG BẢO TRÌ" : "TẠO QR"}
                         </Button>
                     </div>
                 </div>
@@ -581,7 +485,7 @@ const CreatePaymentPage: React.FC = () => {
                 <div className="h-12 w-0.5 rounded-full bg-border group-hover:bg-primary transition-all duration-300" />
             </div>
 
-            {/* Right Column: QR Display (Resizable) */}
+            {/* Right Column: QR Display */}
             <div
                 className="flex flex-col gap-lg h-full min-h-0 overflow-y-auto px-lg py-md flex-1 min-w-0 scrollbar-hidden animate-in fade-in slide-in-from-right-4 duration-500"
                 style={{ width: `${100 - leftPercent}%` }}
@@ -603,7 +507,7 @@ const CreatePaymentPage: React.FC = () => {
                 onClose={() => setIsPinModalOpen(false)}
                 onConfirm={handlePinAccount}
                 title={selectedAccount?.isPinned ? "Xác nhận bỏ ghim tài khoản" : "Xác nhận ghim tài khoản"}
-                description={`Bạn có chắc chắn muốn ${selectedAccount?.isPinned ? 'bỏ ghim' : 'ghim'} tài khoản "${selectedAccount?.accountNumber || selectedAccount?.bankCode}" không?`}
+                description={`Bạn có chắc chắn muốn ${selectedAccount?.isPinned ? "bỏ ghim" : "ghim"} tài khoản "${selectedAccount?.accountNumber || selectedAccount?.bankCode}" không?`}
                 loading={loading}
                 confirmText={selectedAccount?.isPinned ? "Bỏ ghim" : "Ghim"}
             />

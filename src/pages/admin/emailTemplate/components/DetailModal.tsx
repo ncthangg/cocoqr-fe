@@ -5,6 +5,7 @@ import { formatDateTime } from "@/utils/dateTimeUtils";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
+import Button from "@/components/UICustoms/Button";
 
 interface DetailModalProps {
     isOpen: boolean;
@@ -110,12 +111,13 @@ const EmailTemplateDetailModal: React.FC<DetailModalProps> = ({ isOpen, onClose,
 
                 {/* Footer */}
                 <div className="p-4 border-t border-border flex justify-end bg-bg/50">
-                    <button
+                    <Button
+                        variant="primary"
                         onClick={onClose}
-                        className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95"
+                        className="px-6 rounded-lg"
                     >
                         Đóng
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

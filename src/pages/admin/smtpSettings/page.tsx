@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
-import { Server, Loader2, RefreshCw, Plus } from "lucide-react";
+import { Server, Loader2, Plus } from "lucide-react";
 import type { SmtpSettingRes } from "@/models/entity.model";
 import { smtpSettingApi } from "@/services/smtp-setting-api.service";
 import { SmtpPanel } from "./components/SmtpPanel";
 import { CreatePanel } from "./components/CreatePanel";
 import { type SmtpTypeKey, ALL_SMTP_TYPES, normaliseType } from "./utils";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const SmtpSettingsPage: React.FC = () => {
     // Keyed by UPPER_CASE SmtpTypeKey — normalised on ingest
@@ -80,11 +81,11 @@ const SmtpSettingsPage: React.FC = () => {
                             <Plus className="w-4 h-4" /> Thêm cấu hình
                         </button>
                     )}
-                    <button onClick={fetchAll} disabled={loading}
-                        className="p-2.5 rounded-xl border border-border text-foreground-muted hover:text-foreground hover:bg-border/50 transition-colors"
-                        title="Tải lại">
-                        <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-                    </button>
+                    <RefreshButton 
+                        onRefresh={fetchAll}
+                        loading={loading}
+                        className="rounded-full"
+                    />
                 </div>
             </div>
 

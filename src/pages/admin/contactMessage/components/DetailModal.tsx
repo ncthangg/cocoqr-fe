@@ -1,25 +1,54 @@
-import React, { useCallback } from "react";
-import { X, Mail, User, Calendar } from "lucide-react";
+import React, { useCallback, useState } from "react";
+import { X, Mail, User, Calendar, Reply, Trash2, CheckCircle2 } from "lucide-react";
 import type { ContactMessageRes } from "@/models/entity.model";
 import { formatDateTime } from "@/utils/dateTimeUtils";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 
 import { ContactMessageStatus } from "@/models/enum";
-import { StatusBadge } from "@/components/UICustoms/StatusBadge";
+import { TagBadge } from "@/components/UICustoms/TagBadge";
+import Button from "@/components/UICustoms/Button";
+import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
     message: ContactMessageRes | null;
+    onReply: (msg: ContactMessageRes) => void;
+    onIgnore: (id: string) => Promise<void>;
 }
 
-const ContactDetailModal: React.FC<Props> = ({ isOpen, onClose, message }) => {
+const ContactDetailModal: React.FC<Props> = ({ isOpen, onClose, message, onReply, onIgnore }) => {
+    const [ignoring, setIgnoring] = useState(false);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
     const handleOverlayClick = useCallback((e: React.MouseEvent) => {
         if (e.target === e.currentTarget) onClose();
     }, [onClose]);
 
     if (!isOpen || !message) return null;
+
+    const handleConfirmIgnore = async () => {
+        try {
+            setIgnoring(true);
+            await onIgnore(message.id);
+            setIsConfirmOpen(false);
+            onClose();
+        } finally {
+            setIgnoring(false);
+        }
+    }
+
+    const renderStatus = () => {
+        switch (message.status) {
+            case ContactMessageStatus.REPLIED:
+                return <TagBadge label="Đã trả lời" color="green" size="lg" icon={<CheckCircle2 className="w-4 h-4" />} />;
+            case ContactMessageStatus.IGNORED:
+                return <TagBadge label="Đã bỏ qua" color="gray" size="lg" icon={<Trash2 className="w-4 h-4" />} />;
+            default:
+                return <TagBadge label="Mới" color="blue" size="lg" icon={<Mail className="w-4 h-4" />} />;
+        }
+    }
 
     return (
         <div
@@ -42,12 +71,7 @@ const ContactDetailModal: React.FC<Props> = ({ isOpen, onClose, message }) => {
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <StatusBadge
-                            status={message.status === ContactMessageStatus.REPLIED}
-                            activeText="Đã trả lời"
-                            inactiveText="Mới"
-                            size="lg"
-                        />
+                        {renderStatus()}
                         <div className="flex flex-col items-end">
                             <span className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider">Gửi lúc</span>
                             <span className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
@@ -94,14 +118,54 @@ const ContactDetailModal: React.FC<Props> = ({ isOpen, onClose, message }) => {
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-border flex justify-end bg-bg/50">
-                    <button
+                <div className="p-4 border-t border-border flex justify-end gap-3 bg-bg/50">
+                    <Button
+                        variant="outline"
                         onClick={onClose}
-                        className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95"
+                        className="px-6 rounded-lg"
                     >
                         Đóng
-                    </button>
+                    </Button>
+                    {message.status === ContactMessageStatus.NEW && (
+                        <>
+                            <Button
+                                onClick={() => setIsConfirmOpen(true)}
+                                loading={ignoring}
+                                icon={<Trash2 className="w-4 h-4" />}
+                                className="px-6 bg-zinc-500 hover:bg-zinc-600 border-zinc-600 text-white rounded-lg shadow-lg shadow-zinc-500/20"
+                            >
+                                Bỏ qua
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    onReply(message);
+                                    onClose();
+                                }}
+                                icon={<Reply className="w-4 h-4" />}
+                                className="px-6 bg-amber-500 hover:bg-amber-600 border-amber-600 text-white rounded-lg shadow-lg shadow-amber-500/20"
+                            >
+                                Trả lời
+                            </Button>
+                        </>
+                    )}
                 </div>
+
+                <ActionConfirmModal
+                    isOpen={isConfirmOpen}
+                    onClose={() => setIsConfirmOpen(false)}
+                    onConfirm={handleConfirmIgnore}
+                    title="Bỏ qua liên hệ"
+                    description={
+                        <div className="text-center">
+                            <p className="text-foreground font-medium">Bạn có chắc chắn muốn bỏ qua liên hệ của <span className="font-bold text-primary">{message.fullName}</span>?</p>
+                            <p className="text-sm text-foreground-muted mt-2">Hành động này sẽ đánh dấu liên hệ là đã bỏ qua.</p>
+                        </div>
+                    }
+                    confirmText="Bỏ qua"
+                    variant="danger"
+                    loading={ignoring}
+                    icon={<Trash2 className="w-5 h-5" />}
+                />
             </div>
         </div>
     );

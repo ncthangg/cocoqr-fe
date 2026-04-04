@@ -16,4 +16,8 @@ export const adminContactApi = {
         const response = await axiosPrivate.post(ApiConstant.ADMIN_CONTACT.POST, data);
         return response.data;
     },
+    patchIgnore: async (id: string): Promise<any> => {
+        const response = await axiosPrivate.patch(ApiConstant.ADMIN_CONTACT.PATCH_IGNORE(id));
+        return response.data;
+    },
 };

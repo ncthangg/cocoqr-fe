@@ -121,7 +121,7 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
                             value={subject}
                             onChange={e => setSubject(e.target.value)}
                             placeholder="Tiêu đề email..."
-                            className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground placeholder:text-foreground-muted outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                            className="input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50"
                             required
                         />
                     </div>
@@ -136,7 +136,7 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
                             value={description}
                             onChange={e => setDescription(e.target.value)}
                             placeholder="Mô tả ngắn về template này..."
-                            className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground placeholder:text-foreground-muted outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                            className="input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50"
                         />
                     </div>
 

@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const ProviderModal = lazy(() => import("./components/ProviderModal"));
 
@@ -30,7 +31,7 @@ const ProviderPage: React.FC = () => {
             }
         } catch (error) {
             console.error("Error fetching providers:", error);
-            toast.error("Kh�ng th? t?i d? li?u provider.");
+            toast.error("Không thể tải dữ liệu provider.");
         } finally {
             setLoading(false);
         }
@@ -64,12 +65,17 @@ const ProviderPage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 shrink-0">
+                <div className="flex items-center gap-3">
                     <StatCard
-                        label="Tổng phương thức"
+                        label="Tổng"
                         value={allProviders.length}
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
+                    />
+                    <RefreshButton
+                        onRefresh={fetchProviders}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
@@ -89,7 +95,7 @@ const ProviderPage: React.FC = () => {
                                 header: "Logo",
                                 accessor: (provider) => provider.logoUrl,
                                 cell: (provider) => (
-                                    <BrandLogo 
+                                    <BrandLogo
                                         logoUrl={provider.logoUrl}
                                         name={provider.name}
                                         code={provider.code}
@@ -118,8 +124,7 @@ const ProviderPage: React.FC = () => {
                                         status={provider.isActive}
                                         activeText="HOẠT ĐỘNG"
                                         inactiveText="BẢO TRÌ"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                             },
                             {

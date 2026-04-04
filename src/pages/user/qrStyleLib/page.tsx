@@ -9,6 +9,7 @@ import type { Column } from "@/components/UICustoms/Table/data-table";
 
 import { StatCard } from "@/components/UICustoms/StatCard";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 import { QRStyleType } from "@/models/enum";
 import type { QrStyleLibraryRes } from "@/models/entity.model";
 
@@ -124,20 +125,27 @@ const QrStyleLibPage: React.FC = () => {
                     <p className="text-sm text-foreground-muted font-medium">Tùy chỉnh và quản lý các phong cách thiết kế mã QR của riêng bạn.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 shrink-0">
-                    <StatCard
-                        label="Tổng Style Cá nhân"
-                        value={data.length}
-                        icon={<Palette className="w-5 h-5 text-primary" />}
-                        color="blue"
-                    />
+                <div className="flex items-center gap-3 shrink-0">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 shrink-0">
+                        <StatCard
+                            label="Tổng cộng"
+                            value={data.length}
+                            icon={<Palette className="w-5 h-5 text-primary" />}
+                            color="blue"
+                        />
 
-                    <StatCard
-                        label="Style mặc định"
-                        value={pinnedCount}
-                        prefix="/1"
-                        icon={<Pin className="w-5 h-5 text-amber-500 fill-amber-500" />}
-                        color="amber"
+                        <StatCard
+                            label="Style mặc định"
+                            value={pinnedCount}
+                            prefix="/1"
+                            icon={<Pin className="w-5 h-5 text-amber-500 fill-amber-500" />}
+                            color="amber"
+                        />
+                    </div>
+                    <RefreshButton 
+                        onRefresh={fetchItems}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>

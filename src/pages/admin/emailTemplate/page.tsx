@@ -4,13 +4,15 @@ import type { EmailTemplateRes } from "@/models/entity.model";
 import { toast } from "react-toastify";
 import { DataTable, type Column } from "@/components/UICustoms/Table/data-table";
 import { formatDateTime } from "@/utils/dateTimeUtils";
-import { FileText, Plus, RefreshCw, Eye, Pencil, Trash2 } from "lucide-react";
+import { FileText, Plus, Eye, Pencil, Trash2 } from "lucide-react";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import EmailTemplateDetailModal from "./components/DetailModal";
 import EmailTemplateCreateModal from "./components/CreateModal";
 import EmailTemplateEditModal from "./components/EditModal";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
+import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const EmailTemplatePage: React.FC = () => {
     const [templates, setTemplates] = useState<EmailTemplateRes[]>([]);
@@ -23,6 +25,10 @@ const EmailTemplatePage: React.FC = () => {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+
+    // Confirm states
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateRes | null>(null);
 
     const fetchTemplates = useCallback(async () => {
         try {
@@ -48,19 +54,27 @@ const EmailTemplatePage: React.FC = () => {
         setIsEditOpen(true);
     }, []);
 
-    const handleDelete = useCallback(async (tpl: EmailTemplateRes) => {
-        if (!confirm(`Xác nhận xóa template "${tpl.templateKey}"?`)) return;
+    const handleOpenConfirmDelete = (tpl: EmailTemplateRes) => {
+        setSelectedTemplate(tpl);
+        setIsConfirmOpen(true);
+    }
+
+    const handleDelete = useCallback(async () => {
+        if (!selectedTemplate) return;
         try {
-            setDeletingId(tpl.id);
-            await emailTemplateApi.delete(tpl.id);
+            setDeletingId(selectedTemplate.id);
+            await emailTemplateApi.delete(selectedTemplate.id);
             toast.success("Đã xóa template.");
-            setTemplates(prev => prev.filter(t => t.id !== tpl.id));
-        } catch (err: any) {
-            toast.error(err?.response?.data?.message || "Không thể xóa template.");
+            setTemplates(prev => prev.filter(t => t.id !== selectedTemplate.id));
+            setIsConfirmOpen(false);
+            setSelectedTemplate(null);
+        } catch (err: unknown) {
+            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(message || "Không thể xóa template.");
         } finally {
             setDeletingId(null);
         }
-    }, []);
+    }, [selectedTemplate]);
 
     const handleCreated = useCallback((res: EmailTemplateRes | null | undefined) => {
         if (res && res.id) {
@@ -154,7 +168,7 @@ const EmailTemplatePage: React.FC = () => {
                     />
                     <ActionButton
                         icon={<Trash2 className="w-4 h-4" />}
-                        onClick={() => handleDelete(tpl)}
+                        onClick={() => handleOpenConfirmDelete(tpl)}
                         color="red"
                         title="Xóa"
                         disabled={deletingId === tpl.id}
@@ -162,7 +176,7 @@ const EmailTemplatePage: React.FC = () => {
                 </div>
             )
         }
-    ], [handleView, handleEdit, handleDelete, deletingId]);
+    ], [handleView, handleEdit, handleOpenConfirmDelete, deletingId]);
 
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
@@ -174,7 +188,7 @@ const EmailTemplatePage: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3">
                     <StatCard
-                        label="Tổng cộng"
+                        label="Tổng"
                         value={templates.length}
                         icon={<FileText className="w-5 h-5 text-primary" />}
                         color="blue"
@@ -184,6 +198,11 @@ const EmailTemplatePage: React.FC = () => {
                         value={activeCount}
                         icon={<FileText className="w-5 h-5 text-green-500" />}
                         color="green"
+                    />
+                    <RefreshButton
+                        onRefresh={fetchTemplates}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
@@ -195,14 +214,6 @@ const EmailTemplatePage: React.FC = () => {
                     className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:bg-primary/90 transition-all active:scale-95 shadow-md shadow-primary/20"
                 >
                     <Plus className="w-4 h-4" /> Tạo Template
-                </button>
-                <button
-                    onClick={fetchTemplates}
-                    disabled={loading}
-                    className="p-2.5 rounded-xl border border-border text-foreground-muted hover:text-foreground hover:bg-border/50 transition-colors"
-                    title="Tải lại"
-                >
-                    <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
                 </button>
             </div>
 
@@ -235,6 +246,22 @@ const EmailTemplatePage: React.FC = () => {
                 onClose={() => { setIsEditOpen(false); setEditTemplate(null); }}
                 onUpdated={handleUpdated}
                 template={editTemplate}
+            />
+
+            <ActionConfirmModal
+                isOpen={isConfirmOpen}
+                onClose={() => { setIsConfirmOpen(false); setSelectedTemplate(null); }}
+                onConfirm={handleDelete}
+                title="Xác nhận xóa"
+                description={
+                    <div>
+                        Bạn có chắc chắn muốn xóa template <span className="font-bold text-danger">{selectedTemplate?.templateKey}</span>?
+                        Hành động này không thể hoàn tác.
+                    </div>
+                }
+                variant="danger"
+                loading={deletingId === selectedTemplate?.id}
+                icon={<Trash2 className="w-5 h-5" />}
             />
         </div>
     );

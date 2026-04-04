@@ -8,6 +8,7 @@ import type { Column } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { StatCard } from "@/components/UICustoms/StatCard";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const RoleModal = lazy(() => import("./components/RoleModal"));
 
@@ -27,7 +28,7 @@ const RolePage: React.FC = () => {
             }
         } catch (error) {
             console.error("Error fetching roles:", error);
-            toast.error("Kh�ng th? t?i d? li?u role.");
+            toast.error("Không thể tải dữ liệu role.");
         } finally {
             setLoading(false);
         }
@@ -55,12 +56,17 @@ const RolePage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 shrink-0">
+                <div className="flex items-center gap-3">
                     <StatCard
-                        label="Tổng role"
+                        label="Tổng"
                         value={allRoles.length}
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
+                    />
+                    <RefreshButton
+                        onRefresh={fetchRoles}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
@@ -97,8 +103,7 @@ const RolePage: React.FC = () => {
                                         status={role.status}
                                         activeText="ACTIVE"
                                         inactiveText="INACTIVE"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                             },
                             {

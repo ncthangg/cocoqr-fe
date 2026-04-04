@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Copy, Palette, Image as ImageIcon, Sliders, Maximize, Check, RefreshCw, SlidersHorizontal, ChevronUp, Trash2, Upload } from 'lucide-react';
+import { Download, Copy, Palette, Image as ImageIcon, Sliders, Maximize, Check, RefreshCw, SlidersHorizontal, ChevronUp, Trash2, Upload, ChevronDown } from 'lucide-react';
 import Button from './Button';
 import ActionConfirmModal from './Modal/ActionConfirmModal';
 import { cn } from '@/lib/utils';
@@ -81,6 +81,25 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
 
     // Customization state
     const [format, setFormat] = useState('png');
+    const [isFormatMenuOpen, setIsFormatMenuOpen] = useState(false);
+    const formatMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (formatMenuRef.current && !formatMenuRef.current.contains(event.target as Node)) {
+                setIsFormatMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const FORMAT_OPTIONS = [
+        { value: 'png', label: 'PNG' },
+        { value: 'svg', label: 'SVG' },
+        { value: 'jpeg', label: 'JPG' },
+        { value: 'webp', label: 'WEBP' }
+    ];
     const [style, setStyle] = useState<StyleConfig>({ ...DEFAULT_STYLE });
 
     useEffect(() => {
@@ -249,7 +268,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                     {/* Right/Bottom: Customization panel & Buttons */}
                     <div className={cn(
                         "transition-all duration-500 flex flex-col justify-end",
-                        isLayoutTwoColumns ? "flex-[60%] border-l border-border/40 pl-lg pb-sm" : "w-full border-t border-border/40 pt-sm mt-auto",
+                        isLayoutTwoColumns ? "flex-[60%] border-l border-border/40 pl-lg pb-sm" : "w-full border-t border-border/40 py-sm mt-auto",
                         (qrData || qrImageUrl) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
                     )}>
 
@@ -263,7 +282,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                                     </label>
                                     <select
                                         id="my-style"
-                                        className="select text-xs h-9 bg-surface border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
+                                        className="select text-xs h-9 border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
                                         value={selectedStyleId}
                                         onChange={(e) => {
                                             const id = e.target.value;
@@ -292,7 +311,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                                     <select
                                         id="qr-pattern"
                                         name="pattern"
-                                        className="select text-xs h-9 bg-surface border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
+                                        className="select text-xs h-9 border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
                                         value={style.pattern}
                                         onChange={(e) => updateStyle("pattern", e.target.value)}
                                     >
@@ -309,7 +328,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                                     <select
                                         id="qr-size"
                                         name="fileSize"
-                                        className="select text-xs h-9 bg-surface border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
+                                        className="select text-xs h-9 border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
                                         value={style.fileSize}
                                         onChange={(e) => updateStyle("fileSize", parseInt(e.target.value))}
                                     >
@@ -462,18 +481,48 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                     (qrData || qrImageUrl) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none hidden"
                 )}>
                     <div className="flex gap-sm w-full shrink-0">
-                        <select
-                            className="bg-primary/5 text-primary font-bold text-xs px-1 sm:px-2 rounded-lg border border-primary/20 outline-none cursor-pointer hover:bg-primary/10 transition-colors h-10 w-20 sm:w-24 text-center shrink-0"
-                            value={format}
-                            onChange={(e) => setFormat(e.target.value)}
-                            disabled={!qrData && !qrImageUrl}
-                            title="Chọn định dạng tải xuống"
-                        >
-                            <option value="png">PNG</option>
-                            <option value="svg">SVG</option>
-                            <option value="jpeg">JPG</option>
-                            <option value="webp">WEBP</option>
-                        </select>
+                        <div className="relative h-10 shrink-0" ref={formatMenuRef}>
+                            <button
+                                type="button"
+                                disabled={!qrData && !qrImageUrl}
+                                onClick={() => setIsFormatMenuOpen(!isFormatMenuOpen)}
+                                className={cn(
+                                    "h-10 w-20 sm:w-24 flex items-center justify-center gap-1.5 px-2 bg-primary/5 text-primary font-extrabold text-xs rounded-lg border transition-all duration-300",
+                                    isFormatMenuOpen ? "border-primary bg-primary/10 shadow-sm" : "border-primary/20 hover:bg-primary/10",
+                                    (!qrData && !qrImageUrl) && "opacity-50 cursor-not-allowed"
+                                )}
+                            >
+                                <span className="uppercase">{format === 'jpeg' ? 'JPG' : format}</span>
+                                <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-300", isFormatMenuOpen && "rotate-180")} />
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {isFormatMenuOpen && (
+                                <div className="absolute bottom-full left-0 mb-2 w-28 bg-surface border border-border rounded-xl shadow-xl overflow-hidden z-20 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                    <div className="flex flex-col p-1.5 gap-1">
+                                        {FORMAT_OPTIONS.map((opt) => (
+                                            <button
+                                                key={opt.value}
+                                                type="button"
+                                                onClick={() => {
+                                                    setFormat(opt.value);
+                                                    setIsFormatMenuOpen(false);
+                                                }}
+                                                className={cn(
+                                                    "w-full px-3 py-2 text-left text-xs font-bold rounded-lg transition-colors",
+                                                    format === opt.value
+                                                        ? "bg-primary text-primary-foreground"
+                                                        : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
+                                                )}
+                                            >
+                                                {opt.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <Button
                             variant="primary"
                             className="flex-1 flex gap-sm items-center justify-center transition-all duration-300 hover:scale-[1.01] h-10"

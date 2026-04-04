@@ -244,7 +244,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                                         </label>
                                         <select
                                             id="qr-pattern"
-                                            className="select text-xs h-9 bg-surface border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
+                                            className="select text-xs h-9 border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
                                             value={style.pattern}
                                             onChange={(e) => updateStyle("pattern", e.target.value)}
                                         >
@@ -260,7 +260,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                                         </label>
                                         <select
                                             id="qr-size"
-                                            className="select text-xs h-9 bg-surface border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
+                                            className="select text-xs h-9 border-border/60 rounded-md px-2 hover:border-primary/40 transition-colors"
                                             value={style.fileSize}
                                             onChange={(e) => updateStyle("fileSize", parseInt(e.target.value))}
                                         >

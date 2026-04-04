@@ -100,12 +100,14 @@ export interface PostContactReq {
 
 /** Admin endpoint — system/admin sends to user/guest */
 export interface AdminPostContactReq {
+    contactMessageId?: string | null;
     fullName: string;
     email: string;
     subject: string;
     content: string;
-    smtpType?: SmtpSettingType | null;
     templateKey?: string | null;
+    htmlBody?: string | null;
+    smtpType?: SmtpSettingType | null;
 }
 
 export interface GetEmailLogReq {

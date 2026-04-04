@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { X, Mail, Send, Loader2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { X, Mail, Send } from "lucide-react";
+import Button from "@/components/UICustoms/Button";
 import { adminContactApi } from "@/services/admin-contact-api.service";
 import { emailTemplateApi } from "@/services/email-template-api.service";
 import type { ContactMessageRes, EmailTemplateRes } from "@/models/entity.model";
@@ -41,10 +42,6 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
         }
     }, [isOpen]);
 
-    const handleOverlayClick = useCallback((e: React.MouseEvent) => {
-        if (e.target === e.currentTarget) onClose();
-    }, [onClose]);
-
     const handleReply = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!message) return;
@@ -62,6 +59,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
         try {
             setSubmitting(true);
             await adminContactApi.post({
+                contactMessageId: message.id,
                 fullName: message.fullName,
                 email: message.email,
                 subject: subject.trim(),
@@ -88,7 +86,6 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
     return (
         <div
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-            onClick={handleOverlayClick}
         >
             <div
                 className="bg-surface border border-border max-w-modal-lg w-full rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
@@ -117,54 +114,72 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
                             <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider">Người nhận</p>
                             <div>
                                 <p className="font-bold text-foreground">{message.fullName}</p>
-                                <p className="text-sm font-medium text-blue-500 break-all">{message.email}</p>
+                                <div className="flex items-center gap-1 text-sm font-medium">
+                                    <span className="text-foreground-muted">mail:</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(message.email);
+                                            toast.info("Đã sao chép email");
+                                        }}
+                                        className="text-blue-500 hover:underline break-all transition-all text-left"
+                                        title="Click để sao chép"
+                                    >
+                                        {message.email}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Template Dropdown */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex justify-between">
-                                Chọn Mẫu Email (Template)
-                                <span className="text-[10px] font-medium opacity-60 normal-case">(Tùy chọn)</span>
-                            </label>
-                            <select
-                                value={selectedTemplateKey}
-                                onChange={e => {
-                                    const val = e.target.value;
-                                    setSelectedTemplateKey(val);
-                                    if (val) {
-                                        const tpl = templates.find(t => t.templateKey === val);
-                                        if (tpl) {
-                                            setSubject(tpl.subject);
-                                            setContent(tpl.body);
-                                        }
-                                    }
-                                }}
-                                className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-border rounded-xl text-foreground font-medium outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none"
-                            >
-                                <option value="">Không sử dụng mẫu</option>
-                                {templates.filter(t => t.isActive).map(t => (
-                                    <option key={t.id} value={t.templateKey}>{t.subject} ({t.templateKey})</option>
-                                ))}
-                            </select>
-                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* SMTP Type options */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex justify-between">
+                                    Loại Email
+                                    <span className="text-[10px] font-medium opacity-60 normal-case">(Tùy chọn)</span>
+                                </label>
+                                <select
+                                    value={smtpType}
+                                    onChange={e => setSmtpType(e.target.value as any)}
+                                    className="select w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/50 appearance-none"
+                                >
+                                    <option value="">Mặc định (Default System SMTP)</option>
+                                    {smtpOptions.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                            </div>
 
-                        {/* SMTP Type options */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex justify-between">
-                                Kiểu Email
-                                <span className="text-[10px] font-medium opacity-60 normal-case">(Tùy chọn)</span>
-                            </label>
-                            <select
-                                value={smtpType}
-                                onChange={e => setSmtpType(e.target.value as any)}
-                                className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground font-medium outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none"
-                            >
-                                <option value="">Mặc định (Từ Contact configs hoặc default SMTP)</option>
-                                {smtpOptions.map(opt => (
-                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                ))}
-                            </select>
+                            {/* Template Dropdown */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex justify-between">
+                                    Chọn Mẫu Email (Template)
+                                    <span className="text-[10px] font-medium opacity-60 normal-case">(Tùy chọn)</span>
+                                </label>
+                                <select
+                                    value={selectedTemplateKey}
+                                    onChange={e => {
+                                        const val = e.target.value;
+                                        setSelectedTemplateKey(val);
+                                        if (val) {
+                                            const tpl = templates.find(t => t.templateKey === val);
+                                            if (tpl) {
+                                                setSubject(tpl.subject);
+                                                setContent(tpl.body);
+                                            }
+                                        } else {
+                                            setSubject("");
+                                            setContent("");
+                                        }
+                                    }}
+                                    className="select w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/50 appearance-none"
+                                >
+                                    <option value="">Không sử dụng mẫu</option>
+                                    {templates.filter(t => t.isActive).map(t => (
+                                        <option key={t.id} value={t.templateKey}>{t.subject} ({t.templateKey})</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         {/* Subject Input */}
@@ -178,7 +193,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
                                 value={subject}
                                 onChange={e => setSubject(e.target.value)}
                                 placeholder="Nhập tiêu đề email..."
-                                className="w-full px-4 py-3 bg-bg border border-border rounded-xl text-foreground placeholder:text-foreground-muted font-medium outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                                className="input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50"
                             />
                         </div>
 
@@ -207,21 +222,21 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
 
                     {/* Footer */}
                     <div className="p-4 border-t border-border bg-bg/50 flex justify-end gap-3 shrink-0">
-                        <button
-                            type="button"
+                        <Button
+                            variant="outline"
                             onClick={onClose}
-                            className="px-6 py-2.5 border border-border text-foreground font-bold rounded-xl hover:bg-border/50 transition-all"
+                            className="px-6 py-2.5 rounded-xl"
                         >
                             Hủy
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={handleReply as any}
-                            disabled={submitting}
-                            className="flex items-center gap-2 px-8 py-2.5 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 active:scale-95"
+                            loading={submitting}
+                            icon={<Send className="w-5 h-5" />}
+                            className="px-8 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20"
                         >
-                            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                            Gửi Trả lời
-                        </button>
+                            Gửi
+                        </Button>
                     </div>
                 </form>
             </div>

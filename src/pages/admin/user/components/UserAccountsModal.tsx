@@ -234,7 +234,7 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                             )}
                                             {(acc.bankCode && acc.bankName) ? acc.bankName : acc.providerName}
                                             {(acc.bankIsActive === false || acc.providerIsActive === false) && (
-                                                <span className="text-red-500 font-bold text-xs animate-pulse">
+                                                <span className="text-danger font-bold text-xs animate-pulse">
                                                     (Đang bảo trì)
                                                 </span>
                                             )}
@@ -264,8 +264,6 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                         status={acc.isActive}
                                         activeText="ĐANG HOẠT ĐỘNG"
                                         inactiveText="KHÔNG HOẠT ĐỘNG"
-                                        activeColor="green"
-                                        inactiveColor="red"
                                     />
                                 )
                             },
@@ -279,8 +277,6 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                         status={acc.status}
                                         activeText="ACTIVE"
                                         inactiveText="INACTIVE"
-                                        activeColor="green"
-                                        inactiveColor="red"
                                     />
                                 )
                             },

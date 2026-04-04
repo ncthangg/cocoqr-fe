@@ -8,6 +8,7 @@ import type { PostQrReq } from "@/models/entity.request.model";
 import { toast } from "react-toastify";
 import { ProviderCode } from "@/models/enum";
 import { qrApi } from "@/services/qr-api.service";
+import { formatVNDInput } from "@/utils/currencyUtils";
 
 const defaultForm = {
     providerId: "",
@@ -21,7 +22,7 @@ const defaultForm = {
     bankLogoUrl: "" as string | null,
     isBankInactive: null as boolean | null,
     number: "",
-    amount: "",
+    amount: "", // raw digits
     note: "",
 };
 
@@ -188,24 +189,35 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                     />
                 </div>
 
-                <div className="flex flex-col gap-sm">
+                <div className="flex flex-col gap-xs">
                     <label
                         htmlFor="hero-amount"
                         className="text-sm font-medium text-foreground-secondary flex items-center gap-xs"
                     >
-                        <Banknote className="w-4 h-4" />
-                        Số tiền (VNĐ)
+                        <Banknote className="w-4 h-4 text-primary" />
+                        Số tiền
                     </label>
-                    <input
-                        id="hero-amount"
-                        name="amount"
-                        type="number"
-                        className="input"
-                        placeholder="Nhập số tiền"
-                        value={formData.amount}
-                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                        min={0}
-                    />
+                    <div className="relative group/amount">
+                        <input
+                            id="hero-amount"
+                            name="amount"
+                            type="text"
+                            inputMode="numeric"
+                            className="input font-mono pr-12 text-sm sm:text-base tracking-tight"
+                            placeholder="Ví dụ: 300.000"
+                            autoComplete="off"
+                            value={formatVNDInput(formData.amount)}
+                            onChange={(e) => {
+                                const raw = e.target.value.replace(/\D/g, "");
+                                if (raw.length <= 15) { // Limit to reasonable VND length
+                                    setFormData({ ...formData, amount: raw });
+                                }
+                            }}
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-foreground-muted select-none group-focus-within/amount:text-primary transition-colors border border-border/60 px-1.5 py-0.5 rounded bg-surface-muted/50">
+                            VND
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex flex-col gap-sm">
