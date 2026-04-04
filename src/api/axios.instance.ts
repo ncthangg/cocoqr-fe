@@ -52,6 +52,11 @@ axiosPrivate.interceptors.response.use(
         if (error?.response?.status === 401 && !prevRequest?.sent) {
             prevRequest.sent = true;
 
+            const refreshToken = getCookie("refreshToken");
+            if (!refreshToken) {
+                return Promise.reject(error);
+            }
+
             try {
                 // Gọi refresh token (có queue nếu nhiều request cùng lúc)
                 const newAccessToken = await tokenRefresher.refreshAccessToken();
