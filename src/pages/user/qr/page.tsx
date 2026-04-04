@@ -36,8 +36,6 @@ const DEFAULT_FORM = {
     note: "",
 };
 
-
-
 /* ─── Component ─────────────────────────────────────────────── */
 
 const CreatePaymentPage: React.FC = () => {
@@ -79,7 +77,7 @@ const CreatePaymentPage: React.FC = () => {
         try {
             const res = await providerApi.getAll();
             if (res) {
-                setAllProviders(res || []);
+                setAllProviders(res);
                 setHasFetchedProviders(true);
             }
         } catch (error) {
@@ -91,7 +89,13 @@ const CreatePaymentPage: React.FC = () => {
         async (page: number, size: number, search?: string, providerId?: string) => {
             try {
                 setLoading(true);
-                const res = await accountApi.getAll(page, size, null, null, providerId ?? null, search ?? null, true);
+                const res = await accountApi.getAll({
+                    pageNumber: page,
+                    pageSize: size,
+                    providerId: providerId ?? null,
+                    searchValue: search ?? null,
+                    isActive: true
+                });
                 if (res) {
                     setAccounts(res.list || []);
                     setPaging(res);

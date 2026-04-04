@@ -77,18 +77,18 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
     ) => {
         try {
             setLoading(true);
-            const res = await accountApi.getAllByAdmin(
-                page,
-                size,
-                sortField ?? null,
-                sortDir ?? null,
+            const res = await accountApi.getAllByAdmin({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
                 userId,
-                providerId ?? null,
-                search ?? null,
-                isActive ?? null,
-                null, // isDeleted
-                status ?? null,
-            );
+                providerId: providerId ?? null,
+                searchValue: search ?? null,
+                isActive: isActive ?? null,
+                isDeleted: false,
+                status: status !== undefined ? String(status) : null,
+            });
             if (res) {
                 setAccounts(res.list || []);
                 setPaging(res);

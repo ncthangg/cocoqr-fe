@@ -41,12 +41,17 @@ const BankPage: React.FC = () => {
         try {
             setLoading(true);
 
-            const res = await bankApi.getAll(page, size, sortField ?? null, sortDir ?? null, isActive ?? null, search ?? null);
+            const res = await bankApi.getAll({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
+                isActive: isActive ?? null,
+                searchValue: search ?? null
+            });
 
             if (res) {
-                let list = res.list || [];
-
-                setBanks(list);
+                setBanks(res.list || []);
                 setPaging(res);
             }
         } catch (error) {

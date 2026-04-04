@@ -44,8 +44,13 @@ const AdminHistoryPage: React.FC = () => {
         if (hasFetchedProviders) return;
         try {
             const res = await providerApi.getAll();
-            if (res) { setAllProviders(res || []); setHasFetchedProviders(true); }
-        } catch (err) { console.error("Error fetching providers:", err); }
+            if (res) {
+                setAllProviders(res);
+                setHasFetchedProviders(true);
+            }
+        } catch (err) {
+            console.error("Error fetching providers:", err);
+        }
     }, [hasFetchedProviders]);
 
     const fetchRecords = useCallback(async (
@@ -54,12 +59,25 @@ const AdminHistoryPage: React.FC = () => {
     ) => {
         try {
             setLoading(true);
-            const res = await qrApi.getAllByAdmin(page, size, sortField ?? null, sortDir ?? null, null, providerId ?? null, search ?? null);
-            if (res) { setRecords(res.list || []); setPaging(res); }
+            const res = await qrApi.getAllByAdmin({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
+                userId: null,
+                providerId: providerId ?? null,
+                searchValue: search ?? null
+            });
+            if (res) {
+                setRecords(res.list || []);
+                setPaging(res);
+            }
         } catch (err) {
             console.error("Error fetching QR history (admin):", err);
             toast.error("Không thể tải lịch sử QR.");
-        } finally { setLoading(false); }
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
     useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { X, Landmark, User, CreditCard, ChevronRight, PlusCircle, Pencil } from "lucide-react";
 import { toast } from "react-toastify";
 import Button from "@/components/UICustoms/Button";
@@ -35,7 +35,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
 
     const [loading, setLoading] = useState(false);
     const [modalLoading, setModalLoading] = useState(false);
-    const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
+    const hasFetchedProviders = useRef(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
     const [bankLogoUrl, setBankLogoUrl] = useState<string | null>(null);
@@ -44,17 +44,17 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
     const isBankType = selectedProvider?.code === ProviderCode.BANK;
 
     const fetchProviders = useCallback(async () => {
-        if (hasFetchedProviders) return;
+        if (hasFetchedProviders.current) return;
         try {
             const res = await providerApi.getAll();
             if (res) {
                 setAllProviders(res || []);
-                setHasFetchedProviders(true);
+                hasFetchedProviders.current = true;
             }
         } catch (error) {
             console.error("Error fetching providers:", error);
         }
-    }, [hasFetchedProviders]);
+    }, []);
 
     const fetchAccountDetail = useCallback(async (id: string) => {
         try {
@@ -86,19 +86,23 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
             fetchProviders();
             if (accountId) fetchAccountDetail(accountId);
         } else {
-            setFormData({
-                providerId: "",
-                bankCode: "",
-                bankName: "",
-                accountHolder: "",
-                accountNumber: "",
-                isActive: true,
-                isPinned: false,
-            });
-            setBankLogoUrl(null);
-            setModalLoading(false);
+            resetForm();
         }
     }, [isOpen, accountId, fetchProviders, fetchAccountDetail]);
+
+    const resetForm = () => {
+        setFormData({
+            providerId: "",
+            bankCode: "",
+            bankName: "",
+            accountHolder: "",
+            accountNumber: "",
+            isActive: true,
+            isPinned: false,
+        });
+        setBankLogoUrl(null);
+        setModalLoading(false);
+    };
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -390,7 +394,7 @@ const PreviewSection: React.FC<PreviewSectionProps> = React.memo(({
                 <>
                     {(bankCode || bankLogoUrl) ? (
                         <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300 w-full">
-                            <BrandLogo 
+                            <BrandLogo
                                 logoUrl={bankLogoUrl}
                                 name={bankName ?? undefined}
                                 code={bankCode ?? undefined}
@@ -420,7 +424,7 @@ const PreviewSection: React.FC<PreviewSectionProps> = React.memo(({
                 </>
             ) : selectedProvider ? (
                 <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300 w-full">
-                    <BrandLogo 
+                    <BrandLogo
                         logoUrl={selectedProvider.logoUrl}
                         name={selectedProvider.name}
                         code={selectedProvider.code}

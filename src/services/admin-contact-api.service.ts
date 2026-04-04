@@ -1,11 +1,23 @@
 import { axiosPrivate } from "../api/axios.instance";
 import { ApiConstant } from "../constants/api.constant";
-import type { AdminPostContactReq } from "../models/entity.request.model";
-import type { ContactMessageRes } from "../models/entity.model";
+import type { AdminPostContactReq, GetContactMessageReq } from "../models/entity.request.model";
+import type { ContactMessageRes, PagingVM } from "../models/entity.model";
 
 export const adminContactApi = {
-    getAll: async (): Promise<ContactMessageRes[]> => {
-        const response = await axiosPrivate.get(ApiConstant.ADMIN_CONTACT.GET_ALL);
+    getAll: async (params: GetContactMessageReq): Promise<PagingVM<ContactMessageRes>> => {
+        const response = await axiosPrivate.get(ApiConstant.ADMIN_CONTACT.GET_ALL, {
+            params: {
+                pageNumber: params.pageNumber,
+                pageSize: params.pageSize,
+                sortField: params.sortField,
+                sortDirection: params.sortDirection,
+                fullName: params.fullName,
+                email: params.email,
+                contactStatus: params.contactStatus,
+                fromDate: params.fromDate,
+                toDate: params.toDate,
+            },
+        });
         return response.data;
     },
     getById: async (id: string): Promise<ContactMessageRes> => {

@@ -60,26 +60,23 @@ const AccountsPage: React.FC = () => {
         }
     }, [hasFetchedProviders]);
 
-    const fetchAccounts = useCallback(async (
-        page: number,
-        size: number,
+    const fetchAccounts = useCallback(async (page: number, size: number,
+        sortField?: string, sortDir?: "asc" | "desc",
         search?: string,
-        sortField?: string,
-        sortDir?: "asc" | "desc",
-        isActive?: boolean,
-        providerId?: string
+        providerId?: string,
+        isActive?: boolean
     ) => {
         try {
             setLoading(true);
-            const res = await accountApi.getAll(
-                page,
-                size,
-                sortField ?? null,
-                sortDir ?? null,
-                providerId ?? null,
-                search ?? null,
-                isActive ?? null
-            );
+            const res = await accountApi.getAll({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
+                providerId: providerId ?? null,
+                searchValue: search ?? null,
+                isActive: isActive ?? null
+            });
             if (res) {
                 setAccounts(res.list || []);
                 setPaging(res);
@@ -96,11 +93,11 @@ const AccountsPage: React.FC = () => {
         fetchAccounts(
             paging.pageNumber,
             paging.pageSize,
-            debouncedSearch,
             sortState?.field,
             sortState?.dir,
-            activeFilter,
-            providerFilter
+            debouncedSearch,
+            providerFilter,
+            activeFilter
         );
     }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, activeFilter, providerFilter]);
 
@@ -140,7 +137,7 @@ const AccountsPage: React.FC = () => {
                 prev.map(acc => acc.id === updated.id ? { ...acc, ...updated } : acc)
             );
         } else {
-            fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, activeFilter, providerFilter);
+            fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter);
         }
     }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, activeFilter, providerFilter]);
 
@@ -247,7 +244,7 @@ const AccountsPage: React.FC = () => {
             accessor: (acc) => acc.bankCode,
             cell: (acc) => (
                 <div className="flex items-center gap-3">
-                    <BrandLogo 
+                    <BrandLogo
                         logoUrl={acc.bankLogoUrl ?? acc.providerLogoUrl}
                         name={acc.bankShortName || acc.providerName}
                         code={acc.bankCode || acc.providerCode}
@@ -326,7 +323,7 @@ const AccountsPage: React.FC = () => {
                 totalItems={stats.totalItems}
                 activeCount={stats.activeCount}
                 pinnedCount={stats.pinnedCount}
-                onRefresh={() => fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, activeFilter, providerFilter)}
+                onRefresh={() => fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter)}
                 loading={loading}
             />
 
@@ -412,12 +409,12 @@ const AccountsPage: React.FC = () => {
 
 // --- Subcomponents ---
 
-const PageHeader: React.FC<{ 
-    totalItems: number, 
-    activeCount: number, 
-    pinnedCount: number, 
-    onRefresh: () => void, 
-    loading: boolean 
+const PageHeader: React.FC<{
+    totalItems: number,
+    activeCount: number,
+    pinnedCount: number,
+    onRefresh: () => void,
+    loading: boolean
 }> = React.memo(({ totalItems, activeCount, pinnedCount, onRefresh, loading }) => (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
         <div className="space-y-1">

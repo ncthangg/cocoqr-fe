@@ -67,13 +67,6 @@ export interface PutProviderReq {
     isDeleteFile?: boolean;
 }
 
-export interface GetQrStyleLibraryReq {
-    userId?: string | null;
-    type?: QRStyleType | null;
-    isActive?: boolean | null;
-    name?: string | null;
-}
-
 export interface CreateQrStyleLibraryReq {
     name: string;
     styleJson: string;
@@ -108,27 +101,6 @@ export interface AdminPostContactReq {
     templateKey?: string | null;
     htmlBody?: string | null;
     smtpType?: SmtpSettingType | null;
-}
-
-export interface GetEmailLogReq {
-    pageNumber: number;
-    pageSize: number;
-    sortField?: string | null;
-    sortDirection?: "asc" | "desc" | null;
-    type?: SmtpSettingType | null;
-    recipientUserId?: string | null;
-    toEmail?: string | null;
-    recipientFullName?: string | null;
-    subject?: string | null;
-    fromDate?: string | null;
-    toDate?: string | null;
-    status?: string | null;
-    direction?: string | null;
-    templateKey?: string | null;
-}
-
-export interface GetSmtpSettingReq {
-    type?: SmtpSettingType | null;
 }
 
 export interface PutSmtpSettingReq {
@@ -166,4 +138,75 @@ export interface PutEmailTemplateReq {
     body: string;
     description?: string | null;
     isActive: boolean;
+}
+
+// ===============================================================
+export interface BasePagingReq {
+    pageNumber: number;
+    pageSize: number;
+    sortField?: string | null;
+    sortDirection?: "asc" | "desc" | null;
+    status?: string | null;
+}
+
+export interface GetQrStyleLibraryReq {
+    userId?: string | null;
+    type?: QRStyleType | null;
+    isActive?: boolean | null;
+}
+
+export interface GetUsersReq extends BasePagingReq {
+    searchValue?: string | null;
+    roleId?: string | null;
+}
+
+export interface GetQrReq extends BasePagingReq {
+    providerId?: string | null;
+    userId?: string | null;
+    searchValue?: string | null;
+}
+
+export interface GetAccountsReq extends BasePagingReq {
+    providerId?: string | null;
+    userId?: string | null;
+    searchValue?: string | null;
+    isActive?: boolean | null;
+    isDeleted?: boolean | null;
+}
+
+export interface GetBanksReq extends BasePagingReq {
+    isActive?: boolean | null;
+    searchValue?: string | null;
+}
+
+export interface GetEmailTemplatesReq extends BasePagingReq {
+    searchValue?: string | null;
+}
+
+export interface GetRolesReq extends BasePagingReq {
+    searchValue?: string | null;
+}
+
+export interface GetEmailLogReq extends BasePagingReq {
+    type?: SmtpSettingType | null;
+    recipientUserId?: string | null;
+    toEmail?: string | null;
+    recipientFullName?: string | null;
+    subject?: string | null;
+    fromDate?: string | null;
+    toDate?: string | null;
+    direction?: string | null;
+    templateKey?: string | null;
+}
+
+export interface GetSmtpSettingReq extends BasePagingReq {
+    type?: SmtpSettingType | null;
+}
+
+export interface GetContactMessageReq extends BasePagingReq {
+    fullName?: string | null;
+    email?: string | null;
+    contactStatus?: string | null;
+    fromDate?: string | null;
+    toDate?: string | null;
 }

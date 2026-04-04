@@ -27,7 +27,7 @@ const ProviderPage: React.FC = () => {
             setLoading(true);
             const res = await providerApi.getAll();
             if (res) {
-                setAllProviders(res || []);
+                setAllProviders(res);
             }
         } catch (error) {
             console.error("Error fetching providers:", error);

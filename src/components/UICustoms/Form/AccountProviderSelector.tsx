@@ -148,7 +148,7 @@ const BankFieldModal: React.FC<BankFieldModalProps> = ({
                     {
                         bankCode ? (
                             <div className="flex items-center gap-md">
-                                <BrandLogo 
+                                <BrandLogo
                                     logoUrl={logoUrl}
                                     name={bankShortName}
                                     code={bankCode}
@@ -211,7 +211,7 @@ const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
     const fetchBanks = useCallback(async () => {
         if (hasFetched) return;
         try {
-            const res = await bankApi.getAll(1, 200, null, null, true, null);
+            const res = await bankApi.getAll({ pageNumber: 1, pageSize: 200, sortField: null, sortDirection: null, isActive: true, searchValue: null, status: null });
             if (res?.list) {
                 setBanks(res.list);
                 setHasFetched(true);
@@ -260,7 +260,7 @@ const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
                     {
                         napasBin ? (
                             <div className="flex items-center gap-md">
-                                <BrandLogo 
+                                <BrandLogo
                                     logoUrl={logoUrl}
                                     name={bankShortName}
                                     code={bankCode}

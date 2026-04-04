@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { adminContactApi } from "@/services/admin-contact-api.service";
-import type { ContactMessageRes } from "@/models/entity.model";
+import type { ContactMessageRes, PagingVM } from "@/models/entity.model";
 import { toast } from "react-toastify";
 import { DataTable, type Column } from "@/components/UICustoms/Table/data-table";
 import { formatDateTime } from "@/utils/dateTimeUtils";
-import { Mail, Eye, Inbox, MailOpen, Search, Reply, Trash2, CheckCircle2 } from "lucide-react";
+import { Mail, Eye, Inbox, MailOpen, Search, Reply, Trash2, CheckCircle2, Calendar } from "lucide-react";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import { useDebounce } from "@/hooks/useDebounce";
 import { ContactMessageStatus } from "@/models/enum";
@@ -15,13 +15,14 @@ import { TagBadge } from "@/components/UICustoms/TagBadge";
 import FilterField from "@/components/UICustoms/FilterField";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import RefreshButton from "@/components/UICustoms/RefreshButton";
+import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 
 /* ─── Static data ───────────────────────────────────────────── */
 
 const READ_FILTER_OPTIONS = [
-    { label: "Chưa trả lời", value: "unread" },
-    { label: "Đã trả lời", value: "read" },
-    { label: "Bỏ qua", value: "ignored" },
+    { label: "Chưa trả lời", value: ContactMessageStatus.NEW },
+    { label: "Đã trả lời", value: ContactMessageStatus.REPLIED },
+    { label: "Bỏ qua", value: ContactMessageStatus.IGNORED },
 ];
 
 /* ─── Component ─────────────────────────────────────────────── */
@@ -30,10 +31,25 @@ const ContactMessagePage: React.FC = () => {
     const [messages, setMessages] = useState<ContactMessageRes[]>([]);
     const [loading, setLoading] = useState(false);
 
+    // Paging state
+    const [paging, setPaging] = useState<PagingVM<ContactMessageRes>>({
+        list: [],
+        pageSize: 10,
+        pageNumber: 1,
+        totalPages: 1,
+        totalItems: 0,
+    });
+
+    // Sorting state (Local, sent to server)
+    const [sortField, setSortField] = useState<string>("createdAt");
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
     // Filters
     const [searchName, setSearchName] = useState("");
     const [searchEmail, setSearchEmail] = useState("");
     const [readFilter, setReadFilter] = useState("");
+    const [fromDate, setFromDate] = useState("");
+    const [toDate, setToDate] = useState("");
 
     const debouncedName = useDebounce(searchName, 400);
     const debouncedEmail = useDebounce(searchEmail, 400);
@@ -56,20 +72,44 @@ const ContactMessagePage: React.FC = () => {
     const fetchMessages = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await adminContactApi.getAll();
-            setMessages(Array.isArray(data) ? data : []);
+            const response = await adminContactApi.getAll({
+                pageNumber: paging.pageNumber,
+                pageSize: paging.pageSize,
+                sortField,
+                sortDirection,
+                fullName: debouncedName || null,
+                email: debouncedEmail || null,
+                contactStatus: readFilter || null,
+                fromDate: fromDate || null,
+                toDate: toDate || null,
+            });
+            if (response) {
+                setMessages(response.list || []);
+                setPaging(response);
+            }
         } catch {
             toast.error("Không thể tải danh sách liên hệ.");
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [paging.pageNumber, paging.pageSize, sortField, sortDirection, debouncedName, debouncedEmail, readFilter, fromDate, toDate]);
 
     useEffect(() => {
         fetchMessages();
     }, [fetchMessages]);
 
+    // Handle filter reset page
+    useEffect(() => {
+        setPaging(prev => ({ ...prev, pageNumber: 1 }));
+    }, [debouncedName, debouncedEmail, readFilter, fromDate, toDate]);
+
     /* ─── Handlers ────────────────────────────────────────────── */
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= paging.totalPages) {
+            setPaging(prev => ({ ...prev, pageNumber: newPage }));
+        }
+    };
 
     const handleView = useCallback(
         async (msg: ContactMessageRes) => {
@@ -123,18 +163,6 @@ const ContactMessagePage: React.FC = () => {
 
     /* ─── Derived state ───────────────────────────────────────── */
 
-    const filtered = useMemo(() => {
-        return messages.filter((m) => {
-            if (debouncedName && !m.fullName?.toLowerCase().includes(debouncedName.toLowerCase())) return false;
-            if (debouncedEmail && !m.email?.toLowerCase().includes(debouncedEmail.toLowerCase())) return false;
-            if (readFilter === "read" && m.status !== ContactMessageStatus.REPLIED) return false;
-            if (readFilter === "unread" && m.status !== ContactMessageStatus.NEW) return false;
-            if (readFilter === "ignored" && m.status !== ContactMessageStatus.IGNORED) return false;
-            return true;
-        });
-    }, [messages, debouncedName, debouncedEmail, readFilter]);
-
-    const totalCount = messages.length;
     const newCount = useMemo(() => messages.filter((m) => m.status === ContactMessageStatus.NEW).length, [messages]);
 
     /* ─── Columns ─────────────────────────────────────────────── */
@@ -145,6 +173,7 @@ const ContactMessagePage: React.FC = () => {
                 header: "Người gửi",
                 accessor: (m) => m.fullName || "",
                 type: "string",
+                sortable: true,
                 cell: (m) => (
                     <div className="flex flex-col">
                         <span className="font-semibold text-foreground">{m.fullName}</span>
@@ -184,6 +213,7 @@ const ContactMessagePage: React.FC = () => {
                 header: "Thời gian",
                 accessor: (m) => m.createdAt,
                 type: "string",
+                sortable: true,
                 cell: (m) => <span className="text-xs font-medium text-foreground-muted">{formatDateTime(m.createdAt)}</span>,
             },
             {
@@ -233,7 +263,7 @@ const ContactMessagePage: React.FC = () => {
                     <p className="text-sm text-foreground-muted font-medium">Quản lý tin nhắn liên hệ từ người dùng.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <StatCard label="Tổng" value={totalCount} icon={<Mail className="w-5 h-5 text-primary" />} color="blue" />
+                    <StatCard label="Tổng" value={paging.totalItems} icon={<Mail className="w-5 h-5 text-primary" />} color="blue" />
                     <StatCard label="Chưa trả lời" value={newCount} icon={<Inbox className="w-5 h-5 text-amber-500" />} color="amber" />
                     <RefreshButton
                         onRefresh={fetchMessages}
@@ -247,7 +277,7 @@ const ContactMessagePage: React.FC = () => {
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 flex-1">
                 {/* Filters */}
                 <div className="p-4 border-b border-border">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <FilterField
                             type="input"
                             label="Tên"
@@ -273,13 +303,64 @@ const ContactMessagePage: React.FC = () => {
                             options={READ_FILTER_OPTIONS}
                             placeholder="Tất cả"
                         />
+                        <FilterField
+                            type="input"
+                            inputType="date"
+                            label="Từ ngày"
+                            icon={<Calendar className="w-3 h-3" />}
+                            value={fromDate}
+                            onChange={setFromDate}
+                        />
+                        <FilterField
+                            type="input"
+                            inputType="date"
+                            label="Đến ngày"
+                            icon={<Calendar className="w-3 h-3" />}
+                            value={toDate}
+                            onChange={setToDate}
+                        />
                     </div>
                 </div>
 
                 {/* Table body */}
                 <div className="min-h-0 flex-1 overflow-hidden">
-                    <DataTable loading={loading} data={filtered} columns={columns} showIndex />
+                    <DataTable
+                        loading={loading}
+                        data={messages}
+                        columns={columns}
+                        showIndex
+                        pageNumber={paging.pageNumber}
+                        pageSize={paging.pageSize}
+                        sortState={
+                            columns.findIndex((c) => (c.sortable && c.header === "Người gửi" && sortField === "fullName") || (c.sortable && c.header === "Thời gian" && sortField === "createdAt")) !== -1
+                                ? {
+                                    index: sortField === "fullName" ? 0 : 3,
+                                    dir: sortDirection,
+                                }
+                                : null
+                        }
+                        onSortChange={(idx, dir) => {
+                            const field = idx === 0 ? "fullName" : idx === 3 ? "createdAt" : null;
+                            if (field && dir) {
+                                setSortField(field);
+                                setSortDirection(dir);
+                            }
+                        }}
+                    />
                 </div>
+
+                {/* Pagination */}
+                <TablePagination
+                    pageNumber={paging.pageNumber}
+                    pageSize={paging.pageSize}
+                    totalItems={paging.totalItems}
+                    totalPages={paging.totalPages}
+                    loading={loading}
+                    onPageChange={handlePageChange}
+                    onPageSizeChange={(size) => {
+                        setPaging(prev => ({ ...prev, pageSize: size, pageNumber: 1 }));
+                    }}
+                />
             </div>
 
             <ContactDetailModal

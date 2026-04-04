@@ -1,6 +1,6 @@
 import { ApiConstant } from "../constants/api.constant";
 import { axiosPrivate } from "../api/axios.instance";
-import type { PostQrReq } from "@/models/entity.request.model";
+import type { PostQrReq, GetQrReq } from "@/models/entity.request.model";
 import type { PostQrRes, QrRes, PagingVM } from "@/models/entity.model";
 
 export const qrApi = {
@@ -9,41 +9,30 @@ export const qrApi = {
         return response.data;
     },
 
-    getAll: async (
-        pageNumber: number, pageSize: number,
-        sortField: string | null, sortDirection: "asc" | "desc" | null,
-        providerId: string | null,
-        searchValue: string | null,
-    ): Promise<PagingVM<QrRes>> => {
+    getAll: async (params: GetQrReq): Promise<PagingVM<QrRes>> => {
         const response = await axiosPrivate.get(ApiConstant.QR.GET_ALL, {
             params: {
-                pageNumber,
-                pageSize,
-                sortField,
-                sortDirection,
-                providerId,
-                searchValue,
+                pageNumber: params.pageNumber,
+                pageSize: params.pageSize,
+                sortField: params.sortField,
+                sortDirection: params.sortDirection,
+                providerId: params.providerId,
+                searchValue: params.searchValue,
             }
         });
         return response.data;
     },
 
-    getAllByAdmin: async (
-        pageNumber: number, pageSize: number,
-        sortField: string | null, sortDirection: "asc" | "desc" | null,
-        userId: string | null,
-        providerId: string | null,
-        searchValue: string | null,
-    ): Promise<PagingVM<QrRes>> => {
+    getAllByAdmin: async (params: GetQrReq): Promise<PagingVM<QrRes>> => {
         const response = await axiosPrivate.get(ApiConstant.QR.GET_ALL_BY_ADMIN, {
             params: {
-                pageNumber,
-                pageSize,
-                sortField,
-                sortDirection,
-                userId,
-                providerId,
-                searchValue,
+                pageNumber: params.pageNumber,
+                pageSize: params.pageSize,
+                sortField: params.sortField,
+                sortDirection: params.sortDirection,
+                userId: params.userId,
+                providerId: params.providerId,
+                searchValue: params.searchValue,
             }
         });
         return response.data;

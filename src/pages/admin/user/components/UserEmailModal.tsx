@@ -213,7 +213,7 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
 
                         <div className="p-3 border-b border-border/50 bg-bg/50">
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted pointer-events-none" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted pointer-events-none z-10" />
                                 <input
                                     type="text"
                                     placeholder="Tìm theo tiêu đề..."
@@ -222,8 +222,20 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                                         setSubjectFilter(e.target.value);
                                         setPaging(prev => ({ ...prev, pageNumber: 1 }));
                                     }}
-                                    className="input pl-9 pr-3 py-2 text-xs rounded-lg"
+                                    className="input !pl-9 pr-9 py-2 text-xs rounded-lg"
                                 />
+                                {subjectFilter && (
+                                    <button
+                                        onClick={() => {
+                                            setSubjectFilter("");
+                                            setPaging(prev => ({ ...prev, pageNumber: 1 }));
+                                        }}
+                                        className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-surface-muted text-foreground-muted hover:text-foreground transition-all duration-200 z-10"
+                                        title="Xóa tìm kiếm"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -273,7 +285,7 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                                 </div>
                             )}
                         </div>
-                        <div className="p-3 border-t border-border bg-surface shrink-0">
+                        <div className="p-3 border-border bg-surface shrink-0">
                             <TablePagination pageNumber={paging.pageNumber} pageSize={paging.pageSize} totalItems={paging.totalItems} totalPages={paging.totalPages} onPageChange={handlePageChange} />
                         </div>
                     </div>

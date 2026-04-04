@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef, lazy, Suspense } from "react";
 import { userApi } from "@/services/user-api.service";
 import { roleApi } from "@/services/role-api.service";
 import type { PagingVM, GetUserBaseRes, RoleRes } from "@/models/entity.model";
@@ -47,36 +47,42 @@ const UserPage: React.FC = () => {
 
     const [roles, setRoles] = useState<{ label: string, value: string }[]>([]);
     const [allRolesRaw, setAllRolesRaw] = useState<RoleRes[]>([]);
-    const [hasFetchedRoles, setHasFetchedRoles] = useState(false);
+    const hasFetchedRoles = useRef(false);
 
     const fetchRoles = useCallback(async () => {
-        if (hasFetchedRoles) return;
+        if (hasFetchedRoles.current) return;
         try {
             const res = await roleApi.getAll();
             if (res) {
-                const mappedRoles = (res || []).map((r: RoleRes) => ({
+                const mappedRoles = res.map((r: RoleRes) => ({
                     label: r.nameUpperCase,
                     value: r.id
                 }));
                 setRoles(mappedRoles);
-                setAllRolesRaw(res || []);
-                setHasFetchedRoles(true);
+                setAllRolesRaw(res);
+                hasFetchedRoles.current = true;
             }
         } catch (error) {
             console.error("Error fetching roles", error);
         }
-    }, [hasFetchedRoles]);
+    }, []);
 
     const fetchUsers = useCallback(async (page: number, size: number, sortField?: string, sortDir?: "asc" | "desc", search?: string, status?: boolean, roleId?: string) => {
         try {
             setLoading(true);
 
-            // userApi.getAll signature: pageNumber, pageSize, sortField, sortDirection, status, searchValue, roleId
-            const res = await userApi.getAll(page, size, sortField ?? null, sortDir ?? null, status ?? null, search ?? null, roleId ?? null);
-            if (res) {
-                let list = res.list || [];
+            const res = await userApi.getAll({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
+                status: status !== undefined ? String(status) : null,
+                searchValue: search ?? null,
+                roleId: roleId ?? null
+            });
 
-                setUsers(list);
+            if (res) {
+                setUsers(res.list || []);
                 setPaging(res);
             }
         } catch (error) {

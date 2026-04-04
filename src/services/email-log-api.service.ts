@@ -1,7 +1,7 @@
 import { ApiConstant } from "../constants/api.constant";
-import type { PagingVM, GetEmailLogRes, GetEmailLogByIdRes } from "../models/entity.model";
 import { axiosPrivate } from "../api/axios.instance";
 import type { GetEmailLogReq } from "../models/entity.request.model";
+import type { GetEmailLogByIdRes, GetEmailLogRes, PagingVM } from "../models/entity.model";
 
 export const emailLogApi = {
     getAll: async (params: GetEmailLogReq): Promise<PagingVM<GetEmailLogRes>> => {

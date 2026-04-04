@@ -18,12 +18,12 @@ const SmtpSettingsPage: React.FC = () => {
     const fetchAll = useCallback(async () => {
         setLoading(true);
         try {
-            const list = await smtpSettingApi.get();
+            const res = await smtpSettingApi.get();
+            const list = Array.isArray(res) ? res : (res.data || []);
             const map: Partial<Record<SmtpTypeKey, SmtpSettingRes>> = {};
-            list.forEach(s => {
-                // Normalise "Support" → "SUPPORT", "System" → "SYSTEM", etc.
+            list.forEach((s: SmtpSettingRes) => {
                 const key = normaliseType(s.type as string);
-                if (key) map[key] = { ...s, type: key };   // store normalised type
+                if (key) map[key] = { ...s, type: key };
             });
             setSettingsMap(map);
         } catch {

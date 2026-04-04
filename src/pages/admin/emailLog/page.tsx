@@ -74,12 +74,12 @@ const EmailLogPage: React.FC = () => {
                 const params: GetEmailLogReq = {
                     pageNumber: page,
                     pageSize: size,
+                    sortField: "sentAt",
+                    sortDirection: "desc",
                     type: type ?? null,
                     status: status || null,
                     subject: subject || null,
                     direction: direction || null,
-                    sortField: "sentAt",
-                    sortDirection: "desc",
                 };
                 const res = await emailLogApi.getAll(params);
                 if (res) {

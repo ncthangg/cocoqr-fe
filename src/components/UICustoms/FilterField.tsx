@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { X } from "lucide-react";
+import { X, ChevronDown, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FilterFieldBaseProps {
@@ -14,6 +14,7 @@ interface FilterInputProps extends FilterFieldBaseProps {
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
+    inputType?: string; // e.g. "text", "date", "number"
 }
 
 interface FilterSelectProps extends FilterFieldBaseProps {
@@ -36,37 +37,64 @@ const FilterField: React.FC<FilterFieldProps> = (props) => {
     };
 
     return (
-        <div className={cn("space-y-1", colSpan, className)}>
-            <label className="text-xs font-bold text-foreground-muted uppercase flex items-center gap-2">
-                {icon} {label}
+        <div className={cn("space-y-1.5", colSpan, className)}>
+            <label className="text-[10px] font-black text-foreground-muted uppercase tracking-wider flex items-center gap-1.5 ml-0.5">
+                <span className="opacity-70">{icon}</span>
+                {label}
             </label>
-            <div className="relative">
+            <div className="relative group">
                 {props.type === "select" ? (
-                    <select
-                        className="select w-full border border-border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent pr-8 appearance-none"
-                        value={props.value}
-                        onChange={(e) => props.onChange(e.target.value)}
-                    >
-                        <option value="">{props.placeholder ?? "Tất cả"}</option>
-                        {props.options.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="relative">
+                        <select
+                            className={cn(
+                                "select pr-9 appearance-none",
+                                hasValue ? "text-foreground font-semibold !border-primary/50" : "text-foreground-muted font-medium"
+                            )}
+                            value={props.value}
+                            onChange={(e) => props.onChange(e.target.value)}
+                        >
+                            <option value="">{props.placeholder ?? "Tất cả"}</option>
+                            {props.options.map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-foreground-muted group-hover:text-primary transition-colors">
+                            <ChevronDown className="w-4 h-4" />
+                        </div>
+                    </div>
                 ) : (
-                    <input
-                        type="text"
-                        placeholder={props.placeholder ?? ""}
-                        className="input pl-3 pr-8 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
-                        value={props.value}
-                        onChange={(e) => props.onChange(e.target.value)}
-                    />
+                    <div className="relative">
+                        <input
+                            type={props.inputType ?? "text"}
+                            placeholder={props.placeholder ?? ""}
+                            className={cn(
+                                "input",
+                                props.inputType === "date" ? "pr-9" : "",
+                                hasValue ? "text-foreground font-semibold !border-primary/50" : "text-foreground-muted font-medium"
+                            )}
+                            value={props.value}
+                            onChange={(e) => props.onChange(e.target.value)}
+                        />
+                        {(props.inputType === "date") && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-foreground-muted group-hover:text-primary transition-colors">
+                                <Calendar className="w-4 h-4 opacity-40" />
+                            </div>
+                        )}
+                    </div>
                 )}
+
                 {hasValue && (
                     <button
-                        onClick={handleClear}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-primary p-0.5"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleClear();
+                        }}
+                        className={cn(
+                            "absolute top-1/2 -translate-y-1/2 text-foreground-muted hover:text-danger hover:bg-danger/10 p-1 rounded-full transition-all duration-200",
+                            props.type === "select" ? "right-8" : "right-2"
+                        )}
                         aria-label={`Clear ${label}`}
                     >
                         <X className="w-3.5 h-3.5" />

@@ -1,11 +1,11 @@
 import { axiosPrivate } from "../api/axios.instance";
 import { ApiConstant } from "../constants/api.constant";
 import type { EmailTemplateRes } from "../models/entity.model";
-import type { PostEmailTemplateReq, PutEmailTemplateReq } from "../models/entity.request.model";
+import type { PostEmailTemplateReq, PutEmailTemplateReq, GetEmailTemplatesReq } from "../models/entity.request.model";
 
 export const emailTemplateApi = {
-    getAll: async (): Promise<EmailTemplateRes[]> => {
-        const response = await axiosPrivate.get(ApiConstant.EMAIL_TEMPLATE.GET_ALL);
+    getAll: async (params?: GetEmailTemplatesReq): Promise<EmailTemplateRes[]> => {
+        const response = await axiosPrivate.get(ApiConstant.EMAIL_TEMPLATE.GET_ALL, { params });
         return response.data;
     },
     getById: async (id: string): Promise<EmailTemplateRes> => {

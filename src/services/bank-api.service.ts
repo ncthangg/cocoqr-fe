@@ -1,23 +1,20 @@
 import { ApiConstant } from "../constants/api.constant";
 import type { PagingVM, BankRes } from "../models/entity.model";
 import { axiosPrivate, axiosPublic } from "../api/axios.instance";
-import type { PutBankInfoReq } from "../models/entity.request.model";
+import type { PutBankInfoReq, GetBanksReq } from "../models/entity.request.model";
 
 export const bankApi = {
-    getAll: async (pageNumber: number, pageSize: number,
-        sortField: string | null,
-        sortDirection: "asc" | "desc" | null,
-        isActive: boolean | null,
-        searchValue: string | null): Promise<PagingVM<BankRes>> => {
+    getAll: async (params: GetBanksReq): Promise<PagingVM<BankRes>> => {
         const response = await axiosPublic.get(ApiConstant.BANKINFO.GET_ALL,
             {
                 params: {
-                    pageNumber: pageNumber,
-                    pageSize: pageSize,
-                    sortField: sortField,
-                    sortDirection: sortDirection,
-                    isActive: isActive,
-                    searchValue: searchValue,
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    sortField: params.sortField,
+                    sortDirection: params.sortDirection,
+                    isActive: params.isActive,
+                    searchValue: params.searchValue,
+                    status: params.status,
                 }
             }
         );

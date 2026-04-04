@@ -14,7 +14,6 @@ import type { QrStyleLibraryRes } from "@/models/entity.model";
 import { QRStyleType } from "@/models/enum";
 
 const QrStyleLibModal = lazy(() => import("./components/QrStyleLibModal"));
-import { useDebounce } from "@/hooks/useDebounce";
 
 const QrStyleLibPage: React.FC = () => {
     const [data, setData] = useState<QrStyleLibraryRes[]>([]);
@@ -26,27 +25,24 @@ const QrStyleLibPage: React.FC = () => {
     const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
     const [isDeleting, setIsDeleting] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<QrStyleLibraryRes | null>(null);
-    const [searchValue, setSearchValue] = useState("");
-    const debouncedSearch = useDebounce(searchValue, 500);
 
     const fetchItems = useCallback(async () => {
         try {
             setLoading(true);
             const res = await qrStyleLibApi.getAll({
+                userId: null,
                 isActive: activeFilter ?? null,
                 type: QRStyleType.SYSTEM,
-                name: debouncedSearch || null
             });
             if (res) {
-                setData(res || []);
+                setData(res);
             }
         } catch (error) {
-            console.error("Error fetching QR styles:", error);
             toast.error("Không thể tải dữ liệu QR Style.");
         } finally {
             setLoading(false);
         }
-    }, [activeFilter, debouncedSearch]);
+    }, [activeFilter]);
 
     useEffect(() => {
         fetchItems();
@@ -65,8 +61,6 @@ const QrStyleLibPage: React.FC = () => {
     const handleModalSuccess = () => {
         fetchItems();
     };
-
-
 
     const handleDelete = async () => {
         if (!itemToDelete || isDeleting) return;
@@ -113,8 +107,8 @@ const QrStyleLibPage: React.FC = () => {
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
                 <div className="shrink-0 border-b border-border">
                     <TableToolbar
-                        value={searchValue}
-                        onChange={setSearchValue}
+                        value={null}
+                        onChange={null}
                         placeholder="Tìm kiếm style theo tên..."
                         handleOpenCreateModal={handleOpenCreateModal}
                     />
@@ -126,6 +120,9 @@ const QrStyleLibPage: React.FC = () => {
                         data={data}
                         sortState={null}
                         onSortChange={() => { }}
+                        filterState={useMemo(() => ({
+                            3: activeFilter
+                        }), [activeFilter])}
                         onFilterChange={(index, val) => {
                             if (index === 3) setActiveFilter(val as boolean | undefined);
                         }}

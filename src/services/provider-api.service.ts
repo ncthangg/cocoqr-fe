@@ -1,7 +1,7 @@
-import { ApiConstant } from "../constants/api.constant";
-import type { ProviderRes } from "../models/entity.model";
 import { axiosPrivate } from "../api/axios.instance";
+import { ApiConstant } from "../constants/api.constant";
 import type { PutProviderReq } from "../models/entity.request.model";
+import type { ProviderRes } from "../models/entity.model";
 
 export const providerApi = {
     getAll: async (): Promise<ProviderRes[]> => {

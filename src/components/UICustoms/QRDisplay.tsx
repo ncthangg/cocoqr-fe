@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Download, Copy, Palette, Image as ImageIcon, Sliders, Maximize, Check, RefreshCw, SlidersHorizontal, ChevronUp, Trash2, Upload, ChevronDown } from 'lucide-react';
 import Button from './Button';
 import ActionConfirmModal from './Modal/ActionConfirmModal';
@@ -75,6 +75,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
     const qrPreviewRef = useRef<HTMLDivElement>(null);
     const qrCodeRef = useRef<QRCodeStyling | null>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
+    const hasFetchedStyles = useRef(false);
 
     const [qrStyles, setQrStyles] = useState<QrStyleLibraryRes[]>([]);
     const [selectedStyleId, setSelectedStyleId] = useState<string>("");
@@ -108,12 +109,25 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
         setShowCustom(false);
     }, [transactionRef, qrData, qrImageUrl]);
 
+    const fetchStyles = useCallback(async () => {
+        if (hasFetchedStyles.current) return;
+        try {
+            const res = await qrStyleLibApi.getAll({ isActive: true, type: null });
+            if (res) {
+                setQrStyles(res);
+                hasFetchedStyles.current = true;
+            }
+        } catch (error) {
+            console.error("Error fetching QR styles:", error);
+        }
+    }, []);
+
     useEffect(() => {
         if (styleJson) {
             setStyle(parseStyleJson(styleJson));
             const matched = qrStyles.find(s => s.styleJson === styleJson);
             setSelectedStyleId(matched ? matched.id : "");
-        } else {
+        } else if (qrStyles.length > 0) {
             const userDefault = qrStyles.find(s => s.type === QRStyleType.USER && s.isDefault);
             const sysDefault = qrStyles.find(s => s.type === QRStyleType.SYSTEM && s.isDefault);
 
@@ -127,26 +141,13 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                 setStyle({ ...DEFAULT_STYLE });
                 setSelectedStyleId("");
             }
+        } else {
+            // Keep default style until library is fetched (or if no styleJson)
+            if (!styleJson && !selectedStyleId) {
+                setStyle({ ...DEFAULT_STYLE });
+            }
         }
     }, [styleJson, qrStyles]);
-
-    useEffect(() => {
-        if (type === 'private') {
-            const fetchStyles = async () => {
-                try {
-                    const [sysRes, usrRes] = await Promise.all([
-                        qrStyleLibApi.getAll({ isActive: true, type: QRStyleType.SYSTEM }),
-                        qrStyleLibApi.getAll({ isActive: true, type: QRStyleType.USER })
-                    ]);
-                    const allStyles = [...(sysRes || []), ...(usrRes || [])];
-                    setQrStyles(allStyles);
-                } catch (error) {
-                    console.error("Error fetching QR styles:", error);
-                }
-            };
-            fetchStyles();
-        }
-    }, [type]);
 
     useEffect(() => {
         if (!qrData && !qrImageUrl) return;
@@ -186,6 +187,9 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
         if (type === 'public') {
             dispatch(openAuthModal());
         } else {
+            if (!showCustom && !hasFetchedStyles.current) {
+                fetchStyles();
+            }
             setShowCustom(!showCustom);
         }
     };

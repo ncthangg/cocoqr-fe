@@ -50,7 +50,7 @@ const AccountsPage: React.FC = () => {
         try {
             const res = await providerApi.getAll();
             if (res) {
-                setAllProviders(res || []);
+                setAllProviders(res);
                 setHasFetchedProviders(true);
             }
         } catch (error) {
@@ -67,18 +67,18 @@ const AccountsPage: React.FC = () => {
         status?: boolean) => {
         try {
             setLoading(true);
-            const res = await accountApi.getAllByAdmin(
-                page,
-                size,
-                sortField ?? null,
-                sortDir ?? null,
-                null,
-                providerId ?? null,
-                search ?? null,
-                isActive ?? null,
-                isDeleted ?? null,
-                status ?? null,
-            );
+            const res = await accountApi.getAllByAdmin({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
+                userId: null,
+                providerId: providerId ?? null,
+                searchValue: search ?? null,
+                isActive: isActive ?? null,
+                isDeleted: isDeleted ?? null,
+                status: status !== undefined ? String(status) : null,
+            });
             if (res) {
                 setAccounts(res.list || []);
                 setPaging(res);
@@ -128,7 +128,7 @@ const AccountsPage: React.FC = () => {
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
                     />
-                    <RefreshButton 
+                    <RefreshButton
                         onRefresh={() => fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter, false, statusFilter)}
                         loading={loading}
                         className="rounded-full"
@@ -200,7 +200,7 @@ const AccountsPage: React.FC = () => {
                                 cell: (acc) => (
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-2">
-                                            <BrandLogo 
+                                            <BrandLogo
                                                 logoUrl={acc.bankLogoUrl ?? acc.providerLogoUrl}
                                                 name={acc.bankShortName || acc.providerName}
                                                 code={acc.bankCode || acc.providerCode}

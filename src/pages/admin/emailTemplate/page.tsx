@@ -33,8 +33,10 @@ const EmailTemplatePage: React.FC = () => {
     const fetchTemplates = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await emailTemplateApi.getAll();
-            setTemplates(Array.isArray(data) ? data : []);
+            const res = await emailTemplateApi.getAll();
+            if (res) {
+                setTemplates(res);
+            }
         } catch {
             toast.error("Không thể tải danh sách email templates.");
         } finally {

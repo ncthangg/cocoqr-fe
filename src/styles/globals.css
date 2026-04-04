@@ -293,7 +293,7 @@ body {
 }
 
 .select {
-    @apply outline-none transition-all duration-300 font-medium cursor-pointer;
+    @apply w-full px-md py-sm outline-none transition-all duration-300 font-medium cursor-pointer;
     border: 1.5px solid var(--color-input-border);
     border-radius: var(--radius-md);
     background-color: var(--color-input-bg);

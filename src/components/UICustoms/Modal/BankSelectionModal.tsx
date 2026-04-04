@@ -32,14 +32,15 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
             const sortField = sortState?.field || null;
             const sortDir = sortState?.dir || null;
 
-            const res = await bankApi.getAll(
-                paging.pageNumber,
-                paging.pageSize,
-                sortField,
-                sortDir,
-                null, // Fetch all banks to show maintenance status
-                debouncedSearch || null
-            );
+            const res = await bankApi.getAll({
+                pageNumber: paging.pageNumber,
+                pageSize: paging.pageSize,
+                sortField: sortField,
+                sortDirection: sortDir,
+                isActive: true,
+                searchValue: debouncedSearch || null,
+                status: null
+            });
 
             if (res) {
                 setBanks(res.list ?? []);
