@@ -173,7 +173,7 @@
 
 /* =========================
    BASE
-========================= */
+ ========================= */
 
 html {
     scroll-behavior: smooth;
@@ -192,7 +192,7 @@ body {
 
 /* =========================
    PAGE LAYOUT
-========================= */
+ ========================= */
 
 .page-container {
     @apply max-w-7xl mx-auto px-lg py-xl;
@@ -208,7 +208,7 @@ body {
 
 /* =========================
    BUTTON
-========================= */
+ ========================= */
 
 .btn {
     @apply inline-flex items-center justify-center font-bold transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
@@ -273,7 +273,7 @@ body {
 
 /* =========================
    INPUT
-========================= */
+ ========================= */
 
 .input {
     @apply w-full px-md py-sm outline-none transition-all duration-300 font-medium;
@@ -316,7 +316,7 @@ body {
 
 /* =========================
    MODAL
-========================= */
+ ========================= */
 
 .modal-overlay {
     @apply fixed inset-0 flex items-center justify-center p-md;
@@ -337,7 +337,7 @@ body {
 
 /* =========================
    TABLE
-========================= */
+ ========================= */
 
 .table-wrapper {
     @apply w-full overflow-x-auto rounded-2xl;
@@ -369,7 +369,7 @@ body {
 
 /* =========================
    ANIMATION
-========================= */
+ ========================= */
 
 .fade-in {
     @apply animate-in fade-in duration-300;
@@ -474,50 +474,80 @@ body {
     @apply bg-border-strong/50;
 }
 
-/* ==================================
-   QUILL EDITOR OVERRIDES
- ==================================== */
-.email-editor-container .ql-toolbar.ql-snow {
-    @apply bg-surface-muted/30 border-border rounded-t-xl py-2 px-3;
+/* ==============================================
+   QUILL EMAIL EDITOR REGION
+   ============================================== */
+
+/* --- 1. Shared / Base Styles --- */
+.email-editor-container .ql-editor {
+    @apply !min-h-[120px] max-h-[450px] overflow-y-auto leading-relaxed font-sans transition-colors duration-200;
 }
 
-.email-editor-container .ql-container.ql-snow {
-    @apply rounded-b-xl !text-sm min-h-[120px];
+.email-editor-container .ql-editor.ql-blank::before {
+    @apply italic font-medium opacity-50 !text-foreground-muted;
+    left: 1.25rem !important;
+}
+
+/* --- 2. Editable Mode (Input-like behavior) --- */
+.email-editor-container:not(.readonly) .ql-toolbar.ql-snow {
+    @apply bg-surface-muted/40 border-border rounded-t-xl py-2 px-3;
+}
+
+.email-editor-container:not(.readonly) .ql-container.ql-snow {
+    @apply rounded-b-xl !text-sm;
     background-color: var(--color-input-bg);
     color: var(--color-input-text);
     border: 1px solid var(--color-input-border) !important;
-    resize: vertical;
     overflow: hidden;
 }
 
-/* Dark mode: keep editable Quill area light style consistent with other inputs */
+/* Force light style in Dark Mode for editable areas (consistency with Inputs) */
 .dark .email-editor-container:not(.readonly) .ql-container.ql-snow {
-    background-color: var(--color-input-bg) !important;
-    color: var(--color-input-text);
-    border-color: var(--color-input-border) !important;
+    background-color: #ffffff !important;
+    color: #18181b !important;
 }
 
 .dark .email-editor-container:not(.readonly) .ql-editor {
-    color: var(--color-input-text);
+    color: #18181b !important;
 }
 
+/* --- 3. Readonly Mode (View-only behavior) --- */
 .email-editor-container.readonly .ql-toolbar.ql-snow {
-    @apply hidden;
+    @apply hidden; /* Hide toolbar completely */
 }
 
 .email-editor-container.readonly .ql-container.ql-snow {
-    @apply rounded-xl bg-bg/50 !min-h-0 border-border;
+    @apply rounded-xl !min-h-0 border-border bg-bg/50;
+    border-style: dashed;
 }
 
 .email-editor-container.readonly .ql-editor {
     @apply !min-h-0 py-4 px-5;
+    color: var(--color-text-primary); /* Uses theme text color */
 }
 
-.email-editor-container .ql-editor {
-    @apply !min-h-[120px] max-h-[300px] overflow-y-auto leading-relaxed font-sans;
+/* Adjustments for dark mode - Readonly area follows theme */
+.dark .email-editor-container.readonly .ql-container.ql-snow {
+    background-color: rgba(9, 9, 11, 0.4);
+    border-color: rgba(63, 63, 70, 0.4);
 }
 
-/* Scrollbar for editor */
+/* --- 4. Toolbar & Interactive Styles --- */
+.email-editor-container .ql-toolbar .ql-stroke { @apply !stroke-foreground-muted; }
+.email-editor-container .ql-toolbar .ql-fill { @apply !fill-foreground-muted; }
+.email-editor-container .ql-toolbar .ql-picker { @apply !text-foreground-muted; }
+
+.email-editor-container .ql-toolbar .ql-active .ql-stroke,
+.email-editor-container .ql-toolbar button:hover .ql-stroke {
+    @apply !stroke-primary transition-all;
+}
+
+.email-editor-container .ql-toolbar .ql-active .ql-fill,
+.email-editor-container .ql-toolbar button:hover .ql-fill {
+    @apply !fill-primary transition-all;
+}
+
+/* --- 5. Scrollbar Optimization --- */
 .email-editor-container .ql-editor::-webkit-scrollbar {
     width: 5px;
 }
@@ -532,37 +562,4 @@ body {
 
 .email-editor-container .ql-editor::-webkit-scrollbar-thumb:hover {
     @apply bg-border-strong/50;
-}
-
-.email-editor-container .ql-editor.ql-blank::before {
-    @apply italic font-medium opacity-50 !text-foreground-muted;
-    left: 1.25rem !important;
-}
-
-.email-editor-container .ql-toolbar .ql-stroke {
-    @apply !stroke-foreground-muted;
-}
-
-.email-editor-container .ql-toolbar .ql-fill {
-    @apply !fill-foreground-muted;
-}
-
-.email-editor-container .ql-toolbar .ql-picker {
-    @apply !text-foreground-muted;
-}
-
-.email-editor-container .ql-toolbar .ql-active .ql-stroke {
-    @apply !stroke-primary;
-}
-
-.email-editor-container .ql-toolbar .ql-active .ql-fill {
-    @apply !fill-primary;
-}
-
-.email-editor-container .ql-toolbar button:hover .ql-stroke {
-    @apply !stroke-primary transition-all;
-}
-
-.email-editor-container .ql-toolbar button:hover .ql-fill {
-    @apply !fill-primary transition-all;
 }

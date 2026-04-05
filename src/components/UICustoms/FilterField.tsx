@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { X, ChevronDown, Calendar } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FilterFieldBaseProps {
@@ -77,11 +77,6 @@ const FilterField: React.FC<FilterFieldProps> = (props) => {
                             value={props.value}
                             onChange={(e) => props.onChange(e.target.value)}
                         />
-                        {(props.inputType === "date") && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-foreground-muted group-hover:text-primary transition-colors">
-                                <Calendar className="w-4 h-4 opacity-40" />
-                            </div>
-                        )}
                     </div>
                 )}
 
