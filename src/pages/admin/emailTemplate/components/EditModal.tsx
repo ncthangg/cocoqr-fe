@@ -88,7 +88,7 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
                         </div>
                         <div>
                             <h3 className="text-lg font-bold text-foreground">Chỉnh sửa Template</h3>
-                            <p className="text-xs text-foreground-muted font-mono font-medium">{template.templateKey}</p>
+                            <p className="text-xs text-foreground-muted font-primary font-medium">{template.templateKey}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-border rounded-full transition-colors text-foreground-muted hover:text-foreground">
@@ -107,7 +107,7 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
                             type="text"
                             value={template.templateKey}
                             readOnly
-                            className="w-full px-4 py-3 bg-surface-muted border border-border rounded-xl text-foreground-muted font-mono text-sm cursor-not-allowed"
+                            className="w-full px-4 py-3 bg-surface-muted border border-border rounded-xl text-foreground-muted font-primary text-sm cursor-not-allowed"
                         />
                     </div>
 

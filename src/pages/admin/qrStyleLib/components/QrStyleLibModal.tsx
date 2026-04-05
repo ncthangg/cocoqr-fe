@@ -322,7 +322,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                                                 onChange={(e) => updateStyle("bgColor", e.target.value)}
                                                 className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm"
                                             />
-                                            <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.bgColor}</span>
+                                            <span className="text-[10px] font-primary uppercase text-foreground-muted">{style.bgColor}</span>
                                         </div>
                                     </div>
                                     {/* Point Color */}
@@ -338,7 +338,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                                                 onChange={(e) => updateStyle("pointColor", e.target.value)}
                                                 className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm"
                                             />
-                                            <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.pointColor}</span>
+                                            <span className="text-[10px] font-primary uppercase text-foreground-muted">{style.pointColor}</span>
                                         </div>
                                     </div>
                                     {/* Eye Color */}
@@ -354,7 +354,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                                                 onChange={(e) => updateStyle("eyeColor", e.target.value)}
                                                 className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm"
                                             />
-                                            <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.eyeColor}</span>
+                                            <span className="text-[10px] font-primary uppercase text-foreground-muted">{style.eyeColor}</span>
                                         </div>
                                     </div>
                                     {/* Border Color */}
@@ -370,7 +370,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                                                 onChange={(e) => updateStyle("borderColor", e.target.value)}
                                                 className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm"
                                             />
-                                            <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.borderColor}</span>
+                                            <span className="text-[10px] font-primary uppercase text-foreground-muted">{style.borderColor}</span>
                                         </div>
                                     </div>
 
@@ -411,7 +411,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                                 </button>
 
                                 {showRawJson && (
-                                    <pre className="w-full text-[9px] font-mono bg-surface-muted/50 p-sm rounded-lg border border-border/40 overflow-auto max-h-[200px] whitespace-pre-wrap break-all animate-in slide-in-from-top-2 duration-300">
+                                    <pre className="w-full text-[9px] font-primary bg-surface-muted/50 p-sm rounded-lg border border-border/40 overflow-auto max-h-[200px] whitespace-pre-wrap break-all animate-in slide-in-from-top-2 duration-300">
                                         {styleJson}
                                     </pre>
                                 )}

@@ -69,14 +69,14 @@ export function ContactSection() {
             {/* Contact content — centered vertically in available space */}
             <div className="flex-1 flex flex-col justify-center py-16">
                 <div className="mx-auto max-w-6xl px-6">
-                    <div className="mx-auto mb-12 w-full text-center animate-in fade-in duration-500">
-                        <span className="mb-2 inline-block text-sm font-bold uppercase tracking-widest text-primary">
+                    <div className="mx-auto mb-xl w-full text-center animate-in fade-in duration-500">
+                        <span className="mb-sm inline-block text-sm font-bold uppercase tracking-widest text-primary">
                             Liên hệ
                         </span>
-                        <h2 className="text-3xl font-black tracking-tight text-foreground md:text-4xl">
+                        <h2 className="text-3xl font-primary font-black tracking-tight text-foreground md:text-4xl">
                             Hỗ trợ & liên hệ
                         </h2>
-                        <p className="mt-4 w-full text-foreground-muted font-medium mx-auto leading-relaxed">
+                        <p className="mt-md w-full text-foreground-muted font-primary font-medium mx-auto leading-relaxed">
                             Bạn cần hỗ trợ hoặc có thắc mắc về dịch vụ QR Code? Đừng ngần ngại để lại lời nhắn cho chúng tôi.
                         </p>
                     </div>

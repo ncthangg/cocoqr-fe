@@ -71,7 +71,7 @@ export default function KeyText({
     const paddingRight = hasValue && readOnly ? "pr-20" : "";
 
     // Styles chung cho input và textarea
-    const baseInputStyles = `w-full rounded-md border border-border px-md py-sm font-mono text-sm resize-y bg-surface-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary ${paddingRight} ${className}`;
+    const baseInputStyles = `w-full rounded-md border border-border px-md py-sm font-primary text-sm resize-y bg-surface-muted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary ${paddingRight} ${className}`;
 
     // Khi không readOnly, luôn hiển thị giá trị thực (không mask)
     const displayValueForEdit = !readOnly ? safeValue : (isRealContent ? safeValue : (hasValue ? getMaskedText(safeValue) : safeValue));

@@ -8,7 +8,7 @@ export function InfoRow({ label, value, icon, mono }: {
             <span className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5">
                 {icon}{label}
             </span>
-            <span className={`text-sm text-foreground truncate ${mono ? "font-mono" : "font-semibold"}`}>
+            <span className={`text-sm text-foreground truncate ${mono ? "font-primary" : "font-semibold"}`}>
                 {value || <span className="text-foreground-muted italic font-normal text-xs">Chưa cấu hình</span>}
             </span>
         </div>

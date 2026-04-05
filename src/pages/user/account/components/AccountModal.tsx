@@ -345,7 +345,7 @@ const FormSection: React.FC<FormSectionProps> = React.memo(({
             </label>
             <input
                 type="text"
-                className="input h-11 focus:ring-2 focus:ring-primary/20 transition-all font-mono tracking-tight"
+                className="input h-11 focus:ring-2 focus:ring-primary/20 transition-all font-primary tracking-tight"
                 value={formData.accountNumber}
                 onChange={(e) => onAccountNumberChange(e.target.value)}
                 placeholder={isBankType ? "0123456789" : "09xxxxxxxx"}

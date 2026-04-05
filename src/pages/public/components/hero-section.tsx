@@ -17,15 +17,19 @@ export function HeroSection() {
 
                 {/* Headline */}
                 <div className="flex flex-col items-center text-center gap-md animate-in fade-in duration-300">
-                    <span className="inline-block rounded-full bg-primary/10 px-md py-xs text-xs font-semibold tracking-wide text-primary">
+                    <span className="inline-block rounded-full bg-primary/10 px-md py-xs text-xs font-bold uppercase tracking-widest text-primary">
                         Nhanh - An toàn - Tiện lợi
                     </span>
-                    <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-foreground md:text-3xl">
+                    <h1 className="text-3xl font-primary font-black tracking-tight text-foreground md:text-4xl">
                         Tạo mã QR thanh toán{" "}
                         <span className="text-primary">nhanh chóng</span>
                     </h1>
-                    <p className="w-full text-base leading-relaxed text-foreground-muted">
-                        Chỉ cần vài bước đơn giản, bạn có thể tạo mã QR thanh toán cho mọi ngân hàng tại Việt Nam. Nhận tiền dễ dàng, mọi lúc mọi nơi.
+                    <p className="mt-md w-full text-foreground-muted font-primary font-medium mx-auto leading-relaxed">
+                        Chỉ cần vài bước đơn giản, bạn có thể tạo mã
+                        <span className="text-primary"> QR thanh toán </span>
+                        cho mọi ngân hàng tại
+                        <span className="text-primary"> Việt Nam</span>.
+                        Nhận tiền dễ dàng, mọi lúc mọi nơi.
                     </p>
                 </div>
 
@@ -40,7 +44,7 @@ export function HeroSection() {
                     {/* Right: QR Display */}
                     <div className="flex flex-col">
                         <div className="flex items-center shrink-0 h-11 mb-md">
-                            <h2 className="text-xl font-bold text-foreground">Kết quả mã QR</h2>
+                            <h2 className="text-xl font-secondary font-bold text-foreground">Kết quả mã QR</h2>
                         </div>
                         <div className="flex-1">
                             <QRDisplay

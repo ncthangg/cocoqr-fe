@@ -183,7 +183,7 @@ const QrStyleLibPage: React.FC = () => {
                                 header: "Style Config",
                                 accessor: (item) => item.styleJson,
                                 cell: (item) => (
-                                    <div className="flex items-center gap-2 text-xs text-foreground-secondary font-mono bg-surface-muted/30 px-sm py-xs rounded-lg max-w-[200px] truncate border border-border/40" title={item.styleJson}>
+                                    <div className="flex items-center gap-2 text-xs text-foreground-secondary font-primary bg-surface-muted/30 px-sm py-xs rounded-lg max-w-[200px] truncate border border-border/40" title={item.styleJson}>
                                         <FileJson className="w-3.5 h-3.5 text-foreground-muted" />
                                         <span>JSON: {item.styleJson.length} chars</span>
                                     </div>

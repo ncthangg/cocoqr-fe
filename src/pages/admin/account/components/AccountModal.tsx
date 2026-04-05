@@ -35,7 +35,7 @@ function ReadOnlyRow({ icon, label, value, mono, fullWidth }: ReadOnlyRowProps) 
                 {icon}
                 {label}
             </span>
-            <span className={cn("text-sm text-foreground px-xs", mono ? "font-mono tracking-tight" : "font-medium")}>
+            <span className={cn("text-sm text-foreground px-xs", mono ? "font-primary tracking-tight" : "font-medium")}>
                 {value ?? <span className="text-foreground-muted italic font-normal">Chưa cập nhật</span>}
             </span>
         </div>
@@ -212,7 +212,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                                             : "bg-surface-muted/10 border-border/50"
                                     )}>
                                         <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300 w-full">
-                                            <BrandLogo 
+                                            <BrandLogo
                                                 logoUrl={detail?.bankLogoUrl || detail?.providerLogoUrl}
                                                 name={isBank ? (detail.bankName || detail.bankShortName) : detail.providerName}
                                                 code={isBank ? detail.bankCode : detail.providerCode}

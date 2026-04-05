@@ -41,11 +41,11 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
     const executeUpdate = async () => {
         try {
             setLoading(true);
-            await roleApi.put(role.id, { 
-                name: role.name, 
-                status: status 
+            await roleApi.put(role.id, {
+                name: role.name,
+                status: status
             });
-            
+
             toast.success("Cập nhật trạng thái Role thành công!");
             onSuccess?.({ ...role, status });
             onClose();
@@ -109,7 +109,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
                             type="text"
                             value={roleCode}
                             readOnly
-                            className="input bg-surface-muted/50 cursor-not-allowed opacity-80 font-mono tracking-wider"
+                            className="input bg-surface-muted/50 cursor-not-allowed opacity-80 font-primary tracking-wider"
                         />
                     </div>
 
@@ -135,10 +135,10 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
                         Hủy
                     </Button>
                     {!isAdminRole && (
-                        <Button 
-                            type="button" 
-                            variant="primary" 
-                            size="medium" 
+                        <Button
+                            type="button"
+                            variant="primary"
+                            size="medium"
                             onClick={handleUpdateStatus}
                             loading={loading}
                             disabled={status === role.status}
@@ -148,7 +148,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
                     )}
                 </div>
 
-                <ActionConfirmModal 
+                <ActionConfirmModal
                     isOpen={isConfirmOpen}
                     onClose={() => setIsConfirmOpen(false)}
                     onConfirm={executeUpdate}

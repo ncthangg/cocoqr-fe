@@ -132,7 +132,7 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
                                 value={customKey}
                                 onChange={e => setCustomKey(e.target.value)}
                                 placeholder="vd: order_shipped"
-                                className="input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50 font-mono text-sm mt-2"
+                                className="input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50 font-primary text-sm mt-2"
                                 required
                             />
                         )}

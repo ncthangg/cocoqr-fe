@@ -210,7 +210,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                             name="napasBin"
                                             value={formData.napasBin || ""}
                                             readOnly
-                                            className="input font-mono bg-surface-muted/50 cursor-not-allowed opacity-80 text-center"
+                                            className="input font-primary bg-surface-muted/50 cursor-not-allowed opacity-80 text-center"
                                             placeholder="VD: 970436"
                                         />
                                     </div>
@@ -226,7 +226,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                             name="swiftCode"
                                             value={formData.swiftCode || ""}
                                             readOnly
-                                            className="input font-mono uppercase bg-surface-muted/50 cursor-not-allowed opacity-80 text-center"
+                                            className="input font-primary uppercase bg-surface-muted/50 cursor-not-allowed opacity-80 text-center"
                                             placeholder="VD: BFTVVNVX"
                                         />
                                     </div>
@@ -243,7 +243,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                     {previewUrl ? (
                                         <>
                                             <div className="relative group/logo">
-                                                <BrandLogo 
+                                                <BrandLogo
                                                     logoUrl={previewUrl}
                                                     name={formData.shortName || formData.bankName}
                                                     code={formData.bankCode}

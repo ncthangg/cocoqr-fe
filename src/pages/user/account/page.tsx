@@ -269,7 +269,7 @@ const AccountsPage: React.FC = () => {
         {
             header: "SỐ TÀI KHOẢN",
             accessor: (acc) => acc.accountNumber,
-            cell: (acc) => <span className="font-mono font-semibold text-foreground-secondary tracking-tight">{acc.accountNumber}</span>
+            cell: (acc) => <span className="font-primary font-semibold text-foreground-secondary tracking-tight">{acc.accountNumber}</span>
         },
         {
             header: "NGÀY TẠO",

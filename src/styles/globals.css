@@ -7,6 +7,8 @@
 @config "../../tailwind.config.js";
 
 :root {
+    --font-primary: 'Inter', 'GeistVariable', system-ui, sans-serif;
+    --font-secondary: 'Roboto', sans-serif;
     /* Background & Surface */
     --color-bg: #ffffff;
     --color-surface: #fafafa;
@@ -42,7 +44,6 @@
 
     /* Action (Primary = high-contrast monochrome) */
     --color-primary: #18181b;
-    /* zinc-900 */
     --color-primary-foreground: #fafafa;
 
     /* Button Tokens */
@@ -97,6 +98,9 @@
 }
 
 .dark {
+    --font-primary: 'Inter', 'GeistVariable', system-ui, sans-serif;
+    --font-secondary: 'Roboto', sans-serif;
+
     /* Background & Surface */
     --color-bg: #09090b;
     /* zinc-950 */
@@ -182,7 +186,7 @@ html {
 body {
     background-color: var(--color-bg);
     color: var(--color-text-primary);
-    font-family: 'GeistVariable', 'Inter', sans-serif;
+    font-family: var(--font-primary);
     @apply antialiased;
 }
 
@@ -450,7 +454,7 @@ body {
 
 .prose-content pre,
 .prose-content code {
-    @apply bg-surface-muted px-1.5 py-0.5 rounded-md font-mono text-[0.9em] border border-border;
+    @apply bg-surface-muted px-1.5 py-0.5 rounded-md font-primary text-[0.9em] border border-border;
 }
 
 .prose-content pre {
@@ -480,7 +484,7 @@ body {
 
 /* --- 1. Shared / Base Styles --- */
 .email-editor-container .ql-editor {
-    @apply !min-h-[120px] max-h-[450px] overflow-y-auto leading-relaxed font-sans transition-colors duration-200;
+    @apply !min-h-[120px] max-h-[450px] overflow-y-auto leading-relaxed font-primary transition-colors duration-200;
 }
 
 .email-editor-container .ql-editor.ql-blank::before {
@@ -513,7 +517,8 @@ body {
 
 /* --- 3. Readonly Mode (View-only behavior) --- */
 .email-editor-container.readonly .ql-toolbar.ql-snow {
-    @apply hidden; /* Hide toolbar completely */
+    @apply hidden;
+    /* Hide toolbar completely */
 }
 
 .email-editor-container.readonly .ql-container.ql-snow {
@@ -523,7 +528,8 @@ body {
 
 .email-editor-container.readonly .ql-editor {
     @apply !min-h-0 py-4 px-5;
-    color: var(--color-text-primary); /* Uses theme text color */
+    color: var(--color-text-primary);
+    /* Uses theme text color */
 }
 
 /* Adjustments for dark mode - Readonly area follows theme */
@@ -533,9 +539,17 @@ body {
 }
 
 /* --- 4. Toolbar & Interactive Styles --- */
-.email-editor-container .ql-toolbar .ql-stroke { @apply !stroke-foreground-muted; }
-.email-editor-container .ql-toolbar .ql-fill { @apply !fill-foreground-muted; }
-.email-editor-container .ql-toolbar .ql-picker { @apply !text-foreground-muted; }
+.email-editor-container .ql-toolbar .ql-stroke {
+    @apply !stroke-foreground-muted;
+}
+
+.email-editor-container .ql-toolbar .ql-fill {
+    @apply !fill-foreground-muted;
+}
+
+.email-editor-container .ql-toolbar .ql-picker {
+    @apply !text-foreground-muted;
+}
 
 .email-editor-container .ql-toolbar .ql-active .ql-stroke,
 .email-editor-container .ql-toolbar button:hover .ql-stroke {

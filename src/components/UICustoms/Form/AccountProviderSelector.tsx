@@ -310,7 +310,7 @@ const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
                                     setIsOpen(false);
                                 }}
                             >
-                                <span className="text-sm font-mono text-foreground-secondary shrink-0">
+                                <span className="text-sm font-primary text-foreground-secondary shrink-0">
                                     ({b.napasBin})
                                 </span>
                                 <span className="text-sm text-foreground font-medium">

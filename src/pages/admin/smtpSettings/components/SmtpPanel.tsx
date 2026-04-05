@@ -12,13 +12,13 @@ import { InfoRow } from "./InfoRow";
 import { type SmtpTypeKey, getPanelMeta, settingToForm, inputCls } from "../utils";
 
 export interface SmtpPanelProps {
-    type:          SmtpTypeKey;
-    setting:       SmtpSettingRes;
-    onSaved:       (updated: SmtpSettingRes) => void;
-    onDeleted:     (type: SmtpTypeKey) => void;
-    isEditing:     boolean;
+    type: SmtpTypeKey;
+    setting: SmtpSettingRes;
+    onSaved: (updated: SmtpSettingRes) => void;
+    onDeleted: (type: SmtpTypeKey) => void;
+    isEditing: boolean;
     onRequestEdit: () => void;
-    onCancelEdit:  () => void;
+    onCancelEdit: () => void;
 }
 
 export const SmtpPanel = React.memo(function SmtpPanel({
@@ -26,10 +26,10 @@ export const SmtpPanel = React.memo(function SmtpPanel({
 }: SmtpPanelProps) {
     const meta = getPanelMeta(type);
 
-    const [savingEdit, setSavingEdit]       = useState(false);
-    const [testLoading, setTestLoading]     = useState(false);
-    const [deleting, setDeleting]           = useState(false);
-    const [showPassword, setShowPassword]   = useState(false);
+    const [savingEdit, setSavingEdit] = useState(false);
+    const [testLoading, setTestLoading] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [showTestPanel, setShowTestPanel] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -37,7 +37,7 @@ export const SmtpPanel = React.memo(function SmtpPanel({
 
     const [testForm, setTestForm] = useState<Omit<TestSmtpSettingReq, "type">>({
         toEmail: "", subject: "Test Email từ CocoQR",
-        body:    "Đây là email kiểm tra từ hệ thống CocoQR.",
+        body: "Đây là email kiểm tra từ hệ thống CocoQR.",
     });
 
     useEffect(() => { setForm(settingToForm(setting)); }, [setting]);
@@ -115,7 +115,7 @@ export const SmtpPanel = React.memo(function SmtpPanel({
                     <div>
                         <h2 className="text-base font-extrabold text-foreground">{meta.label}</h2>
                         <p className="text-xs text-foreground-muted font-medium">
-                            Type: <span className="font-mono font-bold">{type}</span>
+                            Type: <span className="font-primary font-bold">{type}</span>
                         </p>
                     </div>
                 </div>
@@ -133,24 +133,23 @@ export const SmtpPanel = React.memo(function SmtpPanel({
                 {!isEditing && (
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-3">
-                            <InfoRow label="Host"       value={setting.host}                                icon={<Server className="w-3 h-3" />} />
-                            <InfoRow label="Port"       value={setting.port?.toString()}                    icon={<Wifi className="w-3 h-3" />} />
-                            <InfoRow label="Username"   value={setting.username}                            icon={<Lock className="w-3 h-3" />} mono />
+                            <InfoRow label="Host" value={setting.host} icon={<Server className="w-3 h-3" />} />
+                            <InfoRow label="Port" value={setting.port?.toString()} icon={<Wifi className="w-3 h-3" />} />
+                            <InfoRow label="Username" value={setting.username} icon={<Lock className="w-3 h-3" />} mono />
                             <div className="bg-bg/50 border border-border rounded-xl p-3 flex flex-col gap-1">
                                 <span className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5">
                                     <Lock className="w-3 h-3" />Password
                                 </span>
-                                <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full w-fit border ${
-                                    setting.hasPassword
+                                <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full w-fit border ${setting.hasPassword
                                         ? "bg-green-500/10 text-green-600 border-green-500/20"
                                         : "bg-border/30 text-foreground-muted border-border"
-                                }`}>
+                                    }`}>
                                     {setting.hasPassword ? "✓ Đã cấu hình" : "Chưa đặt"}
                                 </span>
                             </div>
-                            <InfoRow label="SSL"        value={setting.enableSSL ? "Enabled" : "Disabled"} icon={<ShieldCheck className="w-3 h-3" />} />
-                            <InfoRow label="From Email" value={setting.fromEmail}                           icon={<Mail className="w-3 h-3" />} />
-                            <InfoRow label="From Name"  value={setting.fromName}                            icon={<Mail className="w-3 h-3" />} />
+                            <InfoRow label="SSL" value={setting.enableSSL ? "Enabled" : "Disabled"} icon={<ShieldCheck className="w-3 h-3" />} />
+                            <InfoRow label="From Email" value={setting.fromEmail} icon={<Mail className="w-3 h-3" />} />
+                            <InfoRow label="From Name" value={setting.fromName} icon={<Mail className="w-3 h-3" />} />
                         </div>
                         {setting.updatedAt && (
                             <p className="text-xs text-foreground-muted">
@@ -212,7 +211,7 @@ export const SmtpPanel = React.memo(function SmtpPanel({
                                 </div>
                             </form>
                         )}
-                        
+
                         <ActionConfirmModal
                             isOpen={showDeleteModal}
                             onClose={() => setShowDeleteModal(false)}

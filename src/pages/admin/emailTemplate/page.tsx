@@ -106,7 +106,7 @@ const EmailTemplatePage: React.FC = () => {
             accessor: (tpl: EmailTemplateRes) => tpl.templateKey,
             type: "string",
             cell: (tpl: EmailTemplateRes) => (
-                <span className="font-mono text-sm font-bold text-foreground bg-surface-muted px-2 py-1 rounded-md border border-border">
+                <span className="font-primary text-sm font-bold text-foreground bg-surface-muted px-2 py-1 rounded-md border border-border">
                     {tpl.templateKey}
                 </span>
             )

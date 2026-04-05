@@ -53,8 +53,8 @@ export default {
                 lg: "var(--shadow-lg)",
             },
             fontFamily: {
-                primary: ["GeistVariable", "Inter", "sans-serif"],
-                secondary: ["Roboto", "sans-serif"],
+                primary: "var(--font-primary)",
+                secondary: "var(--font-secondary)",
             },
             fontSize: {
                 xs: ["10px", "14px"],

@@ -119,7 +119,7 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
         <div className="flex flex-col gap-md w-full h-full">
             {/* Header */}
             <div className="flex items-center justify-between shrink-0 h-11">
-                <h2 className="text-xl font-bold text-foreground">Thông tin tạo mã QR</h2>
+                <h2 className="text-xl font-secondary font-bold text-foreground">Thông tin tạo mã QR</h2>
                 <button
                     type="button"
                     className="p-sm text-foreground-muted hover:text-danger hover:bg-danger/5 rounded-md transition-all duration-300"
@@ -172,7 +172,7 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                 <div className="flex flex-col gap-sm">
                     <label
                         htmlFor="hero-account-number"
-                        className="text-sm font-medium text-foreground-secondary flex items-center gap-xs"
+                        className="text-sm font-primary font-medium text-foreground-secondary flex items-center gap-xs"
                     >
                         <Hash className="w-4 h-4" />
                         Số tài khoản / Số điện thoại
@@ -192,7 +192,7 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                 <div className="flex flex-col gap-xs">
                     <label
                         htmlFor="hero-amount"
-                        className="text-sm font-medium text-foreground-secondary flex items-center gap-xs"
+                        className="text-sm font-primary font-medium text-foreground-secondary flex items-center gap-xs"
                     >
                         <Banknote className="w-4 h-4 text-primary" />
                         Số tiền
@@ -203,7 +203,7 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                             name="amount"
                             type="text"
                             inputMode="numeric"
-                            className="input font-mono pr-12 text-sm sm:text-base tracking-tight"
+                            className="input font-primary pr-12 text-sm sm:text-base tracking-tight"
                             placeholder="Ví dụ: 300.000"
                             autoComplete="off"
                             value={formatVNDInput(formData.amount)}
@@ -223,7 +223,7 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                 <div className="flex flex-col gap-sm">
                     <label
                         htmlFor="hero-note"
-                        className="text-sm font-medium text-foreground-secondary flex items-center gap-xs"
+                        className="text-sm font-primary font-medium text-foreground-secondary flex items-center gap-xs"
                     >
                         <StickyNote className="w-4 h-4" />
                         Ghi chú (Tùy chọn)

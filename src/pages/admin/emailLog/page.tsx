@@ -186,7 +186,7 @@ const EmailLogPage: React.FC = () => {
                 header: "TemplateKey",
                 accessor: (log) => log.templateKey || "None",
                 type: "string",
-                cell: (log) => <TagBadge label={log.templateKey || "None"} color="gray" size="sm" className="font-mono" />,
+                cell: (log) => <TagBadge label={log.templateKey || "None"} color="gray" size="sm" className="font-primary" />,
             },
             {
                 header: "Direction",

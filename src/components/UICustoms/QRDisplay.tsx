@@ -281,7 +281,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                             <div className="w-full grid grid-cols-3 gap-sm p-sm bg-surface-muted/40 rounded-xl border border-border/50 animate-in slide-in-from-bottom-4 duration-500 mb-xs mt-auto">
 
                                 <div className="col-span-3 flex flex-col gap-xs mb-xs">
-                                    <label htmlFor="my-style" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
+                                    <label htmlFor="my-style" className="text-xs font-primary font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-xs">
                                         <Sliders className="w-3.5 h-3.5" /> Phong cách của tôi (My Style)
                                     </label>
                                     <select
@@ -399,7 +399,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                                             onChange={(e) => updateStyle("bgColor", e.target.value)}
                                             className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
                                         />
-                                        <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.bgColor}</span>
+                                        <span className="text-[10px] font-primary uppercase text-foreground-muted">{style.bgColor}</span>
                                     </div>
                                 </div>
                                 {/* Point Color */}
@@ -415,7 +415,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                                             onChange={(e) => updateStyle("pointColor", e.target.value)}
                                             className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
                                         />
-                                        <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.pointColor}</span>
+                                        <span className="text-[10px] font-primary uppercase text-foreground-muted">{style.pointColor}</span>
                                     </div>
                                 </div>
                                 {/* Eye Color */}
@@ -431,7 +431,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                                             onChange={(e) => updateStyle("eyeColor", e.target.value)}
                                             className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
                                         />
-                                        <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.eyeColor}</span>
+                                        <span className="text-[10px] font-primary uppercase text-foreground-muted">{style.eyeColor}</span>
                                     </div>
                                 </div>
 
@@ -449,7 +449,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                                             onChange={(e) => updateStyle("borderColor", e.target.value)}
                                             className="w-8 h-8 rounded-md cursor-pointer border-0 p-0 overflow-hidden shadow-sm shrink-0"
                                         />
-                                        <span className="text-[10px] font-mono uppercase text-foreground-muted">{style.borderColor}</span>
+                                        <span className="text-[10px] font-primary uppercase text-foreground-muted">{style.borderColor}</span>
                                     </div>
                                 </div>
 

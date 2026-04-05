@@ -425,7 +425,7 @@ const CreatePaymentPage: React.FC = () => {
                                     name="amount"
                                     type="text"
                                     inputMode="numeric"
-                                    className="input font-mono pr-12"
+                                    className="input font-primary pr-12"
                                     placeholder="Nhập số tiền"
                                     autoComplete="off"
                                     value={formatVNDInput(formData.amount)}

@@ -39,7 +39,7 @@ function ReadOnlyRow({ icon, label, value, mono, fullWidth }: ReadOnlyRowProps) 
                 {icon}
                 {label}
             </span>
-            <span className={cn("text-sm text-foreground px-xs", mono ? "font-mono tracking-tight" : "font-medium")}>
+            <span className={cn("text-sm text-foreground px-xs", mono ? "font-primary tracking-tight" : "font-medium")}>
                 {value ?? <span className="text-foreground-muted italic font-normal">Chưa cập nhật</span>}
             </span>
         </div>
@@ -197,7 +197,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, onStatusCh
                                             </div>
                                             <div className="flex flex-col gap-xs">
                                                 <p className="font-bold text-foreground text-base">{detail.fullName}</p>
-                                                <p className="text-xs text-foreground-muted font-mono">{detail.email}</p>
+                                                <p className="text-xs text-foreground-muted font-primary">{detail.email}</p>
                                             </div>
                                         </div> */}
                                         {detail.pictureUrl ? (
@@ -215,7 +215,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, onStatusCh
                                                 </div>
                                                 <div className="flex flex-col gap-xs">
                                                     <p className="font-bold text-foreground text-base">{detail.fullName}</p>
-                                                    <p className="text-xs text-foreground-muted font-mono">{detail.email}</p>
+                                                    <p className="text-xs text-foreground-muted font-primary">{detail.email}</p>
                                                 </div>
                                             </div>
                                         )}

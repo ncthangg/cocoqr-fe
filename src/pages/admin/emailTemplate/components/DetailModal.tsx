@@ -63,7 +63,7 @@ const EmailTemplateDetailModal: React.FC<DetailModalProps> = ({ isOpen, onClose,
                             <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5">
                                 <FileText className="w-3 h-3 text-primary" />Template Key
                             </p>
-                            <p className="text-sm font-bold text-foreground font-mono bg-surface-muted px-3 py-2 rounded-lg border border-border">
+                            <p className="text-sm font-bold text-foreground font-primary bg-surface-muted px-3 py-2 rounded-lg border border-border">
                                 {template.templateKey}
                             </p>
                         </div>

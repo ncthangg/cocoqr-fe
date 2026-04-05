@@ -88,7 +88,7 @@ const EmailDetailModal: React.FC<EmailDetailModalProps> = ({ isOpen, onClose, lo
                                     color="gray"
                                     size="lg"
                                     icon={<FileText className="w-3 h-3" />}
-                                    className="font-mono text-[10px]"
+                                    className="font-primary text-[10px]"
                                 />
                             </div>
                         </div>

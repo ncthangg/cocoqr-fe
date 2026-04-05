@@ -32,14 +32,14 @@ export function FeaturesSection() {
     return (
         <section id="features" className="w-full min-h-[calc(100vh-var(--header-height,73px))] py-2xl flex flex-col justify-center bg-bg relative overflow-hidden snap-start snap-always">
             <div className="mx-auto max-w-6xl px-lg">
-                <div className="mx-auto mb-xl w-full text-center animate-in fade-in duration-300">
-                    <span className="mb-sm inline-block text-sm font-semibold tracking-wide text-primary">
-                        Tại sao chọn QR Pay?
+                <div className="mx-auto mb-xl w-full text-center animate-in fade-in duration-500">
+                    <span className="mb-sm inline-block text-sm font-bold uppercase tracking-widest text-primary">
+                        Tại sao chọn CocoQR?
                     </span>
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+                    <h2 className="text-3xl font-primary font-black tracking-tight text-foreground md:text-4xl">
                         Tính năng nổi bật
                     </h2>
-                    <p className="mt-md w-full text-foreground-muted">
+                    <p className="mt-md w-full text-foreground-muted font-primary font-medium mx-auto leading-relaxed">
                         Giải pháp tạo mã QR thanh toán toàn diện, phục vụ cá nhân và doanh nghiệp.
                     </p>
                 </div>
@@ -54,10 +54,10 @@ export function FeaturesSection() {
                                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-btn-primary-text">
                                     <feature.icon className="h-6 w-6" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-foreground">
+                                <h3 className="text-lg font-secondary font-semibold text-foreground">
                                     {feature.title}
                                 </h3>
-                                <p className="text-base leading-relaxed text-foreground-muted">
+                                <p className="text-base font-primary leading-relaxed text-foreground-muted">
                                     {feature.description}
                                 </p>
                             </CardContent>

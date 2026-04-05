@@ -246,7 +246,7 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                 header: "SỐ TÀI KHOẢN",
                                 accessor: (acc) => acc.accountNumber,
                                 sortable: true,
-                                cell: (acc) => <span className="font-mono text-xs">{acc.accountNumber}</span>
+                                cell: (acc) => <span className="font-primary text-xs">{acc.accountNumber}</span>
                             },
                             {
                                 header: "NGÀY TẠO",

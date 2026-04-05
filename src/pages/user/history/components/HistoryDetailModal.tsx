@@ -91,7 +91,7 @@ function InfoRow({ icon, label, value, mono, fullWidth }: InfoRowProps) {
                 {icon}
                 {label}
             </span>
-            <span className={`text-sm text-foreground break-all ${mono ? "font-mono" : ""}`}>
+            <span className={`text-sm text-foreground break-all ${mono ? "font-primary" : ""}`}>
                 {value ?? <span className="text-foreground-muted">—</span>}
             </span>
         </div>
@@ -222,7 +222,7 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
 
                             {/* Provider / Bank card */}
                             <div className="flex items-center gap-sm bg-surface-muted/40 p-sm rounded-xl border border-border">
-                                <BrandLogo 
+                                <BrandLogo
                                     logoUrl={logoUrl}
                                     name={detail.bankShortName ?? detail.providerName}
                                     code={detail.bankCodeSnapshot ?? detail.providerCode}
@@ -315,7 +315,7 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
                                                 Raw QR String
                                             </span>
                                         </div>
-                                        <p className="text-xs font-mono text-foreground-secondary break-all leading-relaxed">
+                                        <p className="text-xs font-primary text-foreground-secondary break-all leading-relaxed">
                                             {detail.qrData}
                                         </p>
                                     </div>
