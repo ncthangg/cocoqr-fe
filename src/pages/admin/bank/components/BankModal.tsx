@@ -245,7 +245,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                             <div className="relative group/logo">
                                                 <BrandLogo
                                                     logoUrl={previewUrl}
-                                                    name={formData.shortName || formData.bankName}
+                                                    name={formData.bankName}
                                                     code={formData.bankCode}
                                                     size="xl"
                                                     shadow="md"

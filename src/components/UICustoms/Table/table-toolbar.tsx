@@ -69,6 +69,7 @@ export function TableToolbar({
                         className="select h-12 w-[180px] px-md text-base rounded-md border border-border-strong shadow-sm focus-visible:ring-1 focus-visible:ring-primary/40 cursor-pointer"
                         value={filterValue ?? ""}
                         onMouseDown={() => onFetchOptions?.()}
+                        onFocus={() => onFetchOptions?.()}
                         onChange={(e) => {
                             const val = e.target.value;
                             if (val === "") {

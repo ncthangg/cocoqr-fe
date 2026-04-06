@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { X, Mail, Send } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
 import { adminContactApi } from "@/services/admin-contact-api.service";
@@ -23,15 +24,22 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
     const [smtpType, setSmtpType] = useState<keyof typeof SmtpSettingType | "">("");
     const [submitting, setSubmitting] = useState(false);
 
-    // Template states
+    const [hasFetchedTemplates, setHasFetchedTemplates] = useState(false);
     const [templates, setTemplates] = useState<EmailTemplateRes[]>([]);
     const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>("");
 
-    useEffect(() => {
-        if (isOpen) {
-            emailTemplateApi.getAll().then(res => setTemplates(Array.isArray(res) ? res : []));
+    // Fetch templates lazily on interaction
+    const handleFetchTemplates = async () => {
+        if (hasFetchedTemplates) return;
+        try {
+            const res = await emailTemplateApi.getAll();
+            setTemplates(Array.isArray(res) ? res : []);
+            setHasFetchedTemplates(true);
+        } catch (error) {
+            console.error("Error fetching templates:", error);
+            setHasFetchedTemplates(true); // Don't retry every time if it falls
         }
-    }, [isOpen]);
+    };
 
     useEffect(() => {
         if (isOpen) {
@@ -42,8 +50,8 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
         }
     }, [isOpen]);
 
-    const handleReply = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleReply = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         if (!message) return;
 
         if (!subject.trim()) {
@@ -79,16 +87,23 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
         }
     };
 
-    if (!isOpen || !message) return null;
+    if (!message) return null;
 
     const smtpOptions = getSmtpTypeOptions();
 
     return (
         <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+            className={cn(
+                "fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-all duration-300",
+                !isOpen ? "invisible opacity-0" : "visible opacity-100"
+            )}
+            onClick={onClose}
         >
             <div
-                className="bg-surface border border-border max-w-modal-lg w-full rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
+                className={cn(
+                    "bg-surface border border-border max-w-modal-lg w-full rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-all duration-300 transform",
+                    !isOpen ? "scale-95 opacity-0" : "scale-100 opacity-100"
+                )}
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
@@ -158,6 +173,8 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
                                 </label>
                                 <select
                                     value={selectedTemplateKey}
+                                    onMouseDown={handleFetchTemplates}
+                                    onFocus={handleFetchTemplates}
                                     onChange={e => {
                                         const val = e.target.value;
                                         setSelectedTemplateKey(val);
@@ -174,8 +191,10 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
                                     }}
                                     className="select w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/50 appearance-none"
                                 >
-                                    <option value="">Không sử dụng mẫu</option>
-                                    {templates.filter(t => t.isActive).map(t => (
+                                    <option value="" disabled={!hasFetchedTemplates}>
+                                        {hasFetchedTemplates ? "Không sử dụng mẫu" : "Đang tải danh sách mẫu..."}
+                                    </option>
+                                    {hasFetchedTemplates && templates.filter(t => t.isActive).map(t => (
                                         <option key={t.id} value={t.templateKey}>{t.subject} ({t.templateKey})</option>
                                     ))}
                                 </select>

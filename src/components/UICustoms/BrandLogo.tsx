@@ -62,9 +62,9 @@ const BrandLogo: React.FC<BrandLogoProps> = ({
     };
 
     // Fallback logic: use code (max 4 chars) or name (max 2 chars)
-    const initials = code
-        ? code.substring(0, 4).toUpperCase()
-        : (name || "BK").substring(0, 2).toUpperCase();
+    // const initials = code
+    //     ? code.substring(0, 4).toUpperCase()
+    //     : (name || "BK").substring(0, 2).toUpperCase();
 
     return (
         <div
@@ -91,7 +91,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({
                         "font-black text-foreground tracking-tighter uppercase whitespace-nowrap",
                         size !== "none" && textSizes[size]
                     )}>
-                        {initials}
+                        {code}
                     </span>
                 </div>
             )}

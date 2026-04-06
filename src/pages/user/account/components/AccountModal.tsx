@@ -366,6 +366,7 @@ const FormSection: React.FC<FormSectionProps> = React.memo(({
 interface PreviewSectionProps {
     isBankType: boolean;
     bankCode?: string | null;
+    bankShortName?: string | null;
     bankName?: string | null;
     bankLogoUrl: string | null;
     selectedProvider: ProviderRes | null;

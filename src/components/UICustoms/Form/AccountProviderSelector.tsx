@@ -62,6 +62,7 @@ const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
                         value={providerId}
                         onChange={(e) => onProviderChange(e.target.value)}
                         onMouseDown={() => onFetchProviders()}
+                        onFocus={() => onFetchProviders()}
                     >
                         <option value="" disabled hidden>Loại tài khoản</option>
                         {allProviders.length === 0 && providerId !== "" && (
@@ -136,53 +137,62 @@ const BankFieldModal: React.FC<BankFieldModalProps> = ({
     napasBin, bankCode, bankShortName, isBankInactive, logoUrl,
     isBankModalOpen, onOpenModal, onCloseModal,
     onBankSelect, allowInactiveSelection,
-}) => (
-    <div className="flex flex-col gap-sm relative">
-        <label className="text-sm font-medium text-foreground-secondary">Ngân hàng</label>
-        <div
-            className={`input cursor-pointer flex items-center justify-between h-11 pr-3 ${isBankInactive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
-            onClick={onOpenModal}
-        >
-            <div className="flex items-center gap-sm overflow-hidden w-full">
-                <span className="truncate w-full text-left text-sm">
-                    {
-                        bankCode ? (
-                            <div className="flex items-center gap-md">
-                                <BrandLogo
-                                    logoUrl={logoUrl}
-                                    name={bankShortName}
-                                    code={bankCode}
-                                    size="sm"
-                                />
-                                <span className="truncate">
-                                    ({napasBin}) {bankShortName}
-                                </span>
-                            </div>
-                        )
-                            : <span className="text-foreground-muted">Chọn ngân hàng</span>
-                    }
-                </span>
+}) => {
+    const [hasOpenedBankModal, setHasOpenedBankModal] = useState(false);
+
+    const handleOpen = () => {
+        setHasOpenedBankModal(true);
+        onOpenModal();
+    };
+
+    return (
+        <div className="flex flex-col gap-sm relative">
+            <label className="text-sm font-medium text-foreground-secondary">Ngân hàng</label>
+            <div
+                className={`input cursor-pointer flex items-center justify-between h-11 pr-3 ${isBankInactive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
+                onClick={handleOpen}
+            >
+                <div className="flex items-center gap-sm overflow-hidden w-full">
+                    <span className="truncate w-full text-left text-sm">
+                        {
+                            bankCode ? (
+                                <div className="flex items-center gap-md">
+                                    <BrandLogo
+                                        logoUrl={logoUrl}
+                                        name={bankShortName}
+                                        code={bankCode}
+                                        size="sm"
+                                    />
+                                    <span className="truncate">
+                                        ({napasBin}) {bankShortName}
+                                    </span>
+                                </div>
+                            )
+                                : <span className="text-foreground-muted">Chọn ngân hàng</span>
+                        }
+                    </span>
+                </div>
+                <ChevronDown className="w-4 h-4 text-foreground-muted flex-shrink-0" />
             </div>
-            <ChevronDown className="w-4 h-4 text-foreground-muted flex-shrink-0" />
+            {isBankInactive && (
+                <p className="text-xs text-danger font-medium">Ngân hàng đang bảo trì</p>
+            )}
+            {hasOpenedBankModal && (
+                <Suspense fallback={null}>
+                    <BankSelectionModal
+                        isOpen={isBankModalOpen}
+                        onClose={onCloseModal}
+                        onSelectBank={(napasBin: string, bankCode: string, bankShortName: string, bankName: string, logoUrl: string | null, isActive: boolean) => {
+                            onBankSelect(napasBin, bankCode, bankShortName, bankName, logoUrl, isActive);
+                            onCloseModal();
+                        }}
+                        allowInactiveSelection={allowInactiveSelection}
+                    />
+                </Suspense>
+            )}
         </div>
-        {isBankInactive && (
-            <p className="text-xs text-danger font-medium">Ngân hàng đang bảo trì</p>
-        )}
-        {isBankModalOpen && (
-            <Suspense fallback={null}>
-                <BankSelectionModal
-                    isOpen={isBankModalOpen}
-                    onClose={onCloseModal}
-                    onSelectBank={(napasBin, bankCode, bankShortName, bankName, logoUrl, isActive) => {
-                        onBankSelect(napasBin, bankCode, bankShortName, bankName, logoUrl, isActive);
-                        onCloseModal();
-                    }}
-                    allowInactiveSelection={allowInactiveSelection}
-                />
-            </Suspense>
-        )}
-    </div>
-);
+    );
+};
 
 interface BankFieldDropdownProps {
     napasBin: string;

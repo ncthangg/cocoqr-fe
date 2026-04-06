@@ -103,7 +103,7 @@ const BankPage: React.FC = () => {
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
                     />
-                    <RefreshButton 
+                    <RefreshButton
                         onRefresh={() => fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter)}
                         loading={loading}
                         className="rounded-full"
@@ -126,7 +126,7 @@ const BankPage: React.FC = () => {
                         loading={loading}
                         data={banks}
                         sortState={useMemo(() => sortState ? {
-                            index: ["bankCode", "shortName", "bankName", "Trạng thái"]
+                            index: ["bankCode", "shortName", "Trạng thái"]
                                 .indexOf(sortState.field) + 1, dir: sortState.dir
                         } : null, [sortState])}
                         filterState={useMemo(() => statusFilter !== undefined ? { 4: statusFilter } : {}, [statusFilter])}
@@ -148,10 +148,10 @@ const BankPage: React.FC = () => {
                                 header: "Logo",
                                 accessor: (bank) => bank.logoUrl,
                                 cell: (bank) => (
-                                    <BrandLogo 
+                                    <BrandLogo
                                         logoUrl={bank.logoUrl}
-                                        name={bank.shortName}
-                                        code={bank.bankCode}
+                                        name={bank.bankName}
+                                        code={bank.shortName}
                                         size="sm"
                                     />
                                 )
@@ -176,7 +176,7 @@ const BankPage: React.FC = () => {
                                 header: "Tên ngân hàng",
                                 accessor: (bank) => bank.bankName,
                                 type: "string",
-                                sortable: true,
+                                sortable: false,
                                 filterable: false,
                                 cell: (bank) => bank.bankName
                             },

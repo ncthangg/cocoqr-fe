@@ -214,17 +214,17 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                                         <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300 w-full">
                                             <BrandLogo
                                                 logoUrl={detail?.bankLogoUrl || detail?.providerLogoUrl}
-                                                name={isBank ? (detail.bankName || detail.bankShortName) : detail.providerName}
+                                                name={isBank ? detail.bankShortName : detail.providerName}
                                                 code={isBank ? detail.bankCode : detail.providerCode}
                                                 size="xl"
                                                 shadow="md"
                                             />
                                             <div className="flex flex-col gap-xs">
                                                 <p className="font-bold text-foreground text-lg">
-                                                    {isBank ? detail.bankCode : detail.providerCode}
+                                                    {isBank ? detail.bankShortName : detail.providerCode}
                                                 </p>
                                                 <p className="text-xs text-foreground-secondary line-clamp-2 px-sm leading-relaxed">
-                                                    {isBank ? (detail.bankName || detail.bankShortName) : detail.providerName}
+                                                    {isBank ? detail.bankName : detail.providerName}
                                                 </p>
                                             </div>
                                         </div>

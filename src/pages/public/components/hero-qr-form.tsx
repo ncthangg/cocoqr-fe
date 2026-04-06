@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { QrCode, Eraser, Hash, Banknote, StickyNote } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
 import AccountProviderSelector from "@/components/UICustoms/Form/AccountProviderSelector";
@@ -52,10 +52,6 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
             setHasFetchedProviders(true);
         }
     }, [hasFetchedProviders]);
-
-    useEffect(() => {
-        fetchProviders();
-    }, [fetchProviders]);
 
     const prov = allProviders.find(p => p.id === formData.providerId);
     const isProviderInactive = prov ? !prov.isActive : (formData.providerId ? isProviderMaintenance : false);

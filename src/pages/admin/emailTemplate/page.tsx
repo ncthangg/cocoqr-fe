@@ -243,12 +243,14 @@ const EmailTemplatePage: React.FC = () => {
                 onCreated={handleCreated}
                 existingKeys={existingKeys}
             />
-            <EmailTemplateEditModal
-                isOpen={isEditOpen}
-                onClose={() => { setIsEditOpen(false); setEditTemplate(null); }}
-                onUpdated={handleUpdated}
-                template={editTemplate}
-            />
+            {editTemplate && (
+                <EmailTemplateEditModal
+                    isOpen={isEditOpen}
+                    onClose={() => setIsEditOpen(false)}
+                    onUpdated={handleUpdated}
+                    template={editTemplate}
+                />
+            )}
 
             <ActionConfirmModal
                 isOpen={isConfirmOpen}
