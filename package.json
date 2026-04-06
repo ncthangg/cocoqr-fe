@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "build:staging": "tsc -b && vite build --mode staging",
     "preview": "vite preview",
+    "lint": "eslint .",
     "lint:ui": "node scripts/ui-rules-lint.cjs"
   },
   "dependencies": {
