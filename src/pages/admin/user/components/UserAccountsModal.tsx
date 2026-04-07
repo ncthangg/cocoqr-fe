@@ -20,6 +20,7 @@ interface UserAccountsModalProps {
 }
 
 const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, user }) => {
+    //#region States & Effects
     const [accounts, setAccounts] = useState<AccountRes[]>([]);
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
@@ -39,18 +40,18 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
     const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
     const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
 
-    // Modal state
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
 
-    // Debounce search input
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedSearch(searchValue);
         }, 500);
         return () => clearTimeout(handler);
     }, [searchValue]);
+    //#endregion
 
+    //#region Data Fetching
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
         try {
@@ -114,7 +115,9 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
             setPaging(prev => ({ ...prev, pageNumber: 1 }));
         }
     }, [isOpen, user, fetchUserAccounts, paging.pageNumber, paging.pageSize, sortState, debouncedSearch, providerFilter, activeFilter, statusFilter]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -131,7 +134,9 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
             prev.map(acc => acc.id === id ? { ...acc, status: newStatus } : acc)
         );
     };
+    //#endregion
 
+    //#region Render
     if (!isOpen || !user) return null;
 
     return (
@@ -322,6 +327,7 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
             />
         </div>
     );
+    //#endregion
 };
 
 export default UserAccountsModal;

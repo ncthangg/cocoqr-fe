@@ -26,6 +26,7 @@ export const SmtpPanel = React.memo(function SmtpPanel({
 }: SmtpPanelProps) {
     const meta = getPanelMeta(type);
 
+    //#region States & Refs
     const [savingEdit, setSavingEdit] = useState(false);
     const [testLoading, setTestLoading] = useState(false);
     const [deleting, setDeleting] = useState(false);
@@ -39,7 +40,9 @@ export const SmtpPanel = React.memo(function SmtpPanel({
         toEmail: "", subject: "Test Email từ CocoQR",
         body: "Đây là email kiểm tra từ hệ thống CocoQR.",
     });
+    //#endregion
 
+    //#region Side Effects
     useEffect(() => { setForm(settingToForm(setting)); }, [setting]);
 
     useEffect(() => {
@@ -48,7 +51,9 @@ export const SmtpPanel = React.memo(function SmtpPanel({
             setShowPassword(false);
         }
     }, [isEditing, setting]);
+    //#endregion
 
+    //#region Handlers
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!form.host.trim()) return toast.error("Host không được để trống.");
@@ -103,7 +108,9 @@ export const SmtpPanel = React.memo(function SmtpPanel({
             setForm(prev => ({ ...prev, [field]: e.target.checked })),
         []
     );
+    //#endregion
 
+    //#region Render
     return (
         <div className={`rounded-2xl border border-border bg-surface shadow-sm flex flex-col overflow-hidden transition-all duration-200 ${isEditing ? "ring-2 ring-primary/30" : ""}`}>
             {/* Header */}
@@ -141,8 +148,8 @@ export const SmtpPanel = React.memo(function SmtpPanel({
                                     <Lock className="w-3 h-3" />Password
                                 </span>
                                 <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded-full w-fit border ${setting.hasPassword
-                                        ? "bg-green-500/10 text-green-600 border-green-500/20"
-                                        : "bg-border/30 text-foreground-muted border-border"
+                                    ? "bg-green-500/10 text-green-600 border-green-500/20"
+                                    : "bg-border/30 text-foreground-muted border-border"
                                     }`}>
                                     {setting.hasPassword ? "✓ Đã cấu hình" : "Chưa đặt"}
                                 </span>
@@ -300,4 +307,5 @@ export const SmtpPanel = React.memo(function SmtpPanel({
             </div>
         </div>
     );
+    //#endregion
 });

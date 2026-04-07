@@ -22,6 +22,7 @@ const UserModal = lazy(() => import("./components/UserModal"));
 const UserEmailModal = lazy(() => import("./components/UserEmailModal"));
 
 const UserPage: React.FC = () => {
+    //#region States
     const [users, setUsers] = useState<GetUserBaseRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [paging, setPaging] = useState<PagingVM<GetUserBaseRes>>({
@@ -38,7 +39,6 @@ const UserPage: React.FC = () => {
     const [isUserEmailModalOpen, setIsUserEmailModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<GetUserBaseRes | null>(null);
 
-    // Filter states
     const [searchValue, setSearchValue] = useState<string>("");
     const debouncedSearch = useDebounce(searchValue, 500);
     const [sortState, setSortState] = useState<{ field: string, dir: "asc" | "desc" } | null>(null);
@@ -48,7 +48,9 @@ const UserPage: React.FC = () => {
     const [roles, setRoles] = useState<{ label: string, value: string }[]>([]);
     const [allRolesRaw, setAllRolesRaw] = useState<RoleRes[]>([]);
     const hasFetchedRoles = useRef(false);
+    //#endregion
 
+    //#region Data Fetching
     const fetchRoles = useCallback(async () => {
         if (hasFetchedRoles.current) return;
         try {
@@ -96,7 +98,9 @@ const UserPage: React.FC = () => {
     useEffect(() => {
         fetchUsers(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, statusFilter, roleIdFilter);
     }, [fetchUsers, paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, statusFilter, roleIdFilter]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -124,7 +128,9 @@ const UserPage: React.FC = () => {
             prev.map(u => u.id === userId ? { ...u, status: newStatus } : u)
         );
     }, []);
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -356,6 +362,7 @@ const UserPage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default UserPage;

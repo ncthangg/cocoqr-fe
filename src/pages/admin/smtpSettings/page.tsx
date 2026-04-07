@@ -9,12 +9,14 @@ import { type SmtpTypeKey, ALL_SMTP_TYPES, normaliseType } from "./utils";
 import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const SmtpSettingsPage: React.FC = () => {
-    // Keyed by UPPER_CASE SmtpTypeKey — normalised on ingest
+    //#region States
     const [settingsMap, setSettingsMap] = useState<Partial<Record<SmtpTypeKey, SmtpSettingRes>>>({});
-    const [loading, setLoading]         = useState(false);
+    const [loading, setLoading] = useState(false);
     const [editingType, setEditingType] = useState<SmtpTypeKey | null>(null);
-    const [showCreate, setShowCreate]   = useState(false);
+    const [showCreate, setShowCreate] = useState(false);
+    //#endregion
 
+    //#region Data Fetching
     const fetchAll = useCallback(async () => {
         setLoading(true);
         try {
@@ -34,7 +36,9 @@ const SmtpSettingsPage: React.FC = () => {
     }, []);
 
     useEffect(() => { fetchAll(); }, [fetchAll]);
+    //#endregion
 
+    //#region Handlers
     const handleSaved = useCallback((updated: SmtpSettingRes) => {
         const key = normaliseType(updated.type as string) ?? (updated.type as SmtpTypeKey);
         setSettingsMap(prev => ({ ...prev, [key]: { ...updated, type: key } }));
@@ -52,12 +56,14 @@ const SmtpSettingsPage: React.FC = () => {
             return next;
         });
     }, []);
+    //#endregion
 
     // Types that already have a setting — shown as panels
     const configuredTypes = ALL_SMTP_TYPES.filter(t => settingsMap[t]);
     // Types not yet configured — available in the Add dropdown
-    const availableTypes  = ALL_SMTP_TYPES.filter(t => !settingsMap[t]);
+    const availableTypes = ALL_SMTP_TYPES.filter(t => !settingsMap[t]);
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             {/* Page Header */}
@@ -81,7 +87,7 @@ const SmtpSettingsPage: React.FC = () => {
                             <Plus className="w-4 h-4" /> Thêm cấu hình
                         </button>
                     )}
-                    <RefreshButton 
+                    <RefreshButton
                         onRefresh={fetchAll}
                         loading={loading}
                         className="rounded-full"
@@ -133,6 +139,7 @@ const SmtpSettingsPage: React.FC = () => {
             />
         </div>
     );
+    //#endregion
 };
 
 export default SmtpSettingsPage;

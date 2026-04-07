@@ -5,9 +5,12 @@ import ThemeToggle from "../../../components/UICustoms/ThemeToggle"
 import Logo from "../../../components/UICustoms/Logo"
 
 export function Header() {
+    //#region States
     const dispatch = useAppDispatch()
     const { isRoleSelectionModalOpen } = useAppSelector((state) => state.auth)
+    //#endregion
 
+    //#region Render
     return (
         <header className="sticky top-0 z-50 border-b border-border bg-surface/80 backdrop-blur-md">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-lg py-md">
@@ -47,4 +50,5 @@ export function Header() {
             </div>
         </header>
     )
+    //#endregion
 }

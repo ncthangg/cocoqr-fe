@@ -47,6 +47,7 @@ interface QrStyleLibModalProps {
 }
 
 const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSuccess, item }) => {
+    //#region States & Refs
     const [loading, setLoading] = useState(false);
     const [name, setName] = useState("");
     const [isActive, setIsActive] = useState(true);
@@ -59,12 +60,11 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
     const qrPreviewRef = useRef<HTMLDivElement>(null);
     const qrCodeRef = useRef<QRCodeStyling | null>(null);
 
-    // Visual style state
     const [style, setStyle] = useState<StyleConfig>({ ...DEFAULT_STYLE });
-
-    // Derived JSON from style config
     const styleJson = useMemo(() => JSON.stringify(style, null, 2), [style]);
+    //#endregion
 
+    //#region Side Effects
     useEffect(() => {
         if (isOpen) {
             if (item) {
@@ -98,7 +98,6 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
         return "square";
     };
 
-    // Create / update QR code instance
     useEffect(() => {
         if (!isOpen) return;
 
@@ -125,9 +124,11 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
             qrCodeRef.current.update(opts);
         }
     }, [style, isOpen]);
+    //#endregion
 
     if (!isOpen) return null;
 
+    //#region Handlers
     const updateStyle = (key: keyof StyleConfig, value: any) => {
         setStyle(prev => ({ ...prev, [key]: value }));
     };
@@ -140,6 +141,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
         }
         setIsConfirmOpen(true);
     };
+
     const executeSave = async () => {
         try {
             setLoading(true);
@@ -187,7 +189,9 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
             setIsDeleteConfirmOpen(false);
         }
     };
+    //#endregion
 
+    //#region Render
     return (
         <div className="modal-overlay">
             <div
@@ -201,7 +205,6 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                     <h2 className="text-lg font-bold text-foreground flex items-center gap-sm">
                         <Layout className="w-5 h-5 text-primary" />
                         {item ? "Chỉnh sửa QR Style" : "Thêm QR Style hệ thống"}
-
                     </h2>
                     <button
                         type="button"
@@ -376,7 +379,6 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                                             <span className="text-[10px] font-primary uppercase text-foreground-muted">{style.borderColor}</span>
                                         </div>
                                     </div>
-
                                 </div>
 
                                 {/* Toggles */}
@@ -462,38 +464,39 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                         </div>
                     </div>
                 </form>
-            </div>
 
-            <ActionConfirmModal
-                isOpen={isDeleteConfirmOpen}
-                onClose={() => setIsDeleteConfirmOpen(false)}
-                onConfirm={executeDelete}
-                title="Xác nhận xóa Style"
-                description={
-                    <div className="flex flex-col gap-3">
-                        <p>Bạn có chắc muốn xóa style <span className="font-bold">"{name}"</span>?</p>
-                        <div className="flex items-start gap-2 p-3 rounded-lg bg-danger/5 border border-danger/10">
-                            <AlertCircle className="w-4 h-4 text-danger mt-0.5 shrink-0" />
-                            <p className="text-xs text-danger/80">Hành động này không thể hoàn tác.</p>
+                <ActionConfirmModal
+                    isOpen={isDeleteConfirmOpen}
+                    onClose={() => setIsDeleteConfirmOpen(false)}
+                    onConfirm={executeDelete}
+                    title="Xác nhận xóa Style"
+                    description={
+                        <div className="flex flex-col gap-3">
+                            <p>Bạn có chắc muốn xóa style <span className="font-bold">"{name}"</span>?</p>
+                            <div className="flex items-start gap-2 p-3 rounded-lg bg-danger/5 border border-danger/10">
+                                <AlertCircle className="w-4 h-4 text-danger mt-0.5 shrink-0" />
+                                <p className="text-xs text-danger/80">Hành động này không thể hoàn tác.</p>
+                            </div>
                         </div>
-                    </div>
-                }
-                loading={isDeletingModal}
-                confirmText="Xác nhận xóa"
-                variant="danger"
-            />
+                    }
+                    loading={isDeletingModal}
+                    confirmText="Xác nhận xóa"
+                    variant="danger"
+                />
 
-            <ActionConfirmModal
-                isOpen={isConfirmOpen}
-                onClose={() => setIsConfirmOpen(false)}
-                onConfirm={executeSave}
-                title={item ? "Xác nhận cập nhật QR Style" : "Xác nhận tạo QR Style mới"}
-                description={`Bạn có chắc chắn muốn ${item ? "cập nhật" : "tạo mới"} style "${name}"?`}
-                loading={loading}
-                confirmText={item ? "Cập nhật" : "Tạo mới"}
-            />
+                <ActionConfirmModal
+                    isOpen={isConfirmOpen}
+                    onClose={() => setIsConfirmOpen(false)}
+                    onConfirm={executeSave}
+                    title={item ? "Xác nhận cập nhật QR Style" : "Xác nhận tạo QR Style mới"}
+                    description={`Bạn có chắc chắn muốn ${item ? "cập nhật" : "tạo mới"} style "${name}"?`}
+                    loading={loading}
+                    confirmText={item ? "Cập nhật" : "Tạo mới"}
+                />
+            </div>
         </div>
     );
+    //#endregion
 };
 
 export default QrStyleLibModal;

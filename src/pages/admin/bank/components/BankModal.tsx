@@ -17,6 +17,7 @@ interface BankModalProps {
 }
 
 const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank }) => {
+    //#region States & Refs
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<PutBankInfoReq>({
         bankCode: "",
@@ -30,7 +31,9 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    //#endregion
 
+    //#region Side Effects
     useEffect(() => {
         if (isOpen) {
             if (bank) {
@@ -51,9 +54,9 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
             setIsConfirmOpen(false);
         }
     }, [isOpen, bank]);
+    //#endregion
 
-    if (!isOpen) return null;
-
+    //#region Handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
@@ -110,6 +113,10 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
             setLoading(false);
         }
     };
+    //#endregion
+
+    //#region Render
+    if (!isOpen) return null;
 
     return (
         <div
@@ -318,6 +325,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
             />
         </div>
     );
+    //#endregion
 };
 
 export default BankModal;

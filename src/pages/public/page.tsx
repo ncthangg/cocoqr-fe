@@ -5,6 +5,7 @@ import { ContactSection } from "./components/contact-section";
 import { Header } from "./components/header";
 
 const HomePage: React.FC = () => {
+    //#region Render
     return (
         <div className="flex flex-col h-screen w-full overflow-hidden">
             <div className="shrink-0 z-50">
@@ -17,6 +18,7 @@ const HomePage: React.FC = () => {
             </main>
         </div>
     );
+    //#endregion
 };
 
 export default HomePage;

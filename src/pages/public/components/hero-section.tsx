@@ -1,11 +1,18 @@
 import QRDisplay from "@/components/UICustoms/QRDisplay"
 import { HeroQRForm } from "./hero-qr-form"
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import type { PostQrRes } from "@/models/entity.model"
 
 export function HeroSection() {
+    //#region States
     const [qrResult, setQrResult] = useState<PostQrRes | null>(null);
+    //#endregion
 
+    //#region Handlers
+    const handleReset = useCallback(() => setQrResult(null), []);
+    //#endregion
+
+    //#region Render
     return (
         <section
             id="hero"
@@ -38,7 +45,7 @@ export function HeroSection() {
                     {/* Left: QR Form */}
                     <HeroQRForm
                         onQrCreated={setQrResult}
-                        onReset={() => setQrResult(null)}
+                        onReset={handleReset}
                     />
 
                     {/* Right: QR Display */}
@@ -58,4 +65,5 @@ export function HeroSection() {
             </div>
         </section>
     )
+    //#endregion
 }

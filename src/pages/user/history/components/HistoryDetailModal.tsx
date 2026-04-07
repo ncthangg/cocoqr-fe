@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
     X, QrCode, User, CreditCard, Landmark, Hash, Calendar,
     Clock, CheckCircle2, XCircle, AlertCircle, BadgeDollarSign,
@@ -12,14 +12,7 @@ import Button from "@/components/UICustoms/Button";
 import { formatDateTime } from "@/utils/dateTimeUtils";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-interface HistoryDetailModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    historyId: number | null;
-}
-
-// ─── QR Status badge ──────────────────────────────────────────────────────────
+//#region Sub-components
 function QrStatusBadge({ status }: { status: string }) {
     const map: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
         PAID: {
@@ -116,12 +109,21 @@ function formatAmount(amount?: number, currency?: string) {
     const cur = currency ?? "VND";
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: cur }).format(amount);
 }
+//#endregion
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+interface HistoryDetailModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    historyId: number | null;
+}
+
 const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose, historyId }) => {
+    //#region States & Hooks
     const [detail, setDetail] = useState<QrRes | null>(null);
     const [loading, setLoading] = useState(false);
+    //#endregion
 
+    //#region Data Fetching & Side Effects
     const fetchDetail = useCallback(async (id: number) => {
         try {
             setLoading(true);
@@ -149,12 +151,18 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
         if (isOpen) window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
     }, [isOpen, onClose]);
+    //#endregion
 
+    //#region Derived Data
+    const logoUrl = useMemo(() => {
+        const bankLogo = detail?.bankLogoUrl;
+        const providerLogo = detail?.providerLogoUrl;
+        return bankLogo || providerLogo;
+    }, [detail?.bankLogoUrl, detail?.providerLogoUrl]);
+    //#endregion
+
+    //#region Render
     if (!isOpen) return null;
-
-    const bankLogo = detail?.bankLogoUrl;
-    const providerLogo = detail?.providerLogoUrl;
-    const logoUrl = bankLogo || providerLogo;
 
     return (
         <div
@@ -384,6 +392,7 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
             </div>
         </div>
     );
+    //#endregion
 };
 
 export default HistoryDetailModal;

@@ -20,6 +20,7 @@ import RefreshButton from "@/components/UICustoms/RefreshButton";
 const AccountModal = lazy(() => import("./components/AccountModal"));
 
 const AccountsPage: React.FC = () => {
+    //#region States
     const [accounts, setAccounts] = useState<AccountRes[]>([]);
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
@@ -39,12 +40,11 @@ const AccountsPage: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
     const [providerFilter, setProviderFilter] = useState<string | undefined>(undefined);
 
-    // Modal state
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
+    //#endregion
 
-
-
+    //#region Data Fetching
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
         try {
@@ -94,7 +94,9 @@ const AccountsPage: React.FC = () => {
     useEffect(() => {
         fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter, false, statusFilter);
     }, [fetchAccounts, paging.pageNumber, paging.pageSize, sortState, debouncedSearch, providerFilter, activeFilter, statusFilter]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -111,7 +113,9 @@ const AccountsPage: React.FC = () => {
             prev.map(acc => acc.id === id ? { ...acc, status: newStatus } : acc)
         );
     };
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -311,6 +315,7 @@ const AccountsPage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default AccountsPage;

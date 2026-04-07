@@ -29,6 +29,7 @@ const features = [
 ]
 
 export function FeaturesSection() {
+    //#region Render
     return (
         <section id="features" className="w-full min-h-[calc(100vh-var(--header-height,73px))] py-2xl flex flex-col justify-center bg-bg relative overflow-hidden snap-start snap-always">
             <div className="mx-auto max-w-6xl px-lg">
@@ -67,4 +68,5 @@ export function FeaturesSection() {
             </div>
         </section>
     )
+    //#endregion
 }

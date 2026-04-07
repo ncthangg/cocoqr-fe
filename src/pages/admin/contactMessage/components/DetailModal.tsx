@@ -19,27 +19,29 @@ interface Props {
 }
 
 const ContactDetailModal: React.FC<Props> = ({ isOpen, onClose, message, onReply, onIgnore }) => {
+    //#region States & Refs
     const [ignoring, setIgnoring] = useState(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    //#endregion
 
+    //#region Handlers
     const handleOverlayClick = useCallback((e: React.MouseEvent) => {
         if (e.target === e.currentTarget) onClose();
     }, [onClose]);
 
-    if (!isOpen || !message) return null;
-
     const handleConfirmIgnore = async () => {
         try {
             setIgnoring(true);
-            await onIgnore(message.id);
+            await onIgnore(message!.id);
             setIsConfirmOpen(false);
             onClose();
         } finally {
             setIgnoring(false);
         }
-    }
+    };
 
     const renderStatus = () => {
+        if (!message) return null;
         switch (message.status) {
             case ContactMessageStatus.REPLIED:
                 return <TagBadge label="Đã trả lời" color="green" size="lg" icon={<CheckCircle2 className="w-4 h-4" />} />;
@@ -48,7 +50,11 @@ const ContactDetailModal: React.FC<Props> = ({ isOpen, onClose, message, onReply
             default:
                 return <TagBadge label="Mới" color="blue" size="lg" icon={<Mail className="w-4 h-4" />} />;
         }
-    }
+    };
+    //#endregion
+
+    //#region Render
+    if (!isOpen || !message) return null;
 
     return (
         <div
@@ -169,6 +175,7 @@ const ContactDetailModal: React.FC<Props> = ({ isOpen, onClose, message, onReply
             </div>
         </div>
     );
+    //#endregion
 };
 
 export default React.memo(ContactDetailModal);

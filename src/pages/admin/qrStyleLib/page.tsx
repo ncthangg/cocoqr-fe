@@ -17,6 +17,7 @@ import { QRStyleType } from "@/models/enum";
 const QrStyleLibModal = lazy(() => import("./components/QrStyleLibModal"));
 
 const QrStyleLibPage: React.FC = () => {
+    //#region States
     const [data, setData] = useState<QrStyleLibraryRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -27,7 +28,9 @@ const QrStyleLibPage: React.FC = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isPinning, setIsPinning] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<QrStyleLibraryRes | null>(null);
+    //#endregion
 
+    //#region Data Fetching
     const fetchItems = useCallback(async () => {
         try {
             setLoading(true);
@@ -49,7 +52,9 @@ const QrStyleLibPage: React.FC = () => {
     useEffect(() => {
         fetchItems();
     }, [fetchItems]);
+    //#endregion
 
+    //#region Handlers
     const handleOpenCreateModal = () => {
         setSelectedItem(null);
         setIsModalOpen(true);
@@ -110,9 +115,11 @@ const QrStyleLibPage: React.FC = () => {
             setIsPinning(false);
         }
     };
+    //#endregion
 
     const activeCount = data.filter(a => a.isActive).length;
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -294,6 +301,7 @@ const QrStyleLibPage: React.FC = () => {
             />
         </div>
     );
+    //#endregion
 };
 
 export default QrStyleLibPage;

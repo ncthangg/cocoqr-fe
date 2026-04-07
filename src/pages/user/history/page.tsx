@@ -18,6 +18,7 @@ import RefreshButton from "@/components/UICustoms/RefreshButton";
 const HistoryDetailModal = lazy(() => import("./components/HistoryDetailModal"));
 
 const UserHistoryPage: React.FC = () => {
+    //#region States
     const [records, setRecords] = useState<QrRes[]>([]);
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
@@ -37,9 +38,11 @@ const UserHistoryPage: React.FC = () => {
 
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<number | null>(null);
+    //#endregion
 
 
 
+    //#region Data Fetching
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
         try {
@@ -82,7 +85,9 @@ const UserHistoryPage: React.FC = () => {
     useEffect(() => {
         fetchRecords(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, providerFilter);
     }, [fetchRecords, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, providerFilter]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages)
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -92,7 +97,9 @@ const UserHistoryPage: React.FC = () => {
         setSelectedId(rec.id);
         setIsDetailOpen(true);
     };
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-8 flex-1 min-h-0">
             {/* Page Header */}
@@ -262,6 +269,7 @@ const UserHistoryPage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default UserHistoryPage;

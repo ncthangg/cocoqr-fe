@@ -17,6 +17,7 @@ import RefreshButton from "@/components/UICustoms/RefreshButton";
 const BankModal = lazy(() => import("./components/BankModal"));
 
 const BankPage: React.FC = () => {
+    //#region States
     const [banks, setBanks] = useState<BankRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [paging, setPaging] = useState<PagingVM<BankRes>>({
@@ -34,9 +35,9 @@ const BankPage: React.FC = () => {
     const debouncedSearch = useDebounce(searchValue, 500);
     const [sortState, setSortState] = useState<{ field: string, dir: "asc" | "desc" } | null>(null);
     const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
+    //#endregion
 
-
-
+    //#region Data Fetching
     const fetchBanks = useCallback(async (page: number, size: number, search?: string, sortField?: string, sortDir?: "asc" | "desc", isActive?: boolean) => {
         try {
             setLoading(true);
@@ -65,7 +66,9 @@ const BankPage: React.FC = () => {
     useEffect(() => {
         fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter);
     }, [fetchBanks, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, statusFilter]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -86,7 +89,9 @@ const BankPage: React.FC = () => {
             fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter);
         }
     };
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -206,12 +211,6 @@ const BankPage: React.FC = () => {
                                             color="blue"
                                             title="Chỉnh sửa"
                                         />
-                                        {/* <ActionButton
-                                            icon={<Trash2 className="w-4 h-4" />}
-                                            onClick={() => handleOpenDeleteModal(bank)}
-                                            color="red"
-                                            title="Xóa"
-                                        /> */}
                                     </div>
                                 )
                             }
@@ -246,6 +245,7 @@ const BankPage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default BankPage;

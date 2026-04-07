@@ -32,14 +32,22 @@ interface HeroQRFormProps {
 }
 
 export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
+    //#region States & Refs
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
     const [formData, setFormData] = useState(defaultForm);
     const [isProviderMaintenance, setIsProviderMaintenance] = useState(false);
     const [isBankMaintenance, setIsBankMaintenance] = useState(false);
-
     const [qrLoading, setQrLoading] = useState(false);
+    //#endregion
 
+    //#region Derived Data
+    const prov = allProviders.find(p => p.id === formData.providerId);
+    const isProviderInactive = prov ? !prov.isActive : (formData.providerId ? isProviderMaintenance : false);
+    const isBankInactive = isBankMaintenance;
+    //#endregion
+
+    //#region Handlers
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
         try {
@@ -53,18 +61,14 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
         }
     }, [hasFetchedProviders]);
 
-    const prov = allProviders.find(p => p.id === formData.providerId);
-    const isProviderInactive = prov ? !prov.isActive : (formData.providerId ? isProviderMaintenance : false);
-    const isBankInactive = isBankMaintenance;
-
-    const handleReset = () => {
+    const handleReset = useCallback(() => {
         setFormData(defaultForm);
         setIsProviderMaintenance(false);
         setIsBankMaintenance(false);
         if (onReset) onReset();
-    };
+    }, [onReset]);
 
-    const handleCreateQR = async () => {
+    const handleCreateQR = useCallback(async () => {
         if (!formData.providerId) {
             toast.warning("Vui lòng chọn loại tài khoản.");
             return;
@@ -109,8 +113,10 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
         } finally {
             setQrLoading(false);
         }
-    };
+    }, [formData, allProviders, isProviderInactive, isBankInactive, onQrCreated]);
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-md w-full h-full">
             {/* Header */}
@@ -261,4 +267,5 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
             </div>
         </div>
     );
+    //#endregion
 }

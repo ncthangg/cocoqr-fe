@@ -40,6 +40,7 @@ const SMTP_TYPE_COLOR_MAP: Record<string, "blue" | "purple" | "amber" | "indigo"
 /* ─── Component ─────────────────────────────────────────────── */
 
 const EmailLogPage: React.FC = () => {
+    //#region States
     const [logs, setLogs] = useState<GetEmailLogRes[]>([]);
     const [loading, setLoading] = useState(false);
     const [paging, setPaging] = useState<PagingVM<GetEmailLogRes>>({
@@ -50,7 +51,6 @@ const EmailLogPage: React.FC = () => {
         totalItems: 0,
     });
 
-    // Filter states
     const [typeFilter, setTypeFilter] = useState<SmtpSettingType | undefined>(undefined);
     const [statusFilter, setStatusFilter] = useState("");
     const [directionFilter, setDirectionFilter] = useState("");
@@ -58,15 +58,16 @@ const EmailLogPage: React.FC = () => {
 
     const debouncedSubject = useDebounce(subjectSearch, 500);
 
-    // Detail modal
     const [selectedLog, setSelectedLog] = useState<GetEmailLogByIdRes | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [fetchingDetailId, setFetchingDetailId] = useState<string | null>(null);
 
     const typeOptions = useMemo(() => getSmtpTypeOptions(), []);
+    //#endregion
 
     /* ─── Data fetching ───────────────────────────────────────── */
 
+    //#region Data Fetching
     const fetchLogs = useCallback(
         async (page: number, size: number, type?: SmtpSettingType, status?: string, subject?: string, direction?: string) => {
             try {
@@ -99,9 +100,11 @@ const EmailLogPage: React.FC = () => {
     useEffect(() => {
         fetchLogs(paging.pageNumber, paging.pageSize, typeFilter, statusFilter, debouncedSubject, directionFilter);
     }, [fetchLogs, paging.pageNumber, paging.pageSize, typeFilter, statusFilter, debouncedSubject, directionFilter]);
+    //#endregion
 
     /* ─── Handlers ────────────────────────────────────────────── */
 
+    //#region Handlers
     const handlePageChange = useCallback(
         (newPage: number) => {
             setPaging((prev) => (newPage >= 1 && newPage <= prev.totalPages ? { ...prev, pageNumber: newPage } : prev));
@@ -151,6 +154,7 @@ const EmailLogPage: React.FC = () => {
     const handlePageSizeChange = useCallback((newSize: number) => {
         setPaging((prev) => ({ ...prev, pageSize: newSize, pageNumber: 1 }));
     }, []);
+    //#endregion
 
     /* ─── Columns ─────────────────────────────────────────────── */
 
@@ -246,6 +250,7 @@ const EmailLogPage: React.FC = () => {
 
     /* ─── Render ──────────────────────────────────────────────── */
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -327,6 +332,7 @@ const EmailLogPage: React.FC = () => {
             <EmailDetailModal isOpen={isModalOpen} onClose={handleCloseModal} log={selectedLog} />
         </div>
     );
+    //#endregion
 };
 
 export default EmailLogPage;

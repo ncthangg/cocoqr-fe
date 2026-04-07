@@ -18,6 +18,7 @@ interface CreateModalProps {
 }
 
 const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose, onCreated, existingKeys }) => {
+    //#region States & Refs
     const [templateKey, setTemplateKey] = useState<string>("");
     const [customKey, setCustomKey] = useState("");
     const [subject, setSubject] = useState("");
@@ -25,9 +26,11 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
     const [description, setDescription] = useState("");
     const [isActive, setIsActive] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    //#endregion
 
     const availableKeys = ALL_TEMPLATE_KEYS.filter(k => !existingKeys.includes(k));
 
+    //#region Handlers
     const resetForm = () => {
         setTemplateKey("");
         setCustomKey("");
@@ -78,19 +81,17 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
             };
 
             onCreated(newTemplate);
-        } catch (err: any) {
-            toast.error(err?.response?.data?.message || "Không thể tạo template.");
         } finally {
             setSubmitting(false);
         }
     };
+    //#endregion
 
+    //#region Render
     if (!isOpen) return null;
 
     return (
-        <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-        >
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div
                 className="bg-surface border border-border max-w-modal-lg w-full rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
                 onClick={e => e.stopPropagation()}
@@ -225,6 +226,7 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
             </div>
         </div>
     );
+    //#endregion
 };
 
 export default React.memo(EmailTemplateCreateModal);

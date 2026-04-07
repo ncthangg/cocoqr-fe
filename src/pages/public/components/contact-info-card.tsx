@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { memo, useState, useCallback } from "react";
 import { Copy, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/UICustoms/Card";
 import { toast } from "react-toastify";
@@ -11,16 +11,21 @@ interface ContactInfoCardProps {
 }
 
 function ContactInfoCardInner({ icon: Icon, label, value, href }: ContactInfoCardProps) {
+    //#region States
     const [copied, setCopied] = useState(false);
+    //#endregion
 
-    const handleCopy = (e: React.MouseEvent) => {
+    //#region Handlers
+    const handleCopy = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
         navigator.clipboard.writeText(value);
         setCopied(true);
         toast.info(`Đã sao chép ${label.toLowerCase()}`);
         setTimeout(() => setCopied(false), 2000);
-    };
+    }, [value, label]);
+    //#endregion
 
+    //#region Render
     return (
         <Card
             className="group border-border/60 bg-bg transition-all duration-300 hover:shadow-md hover:scale-[1.01] cursor-pointer"
@@ -51,6 +56,7 @@ function ContactInfoCardInner({ icon: Icon, label, value, href }: ContactInfoCar
             </CardContent>
         </Card>
     );
+    //#endregion
 }
 
 export const ContactInfoCard = memo(ContactInfoCardInner);

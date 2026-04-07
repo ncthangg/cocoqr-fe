@@ -14,10 +14,13 @@ interface DetailModalProps {
 }
 
 const EmailTemplateDetailModal: React.FC<DetailModalProps> = ({ isOpen, onClose, template }) => {
+    //#region Handlers
     const handleOverlayClick = useCallback((e: React.MouseEvent) => {
         if (e.target === e.currentTarget) onClose();
     }, [onClose]);
+    //#endregion
 
+    //#region Render
     if (!isOpen || !template) return null;
 
     return (
@@ -122,6 +125,7 @@ const EmailTemplateDetailModal: React.FC<DetailModalProps> = ({ isOpen, onClose,
             </div>
         </div>
     );
+    //#endregion
 };
 
 export default React.memo(EmailTemplateDetailModal);

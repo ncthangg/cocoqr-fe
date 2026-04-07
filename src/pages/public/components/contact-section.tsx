@@ -22,13 +22,16 @@ const QUILL_MODULES = {
 /* ─── Component ─────────────────────────────────────────────── */
 
 export function ContactSection() {
+    //#region States
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         fullName: "",
         email: "",
     })
     const [content, setContent] = useState("")
+    //#endregion
 
+    //#region Handlers
     const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
@@ -60,7 +63,9 @@ export function ContactSection() {
             setLoading(false)
         }
     }, [content, formData])
+    //#endregion
 
+    //#region Render
     return (
         <section
             id="contact"
@@ -184,4 +189,5 @@ export function ContactSection() {
             </div>
         </section>
     )
+    //#endregion
 }

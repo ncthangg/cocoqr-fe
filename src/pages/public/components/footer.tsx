@@ -20,6 +20,7 @@ const SOCIAL_LINKS = [
 /* ─── Component ─────────────────────────────────────────────── */
 
 export function Footer() {
+    //#region Render
     return (
         <footer className="border-t border-border bg-surface">
             <div className="mx-auto flex max-w-6xl flex-col items-center gap-lg px-lg py-xl md:flex-row md:justify-between">
@@ -49,4 +50,5 @@ export function Footer() {
             </div>
         </footer>
     )
+    //#endregion
 }

@@ -15,10 +15,10 @@ import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal"
 import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const EmailTemplatePage: React.FC = () => {
+    //#region States
     const [templates, setTemplates] = useState<EmailTemplateRes[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Modal states
     const [detailTemplate, setDetailTemplate] = useState<EmailTemplateRes | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [editTemplate, setEditTemplate] = useState<EmailTemplateRes | null>(null);
@@ -26,10 +26,11 @@ const EmailTemplatePage: React.FC = () => {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
-    // Confirm states
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateRes | null>(null);
+    //#endregion
 
+    //#region Data Fetching
     const fetchTemplates = useCallback(async () => {
         try {
             setLoading(true);
@@ -45,7 +46,9 @@ const EmailTemplatePage: React.FC = () => {
     }, []);
 
     useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
+    //#endregion
 
+    //#region Handlers
     const handleView = useCallback((tpl: EmailTemplateRes) => {
         setDetailTemplate(tpl);
         setIsDetailOpen(true);
@@ -95,6 +98,7 @@ const EmailTemplatePage: React.FC = () => {
         }
         setIsEditOpen(false);
     }, [fetchTemplates]);
+    //#endregion
 
     const existingKeys = useMemo(() => templates.map(t => t.templateKey), [templates]);
 
@@ -180,6 +184,7 @@ const EmailTemplatePage: React.FC = () => {
         }
     ], [handleView, handleEdit, handleOpenConfirmDelete, deletingId]);
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             {/* Header */}
@@ -269,6 +274,7 @@ const EmailTemplatePage: React.FC = () => {
             />
         </div>
     );
+    //#endregion
 };
 
 export default EmailTemplatePage;

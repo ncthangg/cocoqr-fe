@@ -46,6 +46,7 @@ interface QrStyleLibModalProps {
 }
 
 const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSuccess, item }) => {
+    //#region States & Refs
     const [loading, setLoading] = useState(false);
     const [name, setName] = useState("");
     const [isActive, setIsActive] = useState(true);
@@ -57,12 +58,11 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
     const qrPreviewRef = useRef<HTMLDivElement>(null);
     const qrCodeRef = useRef<QRCodeStyling | null>(null);
 
-    // Visual style state
     const [style, setStyle] = useState<StyleConfig>({ ...DEFAULT_STYLE });
-
-    // Derived JSON from style config
     const styleJson = useMemo(() => JSON.stringify(style, null, 2), [style]);
+    //#endregion
 
+    //#region Side Effects & QR Initialization
     useEffect(() => {
         if (isOpen) {
             if (item) {
@@ -94,7 +94,6 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
         return "square";
     };
 
-    // Create / update QR code instance
     useEffect(() => {
         if (!isOpen) return;
 
@@ -121,9 +120,9 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
             qrCodeRef.current.update(opts);
         }
     }, [style, isOpen]);
+    //#endregion
 
-    if (!isOpen) return null;
-
+    //#region Handlers
     const updateStyle = (key: keyof StyleConfig, value: any) => {
         setStyle(prev => ({ ...prev, [key]: value }));
     };
@@ -136,6 +135,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
         }
         setIsConfirmOpen(true);
     };
+
     const executeSave = async () => {
         try {
             setLoading(true);
@@ -182,6 +182,10 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
             setIsDeleteConfirmOpen(false);
         }
     };
+    //#endregion
+
+    //#region Render
+    if (!isOpen) return null;
 
     return (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
@@ -481,6 +485,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
             />
         </div>
     );
+    //#endregion
 };
 
 export default QrStyleLibModal;

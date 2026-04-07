@@ -14,10 +14,13 @@ interface EmailDetailModalProps {
 }
 
 const EmailDetailModal: React.FC<EmailDetailModalProps> = ({ isOpen, onClose, log }) => {
+    //#region Handlers
     const handleOverlayClick = useCallback((e: React.MouseEvent) => {
         if (e.target === e.currentTarget) onClose();
     }, [onClose]);
+    //#endregion
 
+    //#region Render
     if (!isOpen || !log) return null;
 
     const isSuccess = log.status === EmailLogStatus.SUCCESS || log.status === "SENT";
@@ -155,6 +158,7 @@ const EmailDetailModal: React.FC<EmailDetailModalProps> = ({ isOpen, onClose, lo
             </div>
         </div>
     );
+    //#endregion
 };
 
 export default React.memo(EmailDetailModal);

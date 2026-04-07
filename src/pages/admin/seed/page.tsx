@@ -7,11 +7,13 @@ const RoleSyncPreviewModal = lazy(() => import("./components/RoleSyncPreviewModa
 const ProviderSyncPreviewModal = lazy(() => import("./components/ProviderSyncPreviewModal"));
 
 const SeedPage: React.FC = () => {
-    // Modal states
+    //#region States
     const [isBankPreviewOpen, setIsBankPreviewOpen] = useState(false);
     const [isRolePreviewOpen, setIsRolePreviewOpen] = useState(false);
     const [isProviderPreviewOpen, setIsProviderPreviewOpen] = useState(false);
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-8 flex-1 min-h-0">
             {/* Header Section */}
@@ -169,6 +171,7 @@ const SeedPage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default SeedPage;

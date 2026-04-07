@@ -28,10 +28,10 @@ const READ_FILTER_OPTIONS = [
 /* ─── Component ─────────────────────────────────────────────── */
 
 const ContactMessagePage: React.FC = () => {
+    //#region States
     const [messages, setMessages] = useState<ContactMessageRes[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Paging state
     const [paging, setPaging] = useState<PagingVM<ContactMessageRes>>({
         list: [],
         pageSize: 10,
@@ -40,11 +40,9 @@ const ContactMessagePage: React.FC = () => {
         totalItems: 0,
     });
 
-    // Sorting state (Local, sent to server)
     const [sortField, setSortField] = useState<string>("createdAt");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
-    // Filters
     const [searchName, setSearchName] = useState("");
     const [searchEmail, setSearchEmail] = useState("");
     const [readFilter, setReadFilter] = useState("");
@@ -54,21 +52,20 @@ const ContactMessagePage: React.FC = () => {
     const debouncedName = useDebounce(searchName, 400);
     const debouncedEmail = useDebounce(searchEmail, 400);
 
-    // Detail modal
     const [detailMessage, setDetailMessage] = useState<ContactMessageRes | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [fetchingId, setFetchingId] = useState<string | null>(null);
 
-    // Reply modal
     const [replyMessage, setReplyMessage] = useState<ContactMessageRes | null>(null);
     const [isReplyOpen, setIsReplyOpen] = useState(false);
 
-    // Confirm ignore
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [ignoringId, setIgnoringId] = useState<string | null>(null);
+    //#endregion
 
     /* ─── Data fetching ───────────────────────────────────────── */
 
+    //#region Data Fetching
     const fetchMessages = useCallback(async () => {
         try {
             setLoading(true);
@@ -98,13 +95,14 @@ const ContactMessagePage: React.FC = () => {
         fetchMessages();
     }, [fetchMessages]);
 
-    // Handle filter reset page
     useEffect(() => {
         setPaging(prev => ({ ...prev, pageNumber: 1 }));
     }, [debouncedName, debouncedEmail, readFilter, fromDate, toDate]);
+    //#endregion
 
     /* ─── Handlers ────────────────────────────────────────────── */
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -160,6 +158,7 @@ const ContactMessagePage: React.FC = () => {
         setIsReplyOpen(false);
         setReplyMessage(null);
     }, []);
+    //#endregion
 
     /* ─── Derived state ───────────────────────────────────────── */
 
@@ -254,6 +253,7 @@ const ContactMessagePage: React.FC = () => {
 
     /* ─── Render ──────────────────────────────────────────────── */
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             {/* Header */}
@@ -388,6 +388,7 @@ const ContactMessagePage: React.FC = () => {
             />
         </div>
     );
+    //#endregion
 };
 
 export default ContactMessagePage;

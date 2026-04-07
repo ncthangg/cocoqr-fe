@@ -16,20 +16,21 @@ interface RoleModalProps {
 }
 
 const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role }) => {
+    //#region States & Refs
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(true);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    //#endregion
 
+    //#region Side Effects
     useEffect(() => {
         if (isOpen && role) {
             setStatus(role.status ?? true);
         }
     }, [isOpen, role]);
+    //#endregion
 
-    if (!isOpen || !role) return null;
-
-    const isAdminRole = role.name.toLowerCase() === "admin";
-
+    //#region Handlers
     const handleUpdateStatus = () => {
         if (isAdminRole && !status) {
             toast.warning("Không thể vô hiệu hóa quyền Admin.");
@@ -58,7 +59,12 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
     };
 
     const roleCode = role.nameUpperCase || role.name?.toUpperCase().trim().replace(/\s+/g, "_") || "";
+    //#endregion
 
+    //#region Render
+    if (!isOpen || !role) return null;
+
+    const isAdminRole = role.name.toLowerCase() === "admin";
     return (
         <div
             className="modal-overlay"
@@ -159,6 +165,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
             </div>
         </div>
     );
+    //#endregion
 };
 
 export default RoleModal;

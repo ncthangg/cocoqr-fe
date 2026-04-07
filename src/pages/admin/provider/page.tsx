@@ -16,12 +16,15 @@ import RefreshButton from "@/components/UICustoms/RefreshButton";
 const ProviderModal = lazy(() => import("./components/ProviderModal"));
 
 const ProviderPage: React.FC = () => {
+    //#region States
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
     const [selectedProvider, setSelectedProvider] = useState<ProviderRes | null>(null);
+    //#endregion
 
+    //#region Data Fetching
     const fetchProviders = useCallback(async () => {
         try {
             setLoading(true);
@@ -40,7 +43,9 @@ const ProviderPage: React.FC = () => {
     useEffect(() => {
         fetchProviders();
     }, [fetchProviders]);
+    //#endregion
 
+    //#region Handlers
     const handleOpenEditModal = (provider: ProviderRes) => {
         setSelectedProvider(provider);
         setIsProviderModalOpen(true);
@@ -55,7 +60,9 @@ const ProviderPage: React.FC = () => {
             fetchProviders();
         }
     };
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -81,7 +88,6 @@ const ProviderPage: React.FC = () => {
             </div>
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
-
                 <div className="min-h-0 flex-1 overflow-hidden">
                     <DataTable
                         loading={loading}
@@ -158,6 +164,7 @@ const ProviderPage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default ProviderPage;

@@ -16,17 +16,19 @@ import type { QrStyleLibraryRes } from "@/models/entity.model";
 const QrStyleLibModal = lazy(() => import("./components/QrStyleLibModal"));
 
 const QrStyleLibPage: React.FC = () => {
+    //#region States
     const [data, setData] = useState<QrStyleLibraryRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<QrStyleLibraryRes | null>(null);
 
-
     const [isDeleting, setIsDeleting] = useState(false);
     const [isPinning, setIsPinning] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<QrStyleLibraryRes | null>(null);
+    //#endregion
 
+    //#region Data Fetching
     const fetchItems = useCallback(async () => {
         try {
             setLoading(true);
@@ -48,7 +50,9 @@ const QrStyleLibPage: React.FC = () => {
     useEffect(() => {
         fetchItems();
     }, [fetchItems]);
+    //#endregion
 
+    //#region Handlers
     const handleOpenCreateModal = () => {
         setSelectedItem(null);
         setIsModalOpen(true);
@@ -109,9 +113,10 @@ const QrStyleLibPage: React.FC = () => {
             setIsDeleting(false);
         }
     };
+    //#endregion
 
+    //#region Render
     const pinnedCount = data.filter(a => a.isDefault).length;
-
 
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
@@ -264,5 +269,6 @@ const QrStyleLibPage: React.FC = () => {
         </div>
     );
 };
+//#endregion
 
 export default QrStyleLibPage;

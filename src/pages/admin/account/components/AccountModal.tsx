@@ -43,11 +43,14 @@ function ReadOnlyRow({ icon, label, value, mono, fullWidth }: ReadOnlyRowProps) 
 }
 
 const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId, onStatusChanged }) => {
+    //#region States & Refs
     const [detail, setDetail] = useState<AccountRes | null>(null);
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    //#endregion
 
+    //#region Side Effects
     const fetchDetail = useCallback(async (id: string) => {
         try {
             setLoading(true);
@@ -75,7 +78,9 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
         if (isOpen) window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
     }, [isOpen, onClose]);
+    //#endregion
 
+    //#region Handlers
     const handleToggleStatus = async () => {
         if (!detail || !accountId) return;
         try {
@@ -93,7 +98,9 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
             setIsConfirmOpen(false);
         }
     };
+    //#endregion
 
+    //#region Render
     if (!isOpen) return null;
 
     const isBank = !!detail?.bankCode;
@@ -297,6 +304,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
             />
         </>
     );
+    //#endregion
 };
 
 export default AccountModal;

@@ -13,12 +13,15 @@ import RefreshButton from "@/components/UICustoms/RefreshButton";
 const RoleModal = lazy(() => import("./components/RoleModal"));
 
 const RolePage: React.FC = () => {
+    //#region States
     const [allRoles, setAllRoles] = useState<RoleRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<RoleRes | null>(null);
+    //#endregion
 
+    //#region Data Fetching
     const fetchRoles = useCallback(async () => {
         try {
             setLoading(true);
@@ -37,7 +40,9 @@ const RolePage: React.FC = () => {
     useEffect(() => {
         fetchRoles();
     }, [fetchRoles]);
+    //#endregion
 
+    //#region Handlers
     const handleOpenViewModal = (role: RoleRes) => {
         setSelectedRole(role);
         setIsRoleModalOpen(true);
@@ -46,7 +51,9 @@ const RolePage: React.FC = () => {
     const handleUpdateRoleSuccess = (updatedRole: RoleRes) => {
         setAllRoles(prev => prev.map(r => r.id === updatedRole.id ? updatedRole : r));
     };
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -72,7 +79,6 @@ const RolePage: React.FC = () => {
             </div>
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
-
                 <div className="min-h-0 flex-1 overflow-hidden">
                     <DataTable
                         loading={loading}
@@ -137,6 +143,7 @@ const RolePage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default RolePage;

@@ -23,6 +23,7 @@ import RefreshButton from "@/components/UICustoms/RefreshButton";
 const AccountModal = lazy(() => import("./components/AccountModal"));
 
 const AccountsPage: React.FC = () => {
+    //#region States
     const [accounts, setAccounts] = useState<AccountRes[]>([]);
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
@@ -40,13 +41,14 @@ const AccountsPage: React.FC = () => {
     const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
     const [providerFilter, setProviderFilter] = useState<string | undefined>(undefined);
 
-    // Modals state
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isPinModalOpen, setIsPinModalOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
     const debouncedSearch = useDebounce(searchValue, 500);
+    //#endregion
 
+    //#region Data Fetching
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
         try {
@@ -100,7 +102,9 @@ const AccountsPage: React.FC = () => {
             activeFilter
         );
     }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, activeFilter, providerFilter]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = useCallback((newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -192,6 +196,7 @@ const AccountsPage: React.FC = () => {
             setSelectedAccount(null);
         }
     }, [selectedAccount, accounts]);
+    //#endregion
 
     const stats = useMemo(() => ({
         pinnedCount: accounts.filter(a => a.isPinned).length,
@@ -317,6 +322,7 @@ const AccountsPage: React.FC = () => {
         }
     ], [handleOpenPin, handleOpenEdit, handleOpenDelete]);
 
+    //#region Render
     return (
         <div className="flex flex-col gap-8 flex-1 min-h-0">
             <PageHeader
@@ -406,6 +412,7 @@ const AccountsPage: React.FC = () => {
         </div>
     );
 };
+//#endregion
 
 // --- Subcomponents ---
 

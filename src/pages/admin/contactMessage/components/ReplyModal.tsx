@@ -19,28 +19,17 @@ interface ReplyModalProps {
 }
 
 const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuccess }) => {
+    //#region States & Refs
     const [subject, setSubject] = useState("");
     const [content, setContent] = useState("");
     const [smtpType, setSmtpType] = useState<keyof typeof SmtpSettingType | "">("");
     const [submitting, setSubmitting] = useState(false);
-
     const [hasFetchedTemplates, setHasFetchedTemplates] = useState(false);
     const [templates, setTemplates] = useState<EmailTemplateRes[]>([]);
     const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>("");
+    //#endregion
 
-    // Fetch templates lazily on interaction
-    const handleFetchTemplates = async () => {
-        if (hasFetchedTemplates) return;
-        try {
-            const res = await emailTemplateApi.getAll();
-            setTemplates(Array.isArray(res) ? res : []);
-            setHasFetchedTemplates(true);
-        } catch (error) {
-            console.error("Error fetching templates:", error);
-            setHasFetchedTemplates(true); // Don't retry every time if it falls
-        }
-    };
-
+    //#region Side Effects
     useEffect(() => {
         if (isOpen) {
             setSubject("");
@@ -49,6 +38,20 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
             setSelectedTemplateKey("");
         }
     }, [isOpen]);
+    //#endregion
+
+    //#region Handlers
+    const handleFetchTemplates = async () => {
+        if (hasFetchedTemplates) return;
+        try {
+            const res = await emailTemplateApi.getAll();
+            setTemplates(Array.isArray(res) ? res : []);
+            setHasFetchedTemplates(true);
+        } catch (error) {
+            console.error("Error fetching templates:", error);
+            setHasFetchedTemplates(true);
+        }
+    };
 
     const handleReply = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
@@ -76,9 +79,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
                 templateKey: selectedTemplateKey || null
             });
             toast.success("Đã gửi email reply thành công!");
-            if (onSuccess) {
-                onSuccess();
-            }
+            if (onSuccess) onSuccess();
             onClose();
         } catch (err: any) {
             toast.error(err?.response?.data?.message || "Lỗi khi gửi email. Vui lòng thử lại sau.");
@@ -86,7 +87,9 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
             setSubmitting(false);
         }
     };
+    //#endregion
 
+    //#region Render
     if (!message) return null;
 
     const smtpOptions = getSmtpTypeOptions();
@@ -261,6 +264,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
             </div>
         </div>
     );
+    //#endregion
 };
 
 export default React.memo(ReplyModal);

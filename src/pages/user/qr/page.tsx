@@ -109,12 +109,12 @@ const CreatePaymentPage: React.FC = () => {
         },
         []
     );
-    //#endregion
 
     useEffect(() => {
         if (!hasFetchedAccounts.current) return;
         fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter);
     }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter]);
+    //#endregion
 
     //#region Handlers
     const handlePageChange = useCallback((newPage: number) => {
@@ -129,6 +129,11 @@ const CreatePaymentPage: React.FC = () => {
         setSelectedAccount(acc);
         setIsPinModalOpen(true);
     }, []);
+
+    // Derived states for maintenance checks
+    const prov = allProviders.find((p) => p.id === formData.providerId);
+    const isProviderInactive = prov ? !prov.isActive : formData.providerId ? isProviderMaintenance : false;
+    const isBankInactive = isBankMaintenance;
 
     const handlePinAccount = useCallback(async () => {
         if (!selectedAccount) return;
@@ -201,10 +206,6 @@ const CreatePaymentPage: React.FC = () => {
     }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter]);
 
     const handleCloseDrawer = useCallback(() => setIsDrawerOpen(false), []);
-
-    const prov = allProviders.find((p) => p.id === formData.providerId);
-    const isProviderInactive = prov ? !prov.isActive : formData.providerId ? isProviderMaintenance : false;
-    const isBankInactive = isBankMaintenance;
 
     const handleCreateQR = useCallback(async () => {
         if (!formData.providerId) {

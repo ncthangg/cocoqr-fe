@@ -22,6 +22,7 @@ interface AccountModalProps {
 }
 
 const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess, accountId }) => {
+    //#region States & Refs
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [formData, setFormData] = useState<PutAccountReq>({
         providerId: "",
@@ -42,7 +43,9 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
 
     const selectedProvider = useMemo(() => allProviders.find(p => p.id === formData.providerId) || null, [allProviders, formData.providerId]);
     const isBankType = selectedProvider?.code === ProviderCode.BANK;
+    //#endregion
 
+    //#region Data Fetching & Side Effects
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders.current) return;
         try {
@@ -90,6 +93,14 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
         }
     }, [isOpen, accountId, fetchProviders, fetchAccountDetail]);
 
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+        if (isOpen) window.addEventListener("keydown", handler);
+        return () => window.removeEventListener("keydown", handler);
+    }, [isOpen, onClose]);
+    //#endregion
+
+    //#region Handlers
     const resetForm = () => {
         setFormData({
             providerId: "",
@@ -103,12 +114,6 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
         setBankLogoUrl(null);
         setModalLoading(false);
     };
-
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-        if (isOpen) window.addEventListener("keydown", handler);
-        return () => window.removeEventListener("keydown", handler);
-    }, [isOpen, onClose]);
 
     const handleProviderChange = useCallback((providerId: string) => {
         setFormData(prev => ({ ...prev, providerId, bankCode: "", bankName: "" }));
@@ -189,7 +194,9 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
     }, []);
 
     const openBankModal = useCallback(() => setIsBankModalOpen(true), []);
+    //#endregion
 
+    //#region Render
     if (!isOpen) return null;
 
     return (
@@ -283,6 +290,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onSuccess,
         </>
     );
 };
+//#endregion
 
 // --- Subcomponents ---
 

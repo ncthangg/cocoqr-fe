@@ -15,12 +15,15 @@ interface EditModalProps {
 }
 
 const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onUpdated, template }) => {
+    //#region States & Refs
     const [subject, setSubject] = useState("");
     const [body, setBody] = useState("");
     const [description, setDescription] = useState("");
     const [isActive, setIsActive] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    //#endregion
 
+    //#region Side Effects
     useEffect(() => {
         if (template && isOpen) {
             setSubject(template.subject);
@@ -29,7 +32,9 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
             setIsActive(template.isActive);
         }
     }, [template, isOpen]);
+    //#endregion
 
+    //#region Handlers
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!template) return;
@@ -64,13 +69,13 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
             };
 
             onUpdated(updatedTemplate);
-        } catch (err: any) {
-            toast.error(err?.response?.data?.message || "Không thể cập nhật template.");
         } finally {
             setSubmitting(false);
         }
     };
+    //#endregion
 
+    //#region Render
     if (!template) return null;
 
     return (
@@ -207,6 +212,7 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
             </div>
         </div>
     );
+    //#endregion
 };
 
 export default React.memo(EmailTemplateEditModal);

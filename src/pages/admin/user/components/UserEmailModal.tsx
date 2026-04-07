@@ -36,13 +36,13 @@ interface UserEmailModalProps {
 }
 
 const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }) => {
+    //#region States & Hooks
     const [loading, setLoading] = useState(false);
     const [fetchingDetailId, setFetchingDetailId] = useState<string | null>(null);
     const [logs, setLogs] = useState<GetEmailLogRes[]>([]);
     const [isFormView, setIsFormView] = useState(false);
     const [selectedLog, setSelectedLog] = useState<GetEmailLogByIdRes | null>(null);
 
-    // Paging & Search
     const [subjectFilter, setSubjectFilter] = useState("");
     const debouncedSubject = useDebounce(subjectFilter, 500);
     const [paging, setPaging] = useState<PagingVM<GetEmailLogRes>>({
@@ -53,13 +53,11 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
         totalItems: 0
     });
 
-    // Form state
     const [subject, setSubject] = useState("");
     const [content, setContent] = useState("");
     const [smtpType, setSmtpType] = useState<keyof typeof SmtpSettingType | "">("");
     const [submitting, setSubmitting] = useState(false);
 
-    // Template states
     const [templates, setTemplates] = useState<EmailTemplateRes[]>([]);
     const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>("");
 
@@ -68,7 +66,9 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
             emailTemplateApi.getAll().then(res => setTemplates(Array.isArray(res) ? res : []));
         }
     }, [isOpen]);
+    //#endregion
 
+    //#region Data Fetching & Side Effects
     const fetchHistory = useCallback(async (page: number, size: number, subj: string) => {
         if (!user) return;
         try {
@@ -98,7 +98,6 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
         }
     }, [isOpen, user, fetchHistory, paging.pageNumber, paging.pageSize, debouncedSubject]);
 
-    // Initial reset when modal opens
     useEffect(() => {
         if (isOpen) {
             setIsFormView(false);
@@ -109,7 +108,9 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
             setPaging(prev => ({ ...prev, pageNumber: 1 }));
         }
     }, [isOpen]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -152,8 +153,6 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
 
             await adminContactApi.post(payload);
             toast.success("Email đã được gửi thành công!");
-
-            // Reset form and refresh history at page 1
             setSubject("");
             setContent("");
             setSmtpType("");
@@ -167,7 +166,9 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
             setSubmitting(false);
         }
     };
+    //#endregion
 
+    //#region Render
     if (!isOpen || !user) return null;
 
     const handleOnClose = typeof onClose === 'function' ? onClose : () => { };
@@ -502,6 +503,7 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
             </div>
         </div>
     );
+    //#endregion
 };
 
 export default UserEmailModal;

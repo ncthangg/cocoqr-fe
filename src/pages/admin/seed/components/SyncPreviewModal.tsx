@@ -111,11 +111,14 @@ const SyncPreviewModal: React.FC<SyncPreviewModalProps> = ({
     syncSuccessMessage = "Đồng bộ thành công!",
     syncErrorMessage = "Đồng bộ thất bại.",
 }) => {
+    //#region States & Refs
     const [loading, setLoading] = useState(false);
     const [syncing, setSyncing] = useState(false);
     const [preview, setPreview] = useState<SyncPreviewRes | null>(null);
     const [filter, setFilter] = useState<SyncAction | "all">("all");
+    //#endregion
 
+    //#region Side Effects
     useEffect(() => {
         if (isOpen) {
             loadPreview();
@@ -124,7 +127,9 @@ const SyncPreviewModal: React.FC<SyncPreviewModalProps> = ({
             setFilter("all");
         }
     }, [isOpen]);
+    //#endregion
 
+    //#region Handlers
     const loadPreview = async () => {
         try {
             setLoading(true);
@@ -153,7 +158,9 @@ const SyncPreviewModal: React.FC<SyncPreviewModalProps> = ({
             setSyncing(false);
         }
     };
+    //#endregion
 
+    //#region Render
     if (!isOpen) return null;
 
     const filteredChanges = preview?.changes?.filter(c => filter === "all" || c.action === filter) || [];
@@ -273,6 +280,7 @@ const SyncPreviewModal: React.FC<SyncPreviewModalProps> = ({
             </div>
         </div>
     );
+    //#endregion
 };
 
 // --- Sub-components ---
