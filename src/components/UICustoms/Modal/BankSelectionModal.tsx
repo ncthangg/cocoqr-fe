@@ -30,15 +30,15 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
     const [lastFetchedKey, setLastFetchedKey] = useState("");
 
     const fetchBanks = async () => {
-        const currentKey = JSON.stringify({ 
-            p: paging.pageNumber, 
-            s: paging.pageSize, 
-            sort: sortState, 
-            search: debouncedSearch 
+        const currentKey = JSON.stringify({
+            p: paging.pageNumber,
+            s: paging.pageSize,
+            sort: sortState,
+            search: debouncedSearch
         });
-        
+
         if (currentKey === lastFetchedKey) return;
-        
+
         try {
             setLoading(true);
             const sortField = sortState?.field || null;
@@ -151,7 +151,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                                             <BrandLogo
                                                 logoUrl={bank.logoUrl}
                                                 name={bank.bankName}
-                                                code={bank.shortName}
+                                                code={bank.bankCode}
                                                 size="sm"
                                             />
                                         )

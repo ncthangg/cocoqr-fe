@@ -21,6 +21,7 @@ export const ApiConstant = {
     },
     BANKINFO: {
         GET_ALL: "/bankinfos",
+        GET_ALL_BY_ADMIN: "/bankinfos/by-admin",
         PUT: (id: string) => `/bankinfos/${id}`,
     },
     ROLE: {

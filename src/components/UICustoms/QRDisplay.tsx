@@ -21,6 +21,8 @@ interface QRDisplayProps {
     onDownload?: () => void;
     onCopyLink?: () => void;
     isWide?: boolean;
+    /** When true, triggers a one-time fetch of QR styles (lazy). Controlled by parent. */
+    shouldFetchStyles?: boolean;
 }
 
 interface StyleConfig {
@@ -64,7 +66,7 @@ const patternToEyeType = (p: string): CornerSquareType => {
     return "square";
 };
 
-const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJson, transactionRef, onDownload, onCopyLink, isWide = false }) => {
+const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJson, transactionRef, onDownload, onCopyLink, isWide = false, shouldFetchStyles = false }) => {
     const dispatch = useAppDispatch();
     const [isDownloadConfirmOpen, setIsDownloadConfirmOpen] = useState(false);
     const [showCustom, setShowCustom] = useState(false);
@@ -76,6 +78,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
     const qrCodeRef = useRef<QRCodeStyling | null>(null);
     const logoInputRef = useRef<HTMLInputElement>(null);
     const hasFetchedStyles = useRef(false);
+    const defaultStyleApplied = useRef(false);
 
     const [qrStyles, setQrStyles] = useState<QrStyleLibraryRes[]>([]);
     const [selectedStyleId, setSelectedStyleId] = useState<string>("");
@@ -107,6 +110,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
         setIsDownloaded(false);
         setIsCopied(false);
         setShowCustom(false);
+        defaultStyleApplied.current = false;
     }, [transactionRef, qrData, qrImageUrl]);
 
     const fetchStyles = useCallback(async () => {
@@ -122,12 +126,21 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
         }
     }, []);
 
+    // Fetch styles when parent signals (lazy, once)
+    useEffect(() => {
+        if (shouldFetchStyles) {
+            fetchStyles();
+        }
+    }, [shouldFetchStyles, fetchStyles]);
+
     useEffect(() => {
         if (styleJson) {
             setStyle(parseStyleJson(styleJson));
             const matched = qrStyles.find(s => s.styleJson === styleJson);
             setSelectedStyleId(matched ? matched.id : "");
-        } else if (qrStyles.length > 0) {
+            defaultStyleApplied.current = true;
+        } else if (qrStyles.length > 0 && !defaultStyleApplied.current) {
+            // Auto-apply default: USER isDefault > SYSTEM isDefault
             const userDefault = qrStyles.find(s => s.type === QRStyleType.USER && s.isDefault);
             const sysDefault = qrStyles.find(s => s.type === QRStyleType.SYSTEM && s.isDefault);
 
@@ -141,11 +154,7 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
                 setStyle({ ...DEFAULT_STYLE });
                 setSelectedStyleId("");
             }
-        } else {
-            // Keep default style until library is fetched (or if no styleJson)
-            if (!styleJson && !selectedStyleId) {
-                setStyle({ ...DEFAULT_STYLE });
-            }
+            defaultStyleApplied.current = true;
         }
     }, [styleJson, qrStyles]);
 
@@ -187,9 +196,6 @@ const QRDisplay: React.FC<QRDisplayProps> = ({ type, qrImageUrl, qrData, styleJs
         if (type === 'public') {
             dispatch(openAuthModal());
         } else {
-            if (!showCustom && !hasFetchedStyles.current) {
-                fetchStyles();
-            }
             setShowCustom(!showCustom);
         }
     };

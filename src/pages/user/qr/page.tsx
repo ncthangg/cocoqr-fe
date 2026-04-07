@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { QrCode, Eraser, BookUser, ChevronRight } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
 import { accountApi } from "@/services/account-api.service";
@@ -18,8 +18,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useResizable } from "@/hooks/useResizable";
 import AccountDrawer from "./components/AccountDrawer";
 
-/* ─── Default form state (module-scope) ─────────────────────── */
-
+//#region Constants
 const DEFAULT_FORM = {
     providerId: "",
     providerCode: "",
@@ -35,11 +34,10 @@ const DEFAULT_FORM = {
     amount: "",
     note: "",
 };
-
-/* ─── Component ─────────────────────────────────────────────── */
+//#endregion
 
 const CreatePaymentPage: React.FC = () => {
-    // API State
+    //#region States
     const [accounts, setAccounts] = useState<AccountRes[]>([]);
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
@@ -60,18 +58,20 @@ const CreatePaymentPage: React.FC = () => {
     const [qrResult, setQrResult] = useState<PostQrRes | null>(null);
     const [qrLoading, setQrLoading] = useState(false);
 
-    // Account drawer state
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [providerFilter, setProviderFilter] = useState<string | undefined>(undefined);
 
     const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
     const [formData, setFormData] = useState(DEFAULT_FORM);
+    const [shouldFetchQrStyles, setShouldFetchQrStyles] = useState(false);
+    //#endregion
 
-    // Resizable hook
+    //#region Refs & Hooks
+    const hasFetchedAccounts = useRef(false);
     const { containerRef, leftPercent, startResizing } = useResizable(40);
+    //#endregion
 
-    /* ─── Data fetching ───────────────────────────────────────── */
-
+    //#region Data Fetching
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
         try {
@@ -109,13 +109,14 @@ const CreatePaymentPage: React.FC = () => {
         },
         []
     );
+    //#endregion
 
     useEffect(() => {
+        if (!hasFetchedAccounts.current) return;
         fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter);
     }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter]);
 
-    /* ─── Handlers ────────────────────────────────────────────── */
-
+    //#region Handlers
     const handlePageChange = useCallback((newPage: number) => {
         setPaging((prev) => ({ ...prev, pageNumber: newPage }));
     }, []);
@@ -191,7 +192,14 @@ const CreatePaymentPage: React.FC = () => {
         []
     );
 
-    const handleOpenDrawer = useCallback(() => setIsDrawerOpen(true), []);
+    const handleOpenDrawer = useCallback(() => {
+        if (!hasFetchedAccounts.current) {
+            hasFetchedAccounts.current = true;
+            fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter);
+        }
+        setIsDrawerOpen(true);
+    }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter]);
+
     const handleCloseDrawer = useCallback(() => setIsDrawerOpen(false), []);
 
     const prov = allProviders.find((p) => p.id === formData.providerId);
@@ -235,6 +243,7 @@ const CreatePaymentPage: React.FC = () => {
             };
             const res = await qrApi.post(req);
             setQrResult(res);
+            setShouldFetchQrStyles(true);
             toast.success("Tạo mã QR thành công!");
         } catch (error) {
             console.error("Error creating QR:", error);
@@ -309,9 +318,9 @@ const CreatePaymentPage: React.FC = () => {
     const handleNoteChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData((prev) => ({ ...prev, note: e.target.value }));
     }, []);
+    //#endregion
 
-    /* ─── Render ──────────────────────────────────────────────── */
-
+    //#region Render
     return (
         <div ref={containerRef} className="h-full w-full flex bg-bg flex-1 overflow-hidden relative qr-container">
             {/* Account Drawer */}
@@ -502,6 +511,7 @@ const CreatePaymentPage: React.FC = () => {
                         styleJson={qrResult?.styleJson}
                         transactionRef={qrResult?.transactionRef}
                         isWide={leftPercent <= 50}
+                        shouldFetchStyles={shouldFetchQrStyles}
                     />
                 </div>
             </div>
@@ -517,6 +527,7 @@ const CreatePaymentPage: React.FC = () => {
             />
         </div>
     );
+    //#endregion
 };
 
 export default CreatePaymentPage;

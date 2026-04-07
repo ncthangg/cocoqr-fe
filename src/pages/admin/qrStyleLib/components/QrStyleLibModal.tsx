@@ -50,6 +50,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
     const [loading, setLoading] = useState(false);
     const [name, setName] = useState("");
     const [isActive, setIsActive] = useState(true);
+    const [isDefault, setIsDefault] = useState(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [showRawJson, setShowRawJson] = useState(false);
     const [isDeletingModal, setIsDeletingModal] = useState(false);
@@ -69,10 +70,12 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
             if (item) {
                 setName(item.name || "");
                 setIsActive(item.isActive ?? true);
+                setIsDefault(item.isDefault || false);
                 setStyle(parseStyleJson(item.styleJson));
             } else {
                 setName("");
                 setIsActive(true);
+                setIsDefault(false);
                 setStyle({ ...DEFAULT_STYLE });
             }
             setIsConfirmOpen(false);
@@ -145,7 +148,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                 styleJson,
                 isActive,
                 type: QRStyleType.SYSTEM,
-                isDefault: item ? item.isDefault : false
+                isDefault
             };
 
             if (item) {
@@ -385,6 +388,14 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                                         uncheckedLabel="Bảo trì"
                                         checkedSubtext="Cho phép người dùng nhìn thấy và sử dụng style này"
                                         uncheckedSubtext="Ẩn khỏi danh sách style"
+                                    />
+                                    <StatusToggle
+                                        checked={isDefault}
+                                        onChange={(e) => setIsDefault(e.target.checked)}
+                                        checkedLabel="Mặc định"
+                                        uncheckedLabel="Bình thường"
+                                        checkedSubtext="Sử dụng làm style mặc định"
+                                        uncheckedSubtext="Style bình thường"
                                     />
                                 </div>
                             </div>

@@ -12,6 +12,7 @@ import RoleSelectionModal from "@/components/Modals/RoleSelectionModal";
 
 const RootRoute = lazy(() => import("@/router/RootRoute"))
 const ErrorPage = lazy(() => import("@/pages/ErrorPage/ErrorPage"));
+import { UnauthorizedProvider } from "@/auth/UnauthorizedContext";
 
 const CreatePaymentPage = lazy(() => import("@/pages/user/qr/page"))
 const AccountsPage = lazy(() => import("@/pages/user/account/page"))
@@ -33,13 +34,13 @@ const EmailTemplatePage = lazy(() => import("@/pages/admin/emailTemplate/page"))
 const ContactMessagePage = lazy(() => import("@/pages/admin/contactMessage/page"))
 
 const RootWrapper = () => (
-    <>
+    <UnauthorizedProvider>
         <AuthenModal />
         <RoleSelectionModal />
         <Suspense fallback={null}>
             <Outlet />
         </Suspense>
-    </>
+    </UnauthorizedProvider>
 );
 
 export const router = createBrowserRouter([

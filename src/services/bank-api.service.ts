@@ -20,6 +20,22 @@ export const bankApi = {
         );
         return response.data;
     },
+    getAllByAdmin: async (params: GetBanksReq): Promise<PagingVM<BankRes>> => {
+        const response = await axiosPrivate.get(ApiConstant.BANKINFO.GET_ALL_BY_ADMIN,
+            {
+                params: {
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    sortField: params.sortField,
+                    sortDirection: params.sortDirection,
+                    isActive: params.isActive,
+                    searchValue: params.searchValue,
+                    status: params.status,
+                }
+            }
+        );
+        return response.data;
+    },
     put: async (id: string, req: PutBankInfoReq | FormData): Promise<string> => {
         const response = await axiosPrivate.put(ApiConstant.BANKINFO.PUT(id), req, {
             headers: req instanceof FormData ? { "Content-Type": "multipart/form-data" } : undefined

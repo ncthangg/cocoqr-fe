@@ -41,7 +41,7 @@ const BankPage: React.FC = () => {
         try {
             setLoading(true);
 
-            const res = await bankApi.getAll({
+            const res = await bankApi.getAllByAdmin({
                 pageNumber: page,
                 pageSize: size,
                 sortField: sortField ?? null,
@@ -151,7 +151,7 @@ const BankPage: React.FC = () => {
                                     <BrandLogo
                                         logoUrl={bank.logoUrl}
                                         name={bank.bankName}
-                                        code={bank.shortName}
+                                        code={bank.bankCode}
                                         size="sm"
                                     />
                                 )
