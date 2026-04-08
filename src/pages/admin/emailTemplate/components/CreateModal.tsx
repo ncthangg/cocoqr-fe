@@ -122,6 +122,7 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
                             className="select w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/50"
                             required
                         >
+                            <option value="" disabled hidden>Chọn Template Key...</option>
                             {availableKeys.map(key => (
                                 <option key={key} value={key}>{key}</option>
                             ))}
