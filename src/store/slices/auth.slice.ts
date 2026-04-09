@@ -101,6 +101,9 @@ const authSlice = createSlice({
         startUserSync(state) {
             state.isUserSynced = false;
         },
+        syncUserFailed(state) {
+            state.isUserSynced = true;
+        },
     },
 });
 
@@ -116,6 +119,7 @@ export const {
 
     loadUserInfo,
     startUserSync,
+    syncUserFailed,
 } = authSlice.actions;
 
 export default authSlice.reducer;
