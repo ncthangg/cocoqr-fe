@@ -12,7 +12,7 @@ interface RoleModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: (updatedRole: RoleRes) => void;
-    role?: RoleRes | null;
+    role: RoleRes | null;
 }
 
 const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role }) => {
@@ -40,6 +40,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
     };
 
     const executeUpdate = async () => {
+        if (!role) return;
         try {
             setLoading(true);
             await roleApi.put(role.id, {
@@ -58,7 +59,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
         }
     };
 
-    const roleCode = role.nameUpperCase || role.name?.toUpperCase().trim().replace(/\s+/g, "_") || "";
+    const roleCode = role?.nameUpperCase || role?.name?.toUpperCase().trim().replace(/\s+/g, "_") || "";
     //#endregion
 
     //#region Render
