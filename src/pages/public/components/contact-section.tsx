@@ -1,7 +1,7 @@
 import { Mail, Phone, Send, User, AlignLeft, Loader2 } from "lucide-react"
 import { Card, CardContent } from "@/components/UICustoms/Card"
 import Button from "@/components/UICustoms/Button"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { contactApi } from "@/services/contact-api.service"
 import { toast } from "react-toastify"
 import ReactQuill from "react-quill-new"
@@ -36,14 +36,23 @@ export function ContactSection() {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
     }, [])
+    const lastSubmitTimeRef = useRef<number>(0)
 
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault()
+
+        const now = Date.now();
+        if (now - lastSubmitTimeRef.current < 15000) {
+            toast.warning("Vui lòng đợi 15 giây trước khi thực hiện gửi liên hệ tiếp theo.")
+            return
+        }
 
         if (!content.trim() || content === '<p><br></p>') {
             toast.warning("Vui lòng nhập nội dung liên hệ")
             return
         }
+
+        lastSubmitTimeRef.current = now;
 
         try {
             setLoading(true)

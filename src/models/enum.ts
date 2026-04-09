@@ -103,3 +103,10 @@ export const EmailTemplateKey = {
 } as const;
 
 export type EmailTemplateKey = (typeof EmailTemplateKey)[keyof typeof EmailTemplateKey];
+///=====================================================================
+export const QRType = {
+    PUBLIC: "public",
+    PRIVATE: "private"
+} as const;
+
+export type QRType = typeof QRType[keyof typeof QRType];

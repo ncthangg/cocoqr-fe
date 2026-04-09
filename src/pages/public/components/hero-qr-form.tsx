@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { QrCode, Eraser, Hash, Banknote, StickyNote } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
 import AccountProviderSelector from "@/components/UICustoms/Form/AccountProviderSelector";
@@ -68,7 +68,14 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
         if (onReset) onReset();
     }, [onReset]);
 
+    const lastCreateTimeRef = useRef<number>(0);
     const handleCreateQR = useCallback(async () => {
+        const now = Date.now();
+        if (now - lastCreateTimeRef.current < 5000) {
+            toast.warning("Vui lòng đợi 5 giây trước khi thực hiện thao tác tiếp theo.");
+            return;
+        }
+        
         if (!formData.providerId) {
             toast.warning("Vui lòng chọn loại tài khoản.");
             return;
@@ -77,6 +84,8 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
             toast.warning("Vui lòng nhập số tài khoản / số điện thoại.");
             return;
         }
+
+        lastCreateTimeRef.current = now;
         const selectedProvider = allProviders.find(p => p.id === formData.providerId);
         const isBank = selectedProvider?.code === ProviderCode.BANK;
         if (isBank && !formData.bankCode) {

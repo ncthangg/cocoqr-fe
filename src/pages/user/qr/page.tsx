@@ -10,9 +10,9 @@ import type { PostQrReq, PutAccountReq } from "@/models/entity.request.model";
 import { toast } from "react-toastify";
 import { formatVNDInput, formatVNDDisplay } from "@/utils/currencyUtils";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
-import QRDisplay from "@/components/UICustoms/QRDisplay";
+import QRDisplay from "@/components/UICustoms/QR/QRDisplay";
 import AccountProviderSelector from "@/components/UICustoms/Form/AccountProviderSelector";
-import { ProviderCode } from "@/models/enum";
+import { ProviderCode, QRType } from "@/models/enum";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useResizable } from "@/hooks/useResizable";
@@ -68,6 +68,7 @@ const CreatePaymentPage: React.FC = () => {
 
     //#region Refs & Hooks
     const hasFetchedAccounts = useRef(false);
+    const lastCreateTimeRef = useRef<number>(0);
     const { containerRef, leftPercent, startResizing } = useResizable(40);
     //#endregion
 
@@ -208,6 +209,12 @@ const CreatePaymentPage: React.FC = () => {
     const handleCloseDrawer = useCallback(() => setIsDrawerOpen(false), []);
 
     const handleCreateQR = useCallback(async () => {
+        const now = Date.now();
+        if (now - lastCreateTimeRef.current < 3000) {
+            toast.warning("Vui lòng đợi 3 giây trước khi thực hiện thao tác tiếp theo.");
+            return;
+        }
+
         if (!formData.providerId) {
             toast.warning("Vui lòng chọn loại tài khoản.");
             return;
@@ -216,6 +223,8 @@ const CreatePaymentPage: React.FC = () => {
             toast.warning("Vui lòng nhập số tài khoản / số điện thoại.");
             return;
         }
+
+        lastCreateTimeRef.current = now;
 
         const isBank = formData.providerCode === ProviderCode.BANK;
 
@@ -348,7 +357,9 @@ const CreatePaymentPage: React.FC = () => {
 
             {/* Left Column: QR Form */}
             <div
-                className="flex flex-col gap-lg h-full min-h-0 overflow-y-auto px-lg py-md relative scrollbar-hidden animate-in fade-in slide-in-from-left-4 duration-500"
+                className="flex flex-col gap-lg h-full min-h-0 overflow-y-auto px-lg py-md 
+                relative scrollbar-hidden animate-in fade-in
+                slide-in-from-left-4 duration-500"
                 style={{ width: `${leftPercent}%`, flexShrink: 0 }}
             >
                 {/* Top: Title + Drawer Tag + Clear */}
@@ -501,18 +512,21 @@ const CreatePaymentPage: React.FC = () => {
 
             {/* Right Column: QR Display */}
             <div
-                className="flex flex-col gap-lg h-full min-h-0 overflow-y-auto px-lg py-md flex-1 min-w-0 scrollbar-hidden animate-in fade-in slide-in-from-right-4 duration-500"
+                className="flex flex-col gap-lg h-full min-h-0 overflow-y-auto px-lg py-md
+                flex-1 min-w-0 scrollbar-hidden animate-in fade-in 
+                slide-in-from-right-4 duration-500"
                 style={{ width: `${100 - leftPercent}%` }}
             >
                 <h2 className="text-2xl font-extrabold text-foreground shrink-0 mb-sm">Mã QR</h2>
-                <div className="flex-1 flex flex-col">
+                <div className="flex-1 flex flex-col items-center">
                     <QRDisplay
-                        type="private"
+                        type={QRType.PRIVATE}
                         qrData={qrResult?.qrData}
                         styleJson={qrResult?.styleJson}
                         transactionRef={qrResult?.transactionRef}
                         isWide={leftPercent <= 50}
                         shouldFetchStyles={shouldFetchQrStyles}
+                        className="max-w-4xl"
                     />
                 </div>
             </div>

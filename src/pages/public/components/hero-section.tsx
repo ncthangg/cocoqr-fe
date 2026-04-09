@@ -1,4 +1,5 @@
-import QRDisplay from "@/components/UICustoms/QRDisplay"
+import QRDisplay from "@/components/UICustoms/QR/QRDisplay"
+import { QRType } from "@/models/enum"
 import { HeroQRForm } from "./hero-qr-form"
 import { useState, useCallback } from "react"
 import type { PostQrRes } from "@/models/entity.model"
@@ -16,7 +17,7 @@ export function HeroSection() {
     return (
         <section
             id="hero"
-            className="relative w-full min-h-[calc(100vh-var(--header-height,73px))] py-2xl flex flex-col items-center justify-center overflow-y-auto overflow-x-hidden bg-bg snap-start snap-always"
+            className="relative w-full min-h-[calc(100vh-var(--header-height,73px))] pt-2xl lg:pt-[10vh] pb-2xl flex flex-col items-center justify-start overflow-y-auto overflow-x-hidden bg-bg snap-start snap-always"
         >
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--color-surface),transparent_70%)]" />
 
@@ -55,7 +56,7 @@ export function HeroSection() {
                         </div>
                         <div className="flex-1">
                             <QRDisplay
-                                type="public"
+                                type={QRType.PUBLIC}
                                 qrData={qrResult?.qrData}
                                 transactionRef={qrResult?.transactionRef}
                             />
