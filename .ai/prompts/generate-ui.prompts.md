@@ -1,32 +1,20 @@
 # Generate UI Prompt
 
+> ⚠️ **MUST read `ui.rules.md` before any `.tsx` edit.**
+
 ## When
+Create page, form, table, modal, or any UI component.
 
-* create page
-* create form
-* create table
-* create modal
-* build UI
+## Skills
+`create-page` · `create-form` · `create-table` · `create-modal`
 
-## Use Skills
+## Rules
+`ui` · `component` · `table` · `form` · `modal` · `state` · `api` · `react` · `performance` · `project`
 
-* create-page.skills.md
-* create-form.skills.md
-* create-table.skills.md
-* create-modal.skills.md
-
-## Follow Rules
-
-* component.rules.md
-* ui.rules.md
-* react.rules.md
-* performance.rules.md
-* project.rules.md
-
-## Requirements
-
-* Follow codebase structure
-* Reuse components
-* Optimize performance
-* Avoid inline styles
-* Handle loading / empty / error
+## Workflow
+1. Read `ui.rules.md` → confirm tokens & forbidden patterns
+2. Pick matching Skill → follow its steps
+3. Fetch via `*-api.service.ts` (`PagingVM<T>` or `T[]`)
+4. Handle loading / empty / error (`react-toastify`)
+5. Optimize: `useMemo` columns, `useCallback` handlers, `React.lazy` heavy modals
+6. Verify: no inline styles, no raw Tailwind, no `any`, icons from `lucide-react`

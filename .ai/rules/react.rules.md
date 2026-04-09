@@ -1,24 +1,24 @@
 # React Rules
 
-## State
-- Redux → global
-- Context → DI only
-- useState → UI state
-
-## Performance
-- useMemo / useCallback when needed
-- lazy + Suspense for heavy components
-
-## Rendering
-- No inline objects/functions
-- Pass primitive props
-- Extract sub-components
+> **Scope:** React-specific patterns not owned by other files.
+> Performance (memoization, rendering, code splitting) → `performance.rules.md`. 
+> State tool selection → `state.rules.md`.
 
 ## Effects
-- Strict dependency array
+- Always specify an **explicit, complete dependency array** in `useEffect`
+- Never suppress the `exhaustive-deps` lint rule — fix the root cause instead
 
-## UX
-- Immediate UI update after API success
+## UX — Optimistic Updates
+ 
+After a successful API call, **update the UI immediately** — do not wait for a re-fetch to reflect changes.
+ 
+```tsx
+const handleDelete = async (id: string) => {
+  await deleteUser(id);
+  setUsers(prev => prev.filter(u => u.id !== id)); // immediate update
+};
+```
 
 ## Data
-- Use `PagingVM` for lists
+- Paging → use `PagingVM`
+- No paging → use `Object[]`

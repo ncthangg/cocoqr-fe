@@ -10,25 +10,28 @@ Changes must follow the current architecture and avoid regression in:
 - Performance
 
 ## Tech Stack
-- React + TypeScript + Vite
-- Router: react-router-dom (data router with createBrowserRouter)
-- State: Redux Toolkit (auth.slice) + AuthContext
-- HTTP: Axios (axiosPrivate, axiosPublic) + refresh interceptor
-- UI: Tailwind CSS + tokens in src/styles/globals.css
-- Components: UICustoms + src/components/ui
-- Notifications: react-toastify
-- Icons: lucide-react
+- React + TypeScript (Vite)
+- React Router v6 (`react-router-dom`)
+- Redux Toolkit + React-Redux
+- Tailwind CSS + custom CSS variables
+- React Toastify for notifications
+- Axios for API requests
+- Lucide React for icons
 - Shadcn UI-inspired component utilities (`cva`, `cn`, `Slot`)
 
-## Folder Architecture
-- **Pages**: `src/pages/{public|user|admin}/.../page.tsx`.
-- **Layout**: `src/layouts/UserLayout.tsx`, `src/layouts/AdminLayout.tsx`.
-- **Router**: `src/router/app.router.tsx`.
-- **Services**: `src/services/*-api.service.ts`.
-- **API constants**: `src/constants/api.constant.ts`.
-- **Route constants**: `src/constants/route.constant.ts`.
-- **Store**: `src/store/index.ts`, `src/store/slices/auth.slice.ts`.
-- **Auth providers/guards**: `src/auth/*`.
+## Architecture & Naming
+- **Pages**: `src/pages/{role}/{feature}/page.tsx` (Default export).
+- **Components**: `src/components/UICustoms/` (Reusable business UI).
+- **Services**: `src/services/{name}-api.service.ts` (Typed axios wrappers).
+- **State**: `src/store/slices/{name}.slice.ts` (Redux Toolkit).
+- **Models**: `src/models/*.ts` (Interfaces/Enums).
+- **Constants**: `src/constants/` (API and Route constants).
+
+## Core Patterns
+- **Auth**: `AuthProvider` + Redux. Guards: `RequireAuth` > `RequireRole`.
+- **API**: `axiosPrivate` (auto-token/refresh) or `axiosPublic`.
+- **Layout**: `flex-col` structure using `layouts/{Role}Layout.tsx` + `<Outlet />`.
+- **State**: Redux for global/auth; `useState` for transient UI state.
 
 ## Execution Priority (P0/P1/P2)
 ### P0 — Critical
@@ -61,7 +64,6 @@ Changes must follow the current architecture and avoid regression in:
    - Session expired: UI handler + cleanup `finalizeSession()`.
 **Rule:** Always test: login → expired token → refresh → logout.
 
-
 ## UI System
 - **Styling**:
   - CSS variables are defined in `globals.css`
@@ -75,14 +77,11 @@ Changes must follow the current architecture and avoid regression in:
 - **Icons**: `Lucide React` (always include explicit size: `w-5 h-5`).
 - **Feedback**: `react-toastify` for async operation results.
 
-
 ## API & Fetch Rules
 1. Define endpoint in `ApiConstant`.
 2. Do not call axios directly in pages except case was reviewed.
 3. Service function must be typed return (`Promise<...>`).
 4. Async form must include: loading, disable button, toast result/error.
-
----
 
 ## Performance Guidelines
 References:
