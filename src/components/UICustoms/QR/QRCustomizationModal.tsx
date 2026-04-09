@@ -53,7 +53,7 @@ const QRCustomizationModal: React.FC<QRCustomizationModalProps> = React.memo(({
     const onSaveClick = React.useCallback(() => {
         if (!isChanged) return;
         if (type === QRType.PUBLIC && !isAuthenticated) {
-            dispatch(openAuthModal());
+            dispatch(openAuthModal("Đăng nhập để lưu Customize vào thư viện của riêng bạn"));
         } else {
             setIsSaveModalOpen(true);
         }
@@ -86,7 +86,7 @@ const QRCustomizationModal: React.FC<QRCustomizationModalProps> = React.memo(({
 
     //#region Render
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-sm overflow-hidden font-primary isolate">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-sm overflow-hidden font-primary isolate">
             <div
                 className={cn(
                     "absolute inset-0 bg-background/45 backdrop-blur-2xl transition-opacity duration-500 ease-out",
@@ -96,18 +96,14 @@ const QRCustomizationModal: React.FC<QRCustomizationModalProps> = React.memo(({
             />
 
             <div className={cn(
-                "relative w-full max-w-5xl h-auto max-h-[92vh] bg-surface/90 backdrop-blur-xl border border-border/40 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] rounded-[3rem] overflow-hidden flex flex-col transition-all duration-700 cubic-bezier(0.16,1,0.3,1) transform-gpu",
-                (animState === 'open' || animState === 'opening') ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-12 scale-[0.96]",
+                "relative w-full max-w-5xl h-auto max-h-[92vh] bg-surface/90 backdrop-blur-xl border border-border/40 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] rounded-[3rem] overflow-hidden flex flex-col transition-opacity duration-300",
+                (animState === 'open' || animState === 'opening') ? "opacity-100" : "opacity-0",
                 animState === 'closing' && "pointer-events-none"
-            )}
-            style={{ 
-                willChange: 'transform, opacity, width, height, top, left',
-                backfaceVisibility: 'hidden'
-            }}>
+            )}>
 
                 <div className={cn(
                     "flex items-center justify-between px-8 py-6 border-b border-border/30 shrink-0 bg-surface/40 backdrop-blur-xl transition-all duration-500",
-                    animState === 'closing' ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+                    animState === 'closing' ? "opacity-0" : "opacity-100"
                 )}>
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20 animate-pulse-slow">
@@ -126,7 +122,10 @@ const QRCustomizationModal: React.FC<QRCustomizationModalProps> = React.memo(({
                     </button>
                 </div>
 
-                <div className="flex flex-1 min-h-0 flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-border/30 overflow-hidden">
+                <div className={cn(
+                    "flex flex-1 min-h-0 flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-border/30 overflow-hidden transition-all duration-700 cubic-bezier(0.16,1,0.3,1) transform-gpu",
+                    (animState === 'open' || animState === 'opening') ? "translate-y-0 scale-100" : "translate-y-12 scale-[0.98]"
+                )}>
                     <div className={cn(
                         "flex-[45%] bg-surface-muted/15 flex flex-col items-center justify-center p-12 relative transition-all duration-500",
                         animState === 'closing' && "bg-transparent opacity-0 scale-95"
@@ -266,7 +265,7 @@ const QRCustomizationModal: React.FC<QRCustomizationModalProps> = React.memo(({
                     </div>
                 </div>
 
-                <div className="px-10 py-8 border-t border-border/30 bg-surface/40 backdrop-blur-xl flex justify-end gap-5 shrink-0 animate-in slide-in-from-bottom-4 duration-700 delay-500 transition-opacity">
+                <div className="px-10 py-8 border-t border-border/30 bg-surface/40 backdrop-blur-xl flex justify-end gap-5 shrink-0 transition-opacity">
                     <Button
                         variant="ghost"
                         className={cn(
