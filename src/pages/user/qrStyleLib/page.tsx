@@ -158,7 +158,7 @@ const QrStyleLibPage: React.FC = () => {
                     />
                 </div>
 
-                <div className="min-h-0 flex-1 overflow-hidden">
+                <div className="flex-1 overflow-hidden">
                     <DataTable
                         loading={loading}
                         data={data}
@@ -268,7 +268,7 @@ const QrStyleLibPage: React.FC = () => {
             />
         </div>
     );
+    //#endregion
 };
-//#endregion
 
 export default QrStyleLibPage;

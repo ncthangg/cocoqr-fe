@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useResizable } from "@/hooks/useResizable";
 import AccountDrawer from "./components/AccountDrawer";
+import FeatureFuture from "@/components/UICustoms/FeatureFuture";
 
 //#region Constants
 const DEFAULT_FORM = {
@@ -355,49 +356,52 @@ const CreatePaymentPage: React.FC = () => {
                 refreshLoading={loading}
             />
 
-            {/* Left Column: QR Form */}
+            {/* Left Column: Form Section */}
             <div
-                className="flex flex-col gap-lg h-full min-h-0 overflow-y-auto px-lg py-md 
-                relative scrollbar-hidden animate-in fade-in
+                className="flex flex-col gap-lg h-full min-h-0 overflow-y-auto overflow-x-hidden px-lg py-md
+                flex-none min-w-[450px] scrollbar-hidden animate-in fade-in 
                 slide-in-from-left-4 duration-500"
-                style={{ width: `${leftPercent}%`, flexShrink: 0 }}
+                style={{ width: `${leftPercent}%` }}
             >
-                {/* Top: Title + Drawer Tag + Clear */}
-                <div className="flex items-center justify-between shrink-0 mb-sm">
-                    <div className="flex flex-col gap-1">
-                        <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Tạo QR</h1>
+                {/* Header Section */}
+                <div className="flex items-start justify-between gap-md shrink-0 mb-sm">
+                    <div className="flex flex-col gap-2 flex-1">
+                        <div className="flex items-center gap-4">
+                            <h1 className="text-3xl font-extrabold text-foreground tracking-tight whitespace-nowrap">Tạo QR</h1>
+                            <button
+                                onClick={handleOpenDrawer}
+                                className={cn(
+                                    "flex items-center gap-sm px-4 py-2 rounded-full text-[10px] font-black border transition-all duration-300 hover:shadow-lg active:scale-95 shrink-0",
+                                    selectedAccount
+                                        ? "bg-primary text-primary-foreground border-primary shadow-md"
+                                        : "bg-surface border-border/60 text-foreground-secondary hover:border-primary/40 hover:text-primary"
+                                )}
+                                aria-label="Mở danh sách tài khoản"
+                            >
+                                <BookUser className="w-3.5 h-3.5" />
+                                <span className="truncate max-w-[120px] lg:max-w-[180px] uppercase tracking-wider">
+                                    {selectedAccount
+                                        ? `${selectedAccount.accountHolder || selectedAccount.accountNumber}`
+                                        : "CHỌN TỪ DANH SÁCH"}
+                                </span>
+                                <ChevronRight className="w-3 h-3" />
+                            </button>
+                        </div>
                         <p className="text-sm text-foreground-muted font-medium">
-                            Nhập thông tin hoặc chọn từ danh sách để tạo mã QR thanh toán nhanh chóng.
+                            Nhập thông tin hoặc chọn từ danh sách để tạo mã QR nhanh chóng.
                         </p>
                     </div>
-                    <div className="flex items-center gap-md">
+
+                    <div className="flex items-center">
                         <button
-                            onClick={handleOpenDrawer}
-                            className={cn(
-                                "flex items-center gap-sm px-lg py-sm rounded-full text-xs font-bold border transition-all duration-300 hover:shadow-md",
-                                selectedAccount
-                                    ? "bg-primary text-primary-foreground border-primary shadow-md hover:scale-[1.02]"
-                                    : "bg-surface border-border text-foreground-secondary hover:border-primary hover:text-primary"
-                            )}
-                            aria-label="Mở danh sách tài khoản"
+                            className="p-2.5 text-foreground-secondary hover:text-danger hover:bg-danger/5 rounded-xl transition-all duration-300 group"
+                            onClick={handleClearForm}
+                            aria-label="Xóa thông tin"
+                            title="Xóa thông tin"
                         >
-                            <BookUser className="w-4 h-4" />
-                            <span className="truncate max-w-[180px]">
-                                {selectedAccount
-                                    ? `${selectedAccount.accountHolder || selectedAccount.accountNumber}`
-                                    : "Chọn từ danh sách tài khoản của bạn"}
-                            </span>
-                            <ChevronRight className="w-3.5 h-3.5" />
+                            <Eraser className="w-6 h-6 group-hover:rotate-12 transition-transform" />
                         </button>
                     </div>
-                    <button
-                        className="p-sm text-foreground-secondary hover:text-danger hover:bg-danger/5 rounded-md transition-all duration-300"
-                        onClick={handleClearForm}
-                        aria-label="Xóa thông tin"
-                        title="Xóa thông tin"
-                    >
-                        <Eraser className="w-5 h-5" />
-                    </button>
                 </div>
 
                 {/* Form Card */}
@@ -500,6 +504,12 @@ const CreatePaymentPage: React.FC = () => {
                         </Button>
                     </div>
                 </div>
+
+                {/* History placeholder */}
+                <FeatureFuture
+                    title="Lịch sử mã QR"
+                    description="Chúng tôi đang phát triển tính năng lưu trữ và quản lý lịch sử các mã QR bạn đã tạo."
+                />
             </div>
 
             {/* Resizable Splitter */}

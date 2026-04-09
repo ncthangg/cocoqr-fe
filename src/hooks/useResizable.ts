@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
  * Hook for resizable split-pane behavior.
  * Returns a ref, current left %, and a mouseDown handler for the divider.
  */
-export function useResizable(initialPercent = 40, min = 30, max = 70) {
+export function useResizable(initialPercent = 40, min = 30, max = 60) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [leftPercent, setLeftPercent] = useState(initialPercent);
 

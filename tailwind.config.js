@@ -87,7 +87,15 @@ export default {
                 dropdown: "40",
                 modal: "50",
                 toast: "60"
-            }
+            },
+            keyframes: {
+                shimmer: {
+                    '100%': { transform: 'translateX(100%)' },
+                },
+            },
+            animation: {
+                shimmer: 'shimmer 2.5s infinite',
+            },
         },
     },
     plugins: [],
