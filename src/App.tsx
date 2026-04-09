@@ -37,7 +37,11 @@ function App() {
   return (
     <>
       <RouterProvider router={router} />
-      <ToastContainer position="top-right" style={{ paddingTop: '80px' }} autoClose={3000} />
+      <ToastContainer 
+        position="top-right" 
+        style={{ top: '80px', zIndex: 99999 }}
+        autoClose={3000} 
+      />
     </>
   );
 }

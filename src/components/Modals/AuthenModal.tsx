@@ -23,7 +23,7 @@ const GoogleIcon: React.FC = () => (
 
 const AuthenModal: React.FC = () => {
     const dispatch = useAppDispatch();
-    const { isAuthModalOpen } = useAppSelector((state) => state.auth);
+    const { isAuthModalOpen, authModalTitle } = useAppSelector((state) => state.auth);
 
     const handleCloseModal = useCallback(() => {
         dispatch(closeAuthModal());
@@ -53,7 +53,7 @@ const AuthenModal: React.FC = () => {
 
     return (
         <div
-            className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-8 backdrop-blur-sm transition-all duration-300"
+            className="modal-overlay fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 px-4 py-8 backdrop-blur-sm transition-all duration-300"
             onClick={handleClose}
         >
             <div
@@ -83,15 +83,17 @@ const AuthenModal: React.FC = () => {
                     </div>
 
                     {/* Short text describe */}
-                    <p className="mx-auto text-sm text-foreground-muted">
-                        <span className="text-primary">
-                            Tạo mã QR thanh toán nhanh chóng.
-                        </span>
-                        <br />
-                        <span className="text-primary">
-                            Tạo phong cách mã QR của riêng bạn.
-                        </span>
-                    </p>
+                    {authModalTitle ? (
+                        <p className="mx-auto text-[15px] font-bold text-primary leading-relaxed max-w-[320px] animate-in fade-in duration-500">
+                            {authModalTitle}
+                        </p>
+                    ) : (
+                        <p className="mx-auto text-lg font-medium text-foreground-muted">
+                            <span className="text-primary tracking-tight">Tạo mã QR thanh toán nhanh chóng.</span>
+                            <br />
+                            <span className="text-primary tracking-tight">Tạo phong cách mã QR của riêng bạn.</span>
+                        </p>
+                    )}
 
                     {/* Button signin */}
                     <div>

@@ -35,11 +35,11 @@ const ContactMessagePage = lazy(() => import("@/pages/admin/contactMessage/page"
 
 const RootWrapper = () => (
     <UnauthorizedProvider>
-        <AuthenModal />
-        <RoleSelectionModal />
         <Suspense fallback={null}>
             <Outlet />
         </Suspense>
+        <AuthenModal />
+        <RoleSelectionModal />
     </UnauthorizedProvider>
 );
 
