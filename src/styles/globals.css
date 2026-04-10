@@ -577,3 +577,34 @@ body {
 .email-editor-container .ql-editor::-webkit-scrollbar-thumb:hover {
     @apply bg-border-strong/50;
 }
+
+/* =========================
+   AVATAR RING
+ ========================= */
+
+.avatar-wrap {
+    @apply inline-flex items-center justify-center relative transition-all duration-500 rounded-full;
+    width: 180px; 
+    height: 180px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-foreground));
+    padding: 3px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.avatar-wrap:hover {
+    @apply scale-105 shadow-lg;
+}
+
+.avatar-inner {
+    @apply w-full h-full rounded-full flex items-center justify-center overflow-hidden;
+    background-color: var(--color-surface);
+}
+
+.avatar-inner img {
+    @apply w-full h-full object-cover transition-transform duration-700;
+}
+
+.avatar-inner:hover img {
+    @apply scale-110;
+}

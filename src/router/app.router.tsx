@@ -33,6 +33,10 @@ const SmtpSettingsPage = lazy(() => import("@/pages/admin/smtpSettings/page"))
 const EmailTemplatePage = lazy(() => import("@/pages/admin/emailTemplate/page"))
 const ContactMessagePage = lazy(() => import("@/pages/admin/contactMessage/page"))
 
+const GuidePage = lazy(() => import("@/pages/share/guide/page"))
+const CommitmentPage = lazy(() => import("@/pages/share/commitment/page"))
+const AboutPage = lazy(() => import("@/pages/share/about/page"))
+
 const RootWrapper = () => (
     <UnauthorizedProvider>
         <Suspense fallback={null}>
@@ -51,6 +55,9 @@ export const router = createBrowserRouter([
         children: [
             // ─── PUBLIC ROUTES ──────────────────────────────────────────────
             { index: true, element: <RootRoute /> },
+            { path: RouteConstant.GUIDE, element: <GuidePage /> },
+            { path: RouteConstant.COMMITMENT, element: <CommitmentPage /> },
+            { path: RouteConstant.ABOUT, element: <AboutPage /> },
 
             // ─── USER ROUTES (Role = "user") ──────────────────────────────────
             {

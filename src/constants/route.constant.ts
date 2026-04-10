@@ -20,5 +20,10 @@ export const RouteConstant = {
     ACCOUNTS: "accounts",
     QR_HISTORY: "qr-history",
     USER_QR_STYLE_LIB: "qr-style-lib",
+
+    // SHARE
+    GUIDE: "/guide",
+    COMMITMENT: "/commitment",
+    ABOUT: "/about",
 };
 
