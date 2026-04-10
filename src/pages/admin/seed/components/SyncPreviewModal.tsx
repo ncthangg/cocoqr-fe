@@ -107,8 +107,6 @@ const SyncPreviewModal: React.FC<SyncPreviewModalProps> = ({
     headerIcon,
     fetchPreview: fetchPreviewFn,
     executeSync,
-    syncSuccessMessage = "Đồng bộ thành công!",
-    syncErrorMessage = "Đồng bộ thất bại.",
 }) => {
     //#region States & Refs
     const [loading, setLoading] = useState(false);
