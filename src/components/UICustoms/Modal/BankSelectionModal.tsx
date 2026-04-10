@@ -49,7 +49,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                 pageSize: paging.pageSize,
                 sortField: sortField,
                 sortDirection: sortDir,
-                isActive: true,
+                isActive: null,
                 searchValue: debouncedSearch || null,
                 status: null
             });

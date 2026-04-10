@@ -65,9 +65,9 @@ interface ModalProps {
 - Close on **Escape** key
 - Close on **overlay click** (attach handler to overlay div)
 - `stopPropagation` on the content div to prevent overlay click from firing inside the modal
+- Deactive button create/update when form is invalid or the field not changed with original value
 
 ## Performance
- 
 - `return null` early when `!isOpen` — avoids rendering hidden modals
 - Wrap overlay click handler in `useCallback`
 - Export with `React.memo`

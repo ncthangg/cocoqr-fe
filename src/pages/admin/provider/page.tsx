@@ -2,8 +2,6 @@ import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from
 import { providerApi } from "@/services/provider-api.service";
 import type { ProviderRes } from "@/models/entity.model";
 import { Edit, Wallet } from "lucide-react";
-import { toast } from "react-toastify";
-
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import type { Column } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
@@ -32,9 +30,6 @@ const ProviderPage: React.FC = () => {
             if (res) {
                 setAllProviders(res);
             }
-        } catch (error) {
-            console.error("Error fetching providers:", error);
-            toast.error("Không thể tải dữ liệu provider.");
         } finally {
             setLoading(false);
         }

@@ -63,9 +63,6 @@ export function CreatePanel({ isOpen, availableTypes, onCreated, onClose }: Crea
         try {
             const res = await smtpSettingApi.put({ ...form, type: selectedType });
             onCreated(res);
-            toast.success(`Đã tạo cấu hình SMTP ${selectedType} thành công.`);
-        } catch {
-            toast.error("Tạo cấu hình thất bại. Vui lòng thử lại.");
         } finally {
             setSaving(false);
         }

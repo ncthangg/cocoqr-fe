@@ -45,7 +45,6 @@ const SaveStyleModal: React.FC<SaveStyleModalProps> = ({ isOpen, onClose, curren
                 isActive: true
             };
             await qrStyleLibApi.post(req);
-            toast.success("Đã lưu phong cách mới thành công ✨");
             setStyleName("");
             onClose();
         } finally {

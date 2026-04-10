@@ -78,9 +78,6 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, onStatusCh
             );
             setDetail(prev => prev ? { ...prev, status: newStatus } : prev);
             onStatusChanged?.(user.id, newStatus);
-        } catch (error) {
-            console.error("Error toggling user status:", error);
-            toast.error("Không thể thực hiện thao tác. Vui lòng thử lại.");
         } finally {
             setActionLoading(false);
             setIsConfirmOpen(false);

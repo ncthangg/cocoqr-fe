@@ -75,7 +75,7 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
             toast.warning("Vui lòng đợi 5 giây trước khi thực hiện thao tác tiếp theo.");
             return;
         }
-        
+
         if (!formData.providerId) {
             toast.warning("Vui lòng chọn loại tài khoản.");
             return;
@@ -115,10 +115,6 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
             if (onQrCreated) {
                 onQrCreated(res);
             }
-            toast.success("Tạo mã QR thành công!");
-        } catch (error) {
-            console.error("Error creating QR:", error);
-            toast.error("Tạo mã QR thất bại.");
         } finally {
             setQrLoading(false);
         }

@@ -4,7 +4,6 @@ import {
     Clock, CheckCircle2, XCircle, AlertCircle, BadgeDollarSign,
     Tag, FileText, Layers, Wallet, ShieldCheck,
 } from "lucide-react";
-import { toast } from "react-toastify";
 import { qrApi } from "@/services/qr-api.service";
 import type { QrRes } from "@/models/entity.model";
 import ModalLoading from "@/components/UICustoms/Modal/ModalLoading";
@@ -129,10 +128,6 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
             setLoading(true);
             const res = await qrApi.getById(id);
             setDetail(res);
-        } catch (error) {
-            console.error("Error fetching QR history detail:", error);
-            toast.error("Không thể tải chi tiết lịch sử QR.");
-            onClose();
         } finally {
             setLoading(false);
         }

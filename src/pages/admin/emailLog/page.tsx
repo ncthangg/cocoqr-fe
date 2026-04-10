@@ -3,7 +3,6 @@ import { emailLogApi } from "@/services/email-log-api.service";
 import type { GetEmailLogReq } from "@/models/entity.request.model";
 import type { PagingVM, GetEmailLogRes, GetEmailLogByIdRes } from "@/models/entity.model";
 import { SmtpSettingType, EmailLogStatus, EmailDirection } from "@/models/enum";
-import { toast } from "react-toastify";
 import { DataTable, type Column } from "@/components/UICustoms/Table/data-table";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -87,9 +86,6 @@ const EmailLogPage: React.FC = () => {
                     setLogs(res.list || []);
                     setPaging(res);
                 }
-            } catch (error) {
-                console.error("Error fetching email logs:", error);
-                toast.error("Không thể tải email logs data.");
             } finally {
                 setLoading(false);
             }
@@ -122,8 +118,6 @@ const EmailLogPage: React.FC = () => {
             const detail = await emailLogApi.getById(log.id);
             setSelectedLog(detail);
             setIsModalOpen(true);
-        } catch {
-            toast.error("Không thể lấy chi tiết email");
         } finally {
             setFetchingDetailId(null);
         }

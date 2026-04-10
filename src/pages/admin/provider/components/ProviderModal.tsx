@@ -78,7 +78,6 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
             if (provider) {
                 reqFormData.append("isDeleteFile", String(!file && !previewUrl));
                 await providerApi.put(provider.id, reqFormData as any);
-                toast.success("Cập nhật provider thành công!");
                 const updatedProvider: ProviderRes = {
                     ...provider,
                     code: formData.code,
@@ -91,9 +90,6 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                 toast.error("Tính năng tạo mới provider chưa được triển khai!");
             }
             onClose();
-        } catch (error) {
-            console.error("Error saving provider:", error);
-            toast.error("Có lỗi xảy ra khi lưu provider.");
         } finally {
             setLoading(false);
         }

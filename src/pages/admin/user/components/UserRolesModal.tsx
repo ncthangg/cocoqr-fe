@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { userRoleApi } from "../../../../services/userRole-api.service";
 
 import type { GetUserBaseRes } from "../../../../models/entity.model";
-import { toast } from "react-toastify";
 import { X, Shield, Plus, Trash2 } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
 import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
@@ -48,9 +47,6 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
             const roles = data || [];
             setUserRoles(roles);
             if (onRolesUpdate) onRolesUpdate(user.id, roles);
-        } catch (error) {
-            console.error("Failed to fetch roles for user", error);
-            toast.error(`Không thể tải role cho ${user.fullName}`);
         } finally {
             setLoading(false);
         }
@@ -70,12 +66,8 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
                 roleIds: Array.from(new Set(updatedRoleIds))
             });
 
-            toast.success("Thêm role thành công!");
             setSelectedRoleToAdd("");
             fetchUserRoles();
-        } catch (error) {
-            console.error("Failed to add role", error);
-            toast.error("Thêm role thất bại.");
         } finally {
             setIsSubmitting(false);
         }
@@ -99,13 +91,9 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
                 roleIds: updatedRoleIds
             });
 
-            toast.success("Xóa role thành công!");
             fetchUserRoles();
             setIsDeleteModalOpen(false);
             setRoleToRemove(null);
-        } catch (error) {
-            console.error("Failed to remove role", error);
-            toast.error("Xóa role thất bại.");
         } finally {
             setIsSubmitting(false);
         }

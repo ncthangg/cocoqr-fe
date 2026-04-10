@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback, useMemo, useRef, lazy, Suspens
 import { userApi } from "@/services/user-api.service";
 import { roleApi } from "@/services/role-api.service";
 import type { PagingVM, GetUserBaseRes, RoleRes } from "@/models/entity.model";
-import { toast } from "react-toastify";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import type { Column } from "@/components/UICustoms/Table/data-table";
@@ -87,9 +86,6 @@ const UserPage: React.FC = () => {
                 setUsers(res.list || []);
                 setPaging(res);
             }
-        } catch (error) {
-            console.error("Error fetching users:", error);
-            toast.error("Không thể tải users data.");
         } finally {
             setLoading(false);
         }

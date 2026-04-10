@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { Eye, Wallet } from "lucide-react";
-import { toast } from "react-toastify";
 import { qrApi } from "@/services/qr-api.service";
 import { providerApi } from "@/services/provider-api.service";
 import type { QrRes, PagingVM, ProviderRes } from "@/models/entity.model";
@@ -72,9 +71,6 @@ const AdminHistoryPage: React.FC = () => {
                 setRecords(res.list || []);
                 setPaging(res);
             }
-        } catch (err) {
-            console.error("Error fetching QR history (admin):", err);
-            toast.error("Không thể tải lịch sử QR.");
         } finally {
             setLoading(false);
         }

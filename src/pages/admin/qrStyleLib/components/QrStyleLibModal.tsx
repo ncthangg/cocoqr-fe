@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { X, Palette, LayoutGrid, Image as ImageIcon, Eye, EyeOff, Upload, Trash2, Check, Save, Circle, ShieldCheck } from "lucide-react";
 import QRCodeStyling, { type DotType, type CornerSquareType } from "qr-code-styling";
-import { toast } from "react-toastify";
 import Button from "@/components/UICustoms/Button";
 import { qrStyleLibApi } from "@/services/qrStyleLib-api.service";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
@@ -151,17 +150,12 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
 
             if (item) {
                 await qrStyleLibApi.put(item.id, payload);
-                toast.success("Cập nhật QR Style hệ thống thành công! ✨");
             } else {
                 await qrStyleLibApi.post(payload);
-                toast.success("Đã tạo QR Style hệ thống mới! ✨");
             }
 
             onSuccess();
             onClose();
-        } catch (error) {
-            console.error("Error saving system style:", error);
-            toast.error("Không thể lưu QR Style hệ thống.");
         } finally {
             setLoading(false);
             setIsConfirmOpen(false);
@@ -173,12 +167,10 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
         try {
             setIsDeletingModal(true);
             await qrStyleLibApi.delete(item.id);
-            toast.success("Đã xóa QR Style hệ thống.");
             onSuccess();
             onClose();
         } catch (error) {
             console.error("Error deleting style:", error);
-            toast.error("Không thể xóa QR Style.");
         } finally {
             setIsDeletingModal(false);
             setIsDeleteConfirmOpen(false);

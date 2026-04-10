@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import { accountApi } from "../../../../services/account-api.service";
 import { providerApi } from "../../../../services/provider-api.service";
 import type { AccountRes, GetUserBaseRes, PagingVM, ProviderRes } from "../../../../models/entity.model";
-import { toast } from "react-toastify";
 import { X, Wallet, Eye } from "lucide-react";
 import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
@@ -94,9 +93,6 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                 setAccounts(res.list || []);
                 setPaging(res);
             }
-        } catch (error) {
-            console.error("Error fetching accounts:", error);
-            toast.error("Không thể tải danh sách tài khoản.");
         } finally {
             setLoading(false);
         }

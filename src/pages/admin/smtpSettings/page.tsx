@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { toast } from "react-toastify";
 import { Server, Loader2, Plus } from "lucide-react";
 import type { SmtpSettingRes } from "@/models/entity.model";
 import { smtpSettingApi } from "@/services/smtp-setting-api.service";
@@ -28,8 +27,6 @@ const SmtpSettingsPage: React.FC = () => {
                 if (key) map[key] = { ...s, type: key };
             });
             setSettingsMap(map);
-        } catch {
-            toast.error("Không thể tải cài đặt SMTP.");
         } finally {
             setLoading(false);
         }

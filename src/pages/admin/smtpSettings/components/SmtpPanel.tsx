@@ -65,10 +65,7 @@ export const SmtpPanel = React.memo(function SmtpPanel({
         try {
             const res = await smtpSettingApi.put({ ...form, type });
             onSaved(res);
-            toast.success(`Đã lưu cài đặt ${meta.label} thành công.`);
             onCancelEdit();
-        } catch {
-            toast.error("Lưu cài đặt thất bại. Vui lòng thử lại.");
         } finally {
             setSavingEdit(false);
         }
@@ -81,9 +78,6 @@ export const SmtpPanel = React.memo(function SmtpPanel({
         setTestLoading(true);
         try {
             await smtpSettingApi.test({ ...testForm, type });
-            toast.success(`Email kiểm tra đã được gửi tới ${testForm.toEmail}!`);
-        } catch {
-            toast.error("Gửi email kiểm tra thất bại.");
         } finally {
             setTestLoading(false);
         }
@@ -93,10 +87,7 @@ export const SmtpPanel = React.memo(function SmtpPanel({
         setDeleting(true);
         try {
             await smtpSettingApi.delete(setting.id);
-            toast.success(`Đã xóa cài đặt ${meta.label}.`);
             onDeleted(type);
-        } catch {
-            toast.error("Xóa cài đặt thất bại. Vui lòng thử lại.");
         } finally {
             setDeleting(false);
             setShowDeleteModal(false);

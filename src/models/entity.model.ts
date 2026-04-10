@@ -95,7 +95,7 @@ export interface AccountRes extends BaseRes {
     providerStatus?: boolean;
 
     balance?: number;
-    isPinned?: boolean;
+    isPinned: boolean;
     isActive: boolean;
 }
 

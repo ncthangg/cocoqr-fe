@@ -48,7 +48,6 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
 
     const formData = watch();
 
-
     //#region Handlers
     const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
@@ -73,7 +72,6 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
                 description: values.description.trim() || null,
                 isActive: values.isActive,
             });
-            toast.success("Cập nhật template thành công!");
 
             const updatedTemplate: EmailTemplateRes = {
                 ...template,

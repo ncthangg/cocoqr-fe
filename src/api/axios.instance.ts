@@ -47,6 +47,9 @@ const axiosPublic = axios.create({
 
 axiosPublic.interceptors.response.use(
     (response) => {
+        if (response.data && response.data.code === "SUCCESS" && response.data.message) {
+            toast.success(response.data.message);
+        }
         return response.data;
     },
     async (error) => {
@@ -79,6 +82,9 @@ axiosPrivate.interceptors.request.use(
 
 axiosPrivate.interceptors.response.use(
     (response) => {
+        if (response.data && response.data.code === "SUCCESS" && response.data.message) {
+            toast.success(response.data.message);
+        }
         return response.data;
     },
     async (error) => {

@@ -78,11 +78,8 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
                 smtpType: smtpType ? (smtpType as SmtpSettingType) : null,
                 templateKey: selectedTemplateKey || null
             });
-            toast.success("Đã gửi email reply thành công!");
             if (onSuccess) onSuccess();
             onClose();
-        } catch (err: any) {
-            toast.error(err?.response?.data?.message || "Lỗi khi gửi email. Vui lòng thử lại sau.");
         } finally {
             setSubmitting(false);
         }

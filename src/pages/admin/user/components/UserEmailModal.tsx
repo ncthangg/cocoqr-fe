@@ -5,7 +5,6 @@ import { adminContactApi } from "@/services/admin-contact-api.service";
 import { emailTemplateApi } from "@/services/email-template-api.service";
 import type { AdminPostContactReq } from "@/models/entity.request.model";
 import { SmtpSettingType } from "@/models/enum";
-import { toast } from "react-toastify";
 import {
     X,
     Mail,
@@ -129,8 +128,6 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
             const detail = await emailLogApi.getById(id);
             setSelectedLog(detail);
             setIsFormView(false);
-        } catch (error) {
-            toast.error("Không thể lấy chi tiết email");
         } finally {
             setFetchingDetailId(null);
         }
@@ -152,16 +149,12 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
             };
 
             await adminContactApi.post(payload);
-            toast.success("Email đã được gửi thành công!");
             setSubject("");
             setContent("");
             setSmtpType("");
             setIsFormView(false);
             setPaging(prev => ({ ...prev, pageNumber: 1 }));
             fetchHistory(1, paging.pageSize, debouncedSubject);
-        } catch (error) {
-            console.error("Error sending email", error);
-            toast.error("Gửi email thất bại. Vui lòng thử lại.");
         } finally {
             setSubmitting(false);
         }

@@ -93,7 +93,6 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                 reqFormData.append("isDeleteFile", String(!file && !previewUrl));
 
                 await bankApi.put(bank.id, reqFormData as any);
-                toast.success("Cập nhật ngân hàng thành công!");
                 const updatedBank: BankRes = {
                     ...bank,
                     isActive: formData.isActive,
@@ -102,9 +101,6 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                 onSuccess(updatedBank);
             }
             onClose();
-        } catch (error) {
-            console.error("Error saving bank:", error);
-            toast.error("Có lỗi xảy ra khi lưu ngân hàng.");
         } finally {
             setLoading(false);
         }

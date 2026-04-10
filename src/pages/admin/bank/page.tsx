@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from
 import { bankApi } from "@/services/bank-api.service";
 import type { BankRes, PagingVM } from "@/models/entity.model";
 import { Edit, Wallet } from "lucide-react";
-import { toast } from "react-toastify";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
@@ -55,9 +54,6 @@ const BankPage: React.FC = () => {
                 setBanks(res.list || []);
                 setPaging(res);
             }
-        } catch (error) {
-            console.error("Error fetching banks:", error);
-            toast.error("Không thể tải dữ liệu ngân hàng.");
         } finally {
             setLoading(false);
         }

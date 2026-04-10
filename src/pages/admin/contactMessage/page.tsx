@@ -84,8 +84,6 @@ const ContactMessagePage: React.FC = () => {
                 setMessages(response.list || []);
                 setPaging(response);
             }
-        } catch {
-            toast.error("Không thể tải danh sách liên hệ.");
         } finally {
             setLoading(false);
         }
@@ -116,8 +114,6 @@ const ContactMessagePage: React.FC = () => {
                 const detail = await adminContactApi.getById(msg.id);
                 setDetailMessage(detail);
                 setIsDetailOpen(true);
-            } catch {
-                toast.error("Không thể tải chi tiết liên hệ.");
             } finally {
                 setFetchingId(null);
             }
@@ -134,7 +130,6 @@ const ContactMessagePage: React.FC = () => {
         if (!ignoringId) return;
         try {
             await adminContactApi.patchIgnore(ignoringId);
-            toast.success("Đã bỏ qua liên hệ.");
             fetchMessages();
             setIsConfirmOpen(false);
             setIgnoringId(null);

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { Eye, Wallet } from "lucide-react";
-import { toast } from "react-toastify";
 import { accountApi } from "@/services/account-api.service";
 import { providerApi } from "@/services/provider-api.service";
 import type { AccountRes, ProviderRes } from "@/models/entity.model";
@@ -83,9 +82,6 @@ const AccountsPage: React.FC = () => {
                 setAccounts(res.list || []);
                 setPaging(res);
             }
-        } catch (error) {
-            console.error("Error fetching accounts:", error);
-            toast.error("Không thể tải danh sách tài khoản.");
         } finally {
             setLoading(false);
         }

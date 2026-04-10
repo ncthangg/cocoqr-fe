@@ -144,7 +144,6 @@ const QRDisplay: React.FC<QRDisplayProps> = ({
             setIsCopied(true);
             setTimeout(() => setIsCopied(false), 3000);
         } catch (error) {
-            console.error("Failed to copy image:", error);
             toast?.error("Không thể copy hình ảnh.");
             setIsCopied(true);
             setTimeout(() => setIsCopied(false), 3000);
@@ -206,8 +205,8 @@ const QRDisplay: React.FC<QRDisplayProps> = ({
     // 1. Core QR Logic: Sync instance options with style state (Single Instance)
     useEffect(() => {
         if (!qrData && !qrImageUrl) return;
-        
-        const PREVIEW_QUALITY = 512; 
+
+        const PREVIEW_QUALITY = 512;
         const opts = {
             width: PREVIEW_QUALITY, height: PREVIEW_QUALITY,
             data: qrData || qrImageUrl || "https://cocoqr.vn",
@@ -231,8 +230,8 @@ const QRDisplay: React.FC<QRDisplayProps> = ({
     useEffect(() => {
         if (!qrCodeRef.current) return;
 
-        const targetRef = (animState === 'open' || animState === 'opening' || animState === 'closing') 
-            ? modalQrPreviewRef 
+        const targetRef = (animState === 'open' || animState === 'opening' || animState === 'closing')
+            ? modalQrPreviewRef
             : qrPreviewRef;
 
         if (targetRef.current) {
@@ -296,8 +295,8 @@ const QRDisplay: React.FC<QRDisplayProps> = ({
                                 onClick={handleCustomClick}
                                 className={cn(
                                     "flex items-center gap-2.5 px-6 py-2.5 rounded-full text-[12px] font-black border transition-all duration-300 shadow-md active:scale-95 group",
-                                    animState !== 'closed' 
-                                        ? "bg-primary text-primary-foreground border-primary shadow-primary/20" 
+                                    animState !== 'closed'
+                                        ? "bg-primary text-primary-foreground border-primary shadow-primary/20"
                                         : "bg-surface border-border/60 text-foreground-secondary hover:border-primary/50 hover:text-primary hover:shadow-lg hover:shadow-primary/5"
                                 )}
                                 disabled={!qrData && !qrImageUrl}

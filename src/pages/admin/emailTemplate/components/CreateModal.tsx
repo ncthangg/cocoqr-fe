@@ -70,7 +70,6 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
                 description: description.trim() || null,
                 isActive,
             });
-            toast.success("Tạo template thành công!");
             resetForm();
 
             const newTemplate: EmailTemplateRes = {

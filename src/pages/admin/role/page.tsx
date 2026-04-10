@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from
 import { roleApi } from "@/services/role-api.service";
 import type { RoleRes } from "@/models/entity.model";
 import { Eye, Wallet } from "lucide-react";
-import { toast } from "react-toastify";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import type { Column } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
@@ -29,9 +28,6 @@ const RolePage: React.FC = () => {
             if (res) {
                 setAllRoles(res || []);
             }
-        } catch (error) {
-            console.error("Error fetching roles:", error);
-            toast.error("Không thể tải dữ liệu role.");
         } finally {
             setLoading(false);
         }

@@ -42,8 +42,6 @@ const QrStyleLibPage: React.FC = () => {
             if (res) {
                 setData(res);
             }
-        } catch (error) {
-            toast.error("Không thể tải dữ liệu QR Style.");
         } finally {
             setLoading(false);
         }
@@ -74,12 +72,8 @@ const QrStyleLibPage: React.FC = () => {
         try {
             setIsDeleting(true);
             await qrStyleLibApi.delete(itemToDelete.id);
-            toast.success("Đã xóa QR Style thành công.");
             setItemToDelete(null);
             fetchItems();
-        } catch (error) {
-            console.error("Error deleting QR style:", error);
-            toast.error("Không thể xóa QR Style.");
         } finally {
             setIsDeleting(false);
         }

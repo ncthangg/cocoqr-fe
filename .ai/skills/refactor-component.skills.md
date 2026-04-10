@@ -24,3 +24,4 @@ description: Standardize UI styling and component structure.
 - **Types**: Purge all `any` usages. Ensure properties match `src/models/*.model.ts`.
 - **Icons**: Extract raw bloated SVG strings; substitute with standardized `lucide-react` icons.
 - **Standards**: Verify the output strictly aligns with `.ai/rules/react.rules.md`.
+- **Select-none**: Add `select-none cursor-default` to all static text elements.

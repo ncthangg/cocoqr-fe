@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { emailTemplateApi } from "@/services/email-template-api.service";
 import type { EmailTemplateRes } from "@/models/entity.model";
-import { toast } from "react-toastify";
 import { DataTable, type Column } from "@/components/UICustoms/Table/data-table";
 import { formatDateTime } from "@/utils/dateTimeUtils";
 import { FileText, Plus, Eye, Pencil, Trash2 } from "lucide-react";
@@ -38,8 +37,6 @@ const EmailTemplatePage: React.FC = () => {
             if (res) {
                 setTemplates(res);
             }
-        } catch {
-            toast.error("Không thể tải danh sách email templates.");
         } finally {
             setLoading(false);
         }
@@ -69,13 +66,9 @@ const EmailTemplatePage: React.FC = () => {
         try {
             setDeletingId(selectedTemplate.id);
             await emailTemplateApi.delete(selectedTemplate.id);
-            toast.success("Đã xóa template.");
             setTemplates(prev => prev.filter(t => t.id !== selectedTemplate.id));
             setIsConfirmOpen(false);
             setSelectedTemplate(null);
-        } catch (err: unknown) {
-            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-            toast.error(message || "Không thể xóa template.");
         } finally {
             setDeletingId(null);
         }

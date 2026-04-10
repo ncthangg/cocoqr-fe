@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { X, Landmark, User, CreditCard, Hash, Calendar, Wallet, ShieldCheck, ShieldOff, LayoutDashboard, Lock, LockOpen } from "lucide-react";
-import { toast } from "react-toastify";
 import { accountApi } from "@/services/account-api.service";
 import type { AccountRes } from "@/models/entity.model";
 import ModalLoading from "@/components/UICustoms/Modal/ModalLoading";
@@ -56,10 +55,6 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
             setLoading(true);
             const res = await accountApi.getById(id);
             if (res) setDetail(res);
-        } catch (error) {
-            console.error("Error fetching account detail:", error);
-            toast.error("Không thể tải thông tin chi tiết tài khoản.");
-            onClose();
         } finally {
             setLoading(false);
         }
@@ -87,12 +82,8 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
             setActionLoading(true);
             const newStatus = !detail.status;
             await accountApi.updateStatus(accountId, newStatus);
-            toast.success(newStatus ? "Đã mở khóa tài khoản thành công." : "Đã khóa tài khoản thành công.");
             setDetail(prev => prev ? { ...prev, status: newStatus } : prev);
             onStatusChanged?.(accountId, newStatus);
-        } catch (error) {
-            console.error("Error toggling account status:", error);
-            toast.error("Không thể thực hiện thao tác. Vui lòng thử lại.");
         } finally {
             setActionLoading(false);
             setIsConfirmOpen(false);

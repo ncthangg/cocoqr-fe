@@ -48,11 +48,8 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
                 status: status
             });
 
-            toast.success("Cập nhật trạng thái Role thành công!");
             onSuccess?.({ ...role, status });
             onClose();
-        } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Lỗi khi cập nhật Role.");
         } finally {
             setLoading(false);
             setIsConfirmOpen(false);
