@@ -60,7 +60,7 @@ const AuthenModal: React.FC = () => {
                 className="modal-content max-w-modal-md relative flex flex-col overflow-hidden rounded-2xl bg-surface p-0 shadow-2xl duration-200 animate-in zoom-in-95"
                 onClick={handleStopPropagation}
             >
-                <div className="relative flex w-full flex-col items-center justify-center gap-6 p-8 text-center sm:p-12">
+                <div className="relative flex w-full flex-col items-center justify-center gap-6 p-8 text-center sm:p-12 select-none cursor-default">
                     <button
                         type="button"
                         onClick={handleClose}

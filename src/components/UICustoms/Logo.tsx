@@ -15,7 +15,7 @@ const Logo = ({ className = "h-9 w-9", size, variant = "auto" }: LogoProps) => {
             <img
                 src="/qr-code-dark.svg"
                 alt="CocoQR"
-                className={cn(className)}
+                className={cn(className, "select-none cursor-default")}
                 style={style}
             />
         );
@@ -26,7 +26,7 @@ const Logo = ({ className = "h-9 w-9", size, variant = "auto" }: LogoProps) => {
             <img
                 src="/qr-code-light.svg"
                 alt="CocoQR"
-                className={cn(className)}
+                className={cn(className, "select-none cursor-default")}
                 style={style}
             />
         );

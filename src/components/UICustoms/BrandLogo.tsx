@@ -69,7 +69,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({
     return (
         <div
             className={cn(
-                "flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300",
+                "flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300 select-none cursor-default",
                 // Brand logos usually require white background to look correct
                 !transparent && logoUrl ? "bg-white" : "bg-transparent",
                 size !== "none" && sizeClasses[size],

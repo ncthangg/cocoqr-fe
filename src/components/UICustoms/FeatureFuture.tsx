@@ -31,7 +31,7 @@ const FeatureFuture: React.FC<FeatureFutureProps> = ({
         <div
             className={cn(
                 'relative flex flex-col items-center justify-center overflow-hidden transition-all duration-500',
-                'animate-in fade-in zoom-in duration-700',
+                'animate-in fade-in zoom-in duration-700 select-none cursor-default',
                 isFull
                     ? 'min-h-[60vh] w-full p-2xl'
                     : 'card min-h-64 w-full bg-surface-muted/30 backdrop-blur-sm',
