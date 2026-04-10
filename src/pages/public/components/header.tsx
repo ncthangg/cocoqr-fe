@@ -14,8 +14,8 @@ export function Header() {
     return (
         <header className="sticky top-0 z-50 border-b border-border bg-surface/80 backdrop-blur-md">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-lg py-md">
-                <div className="flex items-center gap-xl lg:gap-2xl">
-                    <a href="#hero" className="flex items-center shrink-0 gap-sm">
+                <div className="flex items-center gap-xl lg:gap-2xl select-none cursor-pointer">
+                    <a href="#hero" className="flex items-center shrink-0 gap-sm ">
                         <Logo />
                     </a>
                     <nav className={`hidden items-center gap-lg md:flex ${isRoleSelectionModalOpen ? 'pointer-events-none opacity-50' : ''}`}>

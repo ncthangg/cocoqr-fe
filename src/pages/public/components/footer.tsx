@@ -23,7 +23,7 @@ export function Footer() {
     //#region Render
     return (
         <footer className="border-t border-border bg-surface">
-            <div className="mx-auto flex max-w-6xl flex-col items-center gap-lg px-lg py-xl md:flex-row md:justify-between">
+            <div className="mx-auto flex max-w-6xl flex-col items-center gap-lg px-lg py-xl md:flex-row md:justify-between select-none cursor-pointer">
                 <div className="flex items-center gap-sm">
                     <a href="#hero" className="flex items-center shrink-0 gap-sm">
                         <Logo />
