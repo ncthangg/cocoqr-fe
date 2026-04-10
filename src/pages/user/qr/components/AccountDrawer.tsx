@@ -25,7 +25,7 @@ interface AccountDrawerProps {
     onSelectAccount: (acc: AccountRes) => void;
     onPageChange: (page: number) => void;
     onPageSizeChange: (size: number) => void;
-    onOpenPin: (acc: AccountRes) => void;
+    handlePinAccount: (acc: AccountRes) => void;
     onRefresh: () => void;
     refreshLoading: boolean;
 }
@@ -46,7 +46,7 @@ const AccountDrawer: React.FC<AccountDrawerProps> = ({
     onSelectAccount,
     onPageChange,
     onPageSizeChange,
-    onOpenPin,
+    handlePinAccount,
     onRefresh,
     refreshLoading,
 }) => {
@@ -72,11 +72,11 @@ const AccountDrawer: React.FC<AccountDrawerProps> = ({
     const columns = useMemo<Column<AccountRes>[]>(
         () => [
             {
-                header: "TÀI KHOẢN",
+                header: "THÔNG TIN TÀI KHOẢN",
                 accessor: (acc) => acc.accountHolder,
                 type: "string",
                 cell: (acc) => (
-                    <div className="flex items-center gap-md">
+                    <div className="flex items-center gap-md py-1">
                         <BrandLogo
                             logoUrl={acc.bankLogoUrl ?? acc.providerLogoUrl}
                             name={acc.bankShortName || acc.providerName}
@@ -84,38 +84,44 @@ const AccountDrawer: React.FC<AccountDrawerProps> = ({
                             size="sm"
                         />
                         <div className="flex flex-col min-w-0">
-                            <span className="font-semibold text-foreground text-base leading-tight uppercase truncate">
-                                {acc.accountHolder}
-                            </span>
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <span className="font-bold text-foreground text-sm uppercase truncate max-w-[200px]">
+                                    {acc.accountHolder}
+                                </span>
+                                {(acc.bankIsActive === false || acc.providerIsActive === false) && (
+                                    <span className="px-1.5 py-0.5 bg-danger/10 text-danger font-bold text-[9px] uppercase rounded-md animate-pulse border border-danger/20 shrink-0">
+                                        BẢO TRÌ
+                                    </span>
+                                )}
+                            </div>
                             <span className="text-xs text-foreground-muted truncate">
                                 {acc.bankCode && acc.bankName ? acc.bankName : acc.providerName}
                                 {" · "}
-                                {acc.accountNumber}
+                                <span className="font-primary font-semibold text-foreground">{acc.accountNumber}</span>
                             </span>
                         </div>
-                        {(acc.bankIsActive === false || acc.providerIsActive === false) && (
-                            <span className="px-sm py-2xs bg-danger/10 text-danger font-bold text-[9px] uppercase rounded-md animate-pulse ml-auto border border-danger/20 shrink-0">
-                                Bảo trì
-                            </span>
-                        )}
                     </div>
                 ),
             },
             {
-                header: "PIN",
+                header: "GHIM",
                 accessor: (acc) => acc.isPinned,
                 type: "boolean",
                 cell: (acc) => (
-                    <ActionButton
-                        icon={<Pin className={cn("w-4 h-4", acc.isPinned && "fill-amber-500")} />}
-                        onClick={() => onOpenPin(acc)}
-                        color={acc.isPinned ? "amber" : "gray"}
-                        title={acc.isPinned ? "Bỏ ghim" : "Ghim"}
-                    />
+                    <div className="flex justify-center w-full">
+                        <ActionButton
+                            icon={<Pin className={cn("w-4 h-4", acc.isPinned && "fill-amber-500 text-amber-500")} />}
+                            onClick={() => {
+                                handlePinAccount(acc);
+                            }}
+                            color={acc.isPinned ? "amber" : "gray"}
+                            title={acc.isPinned ? "Bỏ ghim" : "Ghim"}
+                        />
+                    </div>
                 ),
             },
         ],
-        [onOpenPin]
+        [handlePinAccount]
     );
 
     const pageSizeOptions = useMemo(() => [5, 10, 20], []);
@@ -135,8 +141,8 @@ const AccountDrawer: React.FC<AccountDrawerProps> = ({
                 className={cn(
                     "fixed left-0 top-0 h-full z-50 bg-surface shadow-lg flex flex-col transition-all duration-300 ease-in-out border-r border-border",
                     isOpen
-                        ? "w-[var(--drawer-width,480px)] translate-x-0 opacity-100"
-                        : "w-[var(--drawer-width,480px)] -translate-x-full opacity-0 pointer-events-none"
+                        ? "w-[var(--drawer-width,560px)] translate-x-0 opacity-100"
+                        : "w-[var(--drawer-width,560px)] -translate-x-full opacity-0 pointer-events-none"
                 )}
             >
                 {/* Header */}
@@ -151,7 +157,7 @@ const AccountDrawer: React.FC<AccountDrawerProps> = ({
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <RefreshButton 
+                        <RefreshButton
                             onRefresh={onRefresh}
                             loading={refreshLoading}
                             className="rounded-full"

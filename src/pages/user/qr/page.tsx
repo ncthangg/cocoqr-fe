@@ -9,7 +9,6 @@ import type { AccountRes, PagingVM, PostQrRes, ProviderRes } from "@/models/enti
 import type { PostQrReq, PutAccountReq } from "@/models/entity.request.model";
 import { toast } from "react-toastify";
 import { formatVNDInput, formatVNDDisplay } from "@/utils/currencyUtils";
-import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import QRDisplay from "@/components/UICustoms/QR/QRDisplay";
 import AccountProviderSelector from "@/components/UICustoms/Form/AccountProviderSelector";
 import { ProviderCode, QRType } from "@/models/enum";
@@ -55,7 +54,6 @@ const CreatePaymentPage: React.FC = () => {
     const [isProviderMaintenance, setIsProviderMaintenance] = useState(false);
     const [isBankMaintenance, setIsBankMaintenance] = useState(false);
 
-    const [isPinModalOpen, setIsPinModalOpen] = useState(false);
     const [qrResult, setQrResult] = useState<PostQrRes | null>(null);
     const [qrLoading, setQrLoading] = useState(false);
 
@@ -127,50 +125,40 @@ const CreatePaymentPage: React.FC = () => {
         setPaging((prev) => ({ ...prev, pageSize: newSize, pageNumber: 1 }));
     }, []);
 
-    const handleOpenPin = useCallback((acc: AccountRes) => {
-        setSelectedAccount(acc);
-        setIsPinModalOpen(true);
-    }, []);
-
     // Derived states for maintenance checks
     const prov = allProviders.find((p) => p.id === formData.providerId);
     const isProviderInactive = prov ? !prov.isActive : formData.providerId ? isProviderMaintenance : false;
     const isBankInactive = isBankMaintenance;
 
-    const handlePinAccount = useCallback(async () => {
-        if (!selectedAccount) return;
-        const isCurrentlyPinned = selectedAccount.isPinned;
+    const handlePinAccount = useCallback(async (acc: AccountRes) => {
+        const isCurrentlyPinned = acc.isPinned;
         if (!isCurrentlyPinned) {
-            const currentPinnedCount = accounts.filter((acc) => acc.isPinned).length;
+            const currentPinnedCount = accounts.filter((a) => a.isPinned).length;
             if (currentPinnedCount >= 5) {
                 toast.warning("Bạn chỉ có thể ghim tối đa 5 tài khoản.");
-                setIsPinModalOpen(false);
-                setSelectedAccount(null);
                 return;
             }
         }
         try {
             setLoading(true);
             const req: PutAccountReq = {
-                providerId: selectedAccount.providerId,
-                bankCode: selectedAccount.bankCode ?? "",
-                bankName: selectedAccount.bankName ?? "",
-                accountHolder: selectedAccount.accountHolder ?? "",
-                accountNumber: selectedAccount.accountNumber ?? "",
+                providerId: acc.providerId,
+                bankCode: acc.bankCode ?? "",
+                bankName: acc.bankName ?? "",
+                accountHolder: acc.accountHolder ?? "",
+                accountNumber: acc.accountNumber ?? "",
                 isPinned: !isCurrentlyPinned,
-                isActive: selectedAccount.isActive,
+                isActive: acc.isActive,
             };
-            await accountApi.put(selectedAccount.id, req);
+            await accountApi.put(acc.id, req);
             fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter);
-            setIsPinModalOpen(false);
         } catch (error) {
             console.error("Error toggling pin status:", error);
             toast.error(isCurrentlyPinned ? "Bỏ ghim tài khoản thất bại." : "Ghim tài khoản thất bại.");
         } finally {
             setLoading(false);
-            setSelectedAccount(null);
         }
-    }, [selectedAccount, accounts, fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter]);
+    }, [accounts, fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter]);
 
     const handleSelectAccount = useCallback(
         (acc: AccountRes) => {
@@ -351,7 +339,7 @@ const CreatePaymentPage: React.FC = () => {
                 onSelectAccount={handleSelectAccount}
                 onPageChange={handlePageChange}
                 onPageSizeChange={handlePageSizeChange}
-                onOpenPin={handleOpenPin}
+                handlePinAccount={handlePinAccount}
                 onRefresh={() => fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter)}
                 refreshLoading={loading}
             />
@@ -541,15 +529,6 @@ const CreatePaymentPage: React.FC = () => {
                 </div>
             </div>
 
-            <ActionConfirmModal
-                isOpen={isPinModalOpen}
-                onClose={() => setIsPinModalOpen(false)}
-                onConfirm={handlePinAccount}
-                title={selectedAccount?.isPinned ? "Xác nhận bỏ ghim tài khoản" : "Xác nhận ghim tài khoản"}
-                description={`Bạn có chắc chắn muốn ${selectedAccount?.isPinned ? "bỏ ghim" : "ghim"} tài khoản "${selectedAccount?.accountNumber || selectedAccount?.bankCode}" không?`}
-                loading={loading}
-                confirmText={selectedAccount?.isPinned ? "Bỏ ghim" : "Ghim"}
-            />
         </div>
     );
     //#endregion

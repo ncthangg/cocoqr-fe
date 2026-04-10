@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
 import { qrStyleLibApi } from "@/services/qrStyleLib-api.service";
 import { Edit, Palette, FileJson, Trash2, Pin, PinOff, AlertCircle } from "lucide-react";
-import { toast } from "react-toastify";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
@@ -12,6 +11,7 @@ import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal"
 import RefreshButton from "@/components/UICustoms/RefreshButton";
 import { QRStyleType } from "@/models/enum";
 import type { QrStyleLibraryRes } from "@/models/entity.model";
+import { formatDateTime } from "@/utils/dateTimeUtils";
 
 const QrStyleLibModal = lazy(() => import("./components/QrStyleLibModal"));
 
@@ -39,9 +39,6 @@ const QrStyleLibPage: React.FC = () => {
             if (res) {
                 setData(res || []);
             }
-        } catch (error) {
-            console.error("Error fetching QR styles:", error);
-            toast.error("Không thể tải dữ liệu QR Style.");
         } finally {
             setLoading(false);
         }
@@ -71,28 +68,13 @@ const QrStyleLibPage: React.FC = () => {
         if (isPinning) return;
         try {
             setIsPinning(true);
-            const isPinningNew = !item.isDefault;
-
-            if (isPinningNew) {
-                const existingDefault = data.find(a => a.isDefault && a.id !== item.id);
-                if (existingDefault) {
-                    await qrStyleLibApi.put(existingDefault.id, {
-                        ...existingDefault,
-                        isDefault: false
-                    });
-                }
-            }
 
             await qrStyleLibApi.put(item.id, {
                 ...item,
                 isDefault: !item.isDefault
             });
 
-            toast.success(item.isDefault ? "Đã bỏ mặc định" : "Đã đặt làm mặc định");
             fetchItems();
-        } catch (error) {
-            console.error("Error pinning QR style:", error);
-            toast.error("Không thể thay đổi trạng thái mặc định.");
         } finally {
             setIsPinning(false);
         }
@@ -103,12 +85,8 @@ const QrStyleLibPage: React.FC = () => {
         try {
             setIsDeleting(true);
             await qrStyleLibApi.delete(itemToDelete.id);
-            toast.success("Đã xóa QR Style thành công.");
             setItemToDelete(null);
             fetchItems();
-        } catch (error) {
-            console.error("Error deleting QR style:", error);
-            toast.error("Không thể xóa QR Style.");
         } finally {
             setIsDeleting(false);
         }
@@ -199,8 +177,8 @@ const QrStyleLibPage: React.FC = () => {
                                 header: "Ngày tạo",
                                 accessor: (item) => item.createdAt,
                                 cell: (item) => (
-                                    <span className="text-xs text-foreground-muted">
-                                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : "—"}
+                                    <span className="font-primary font-semibold text-foreground-secondary">
+                                        {item.createdAt ? formatDateTime(item.createdAt) : "—"}
                                     </span>
                                 )
                             },

@@ -25,7 +25,7 @@ export function useModalForm<TFieldValues extends FieldValues>({
     const methods = useForm<TFieldValues>({
         mode: "onChange",
         defaultValues,
-        values, // RHF will automatically re-sync when `values` changes
+        values,
         ...formProps,
     });
 

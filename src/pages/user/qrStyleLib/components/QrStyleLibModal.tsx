@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { X, Palette, LayoutGrid, Image as ImageIcon, Eye, EyeOff, Upload, Trash2, Check, Save, Circle } from "lucide-react";
 import QRCodeStyling, { type DotType, type CornerSquareType } from "qr-code-styling";
-import { toast } from "react-toastify";
 import Button from "@/components/UICustoms/Button";
 import { qrStyleLibApi } from "@/services/qrStyleLib-api.service";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
@@ -66,6 +65,21 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
     const [style, setStyle] = useState<StyleConfig>({ ...DEFAULT_STYLE });
     const styleJson = useMemo(() => JSON.stringify(style, null, 2), [style]);
 
+    const originalStyleJson = useMemo(() => {
+        if (!item) return "";
+        return JSON.stringify(parseStyleJson(item.styleJson), null, 2);
+    }, [item]);
+
+    const hasChanges = useMemo(() => {
+        if (!item) return true;
+        const normalize = (val: string | null | undefined) => val ? val.trim() : "";
+        return (
+            normalize(name) !== normalize(item.name) ||
+            isDefault !== (item.isDefault || false) ||
+            styleJson !== originalStyleJson
+        );
+    }, [item, name, isDefault, styleJson, originalStyleJson]);
+
     const displayJson = useMemo(() => {
         const displayStyle = { ...style };
         if (displayStyle.logo && displayStyle.logo.length > 50) {
@@ -107,17 +121,12 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
 
             if (item) {
                 await qrStyleLibApi.put(item.id, payload);
-                toast.success("Cập nhật phong cách thành công! ✨");
             } else {
                 await qrStyleLibApi.post(payload);
-                toast.success("Đã tạo phong cách mới! ✨");
             }
 
             onSuccess();
             onClose();
-        } catch (error) {
-            console.error("Error saving style:", error);
-            toast.error("Không thể lưu phong cách này.");
         } finally {
             setLoading(false);
             setIsConfirmOpen(false);
@@ -129,12 +138,8 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
         try {
             setIsDeletingModal(true);
             await qrStyleLibApi.delete(item.id);
-            toast.success("Đã xóa phong cách khỏi thư viện.");
             onSuccess();
             onClose();
-        } catch (error) {
-            console.error("Error deleting style:", error);
-            toast.error("Không thể xóa phong cách.");
         } finally {
             setIsDeletingModal(false);
             setIsDeleteConfirmOpen(false);
@@ -362,19 +367,21 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                         </div>
 
                         {/* Status & Settings (Bottom of form) */}
-                        <div className="mt-10 animate-in fade-in slide-in-from-right-2 duration-500 delay-400 border-t border-border/20 pt-10">
-                            <label className={SECTION_LABEL_CLASS}><Check size={13} /> Thiết lập thư viện</label>
-                            <div className="p-6 rounded-[2.5rem] bg-surface-muted/20 border border-border/30">
-                                <StatusToggle
-                                    checked={isDefault}
-                                    onChange={(e) => setIsDefault(e.target.checked)}
-                                    checkedLabel="PHONG CÁCH MẶC ĐỊNH"
-                                    uncheckedLabel="PHONG CÁCH BÌNH THƯỜNG"
-                                    checkedSubtext="Tự động áp dụng thiết kế này cho các mã QR mới"
-                                    uncheckedSubtext="Sử dụng như một tùy chọn thủ công trong thư viện"
-                                />
+                        {item && (
+                            <div className="mt-10 animate-in fade-in slide-in-from-right-2 duration-500 delay-400 border-t border-border/20 pt-10">
+                                <label className={SECTION_LABEL_CLASS}><Check size={13} /> Thiết lập thư viện</label>
+                                <div className="p-6 rounded-[2.5rem] bg-surface-muted/20 border border-border/30">
+                                    <StatusToggle
+                                        checked={isDefault}
+                                        onChange={(e) => setIsDefault(e.target.checked)}
+                                        checkedLabel="PHONG CÁCH MẶC ĐỊNH"
+                                        uncheckedLabel="PHONG CÁCH BÌNH THƯỜNG"
+                                        checkedSubtext="Tự động áp dụng thiết kế này cho các mã QR mới"
+                                        uncheckedSubtext="Sử dụng như một tùy chọn thủ công trong thư viện"
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 
@@ -400,7 +407,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                             variant="primary"
                             className="px-14 h-14 rounded-2xl text-[11px] font-black shadow-[0_20px_40px_-12px_rgba(var(--primary-rgb),0.35)] active:scale-[0.98] transition-all transform-gpu hover:scale-[1.02] hover:-translate-y-0.5"
                             onClick={() => setIsConfirmOpen(true)}
-                            disabled={loading || !name}
+                            disabled={loading || !name.trim() || (!!item && !hasChanges)}
                         >
                             <Save className="w-4 h-4 mr-2" /> {item ? "LƯU THAY ĐỔI" : "TẠO PHONG CÁCH"}
                         </Button>
