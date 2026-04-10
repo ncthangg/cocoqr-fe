@@ -40,8 +40,12 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
         setIsActive(true);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const isSubmitDisabled = () => {
+        const finalKey = templateKey === "__custom__" ? customKey.trim() : templateKey;
+        return !finalKey || !subject.trim() || !body.trim() || body === "<p><br></p>";
+    };
+
+    const handleSubmit = async () => {
         const finalKey = templateKey === "__custom__" ? customKey.trim() : templateKey;
 
         if (!finalKey) {
@@ -216,8 +220,8 @@ const EmailTemplateCreateModal: React.FC<CreateModalProps> = ({ isOpen, onClose,
                         Hủy
                     </button>
                     <button
-                        onClick={handleSubmit as any}
-                        disabled={submitting}
+                        onClick={handleSubmit}
+                        disabled={submitting || isSubmitDisabled()}
                         className="flex items-center gap-2 px-8 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 active:scale-95"
                     >
                         {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}

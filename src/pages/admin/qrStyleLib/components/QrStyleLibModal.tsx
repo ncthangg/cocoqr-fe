@@ -9,6 +9,7 @@ import type { QrStyleLibraryRes } from "@/models/entity.model";
 import { QRStyleType } from "@/models/enum";
 import { cn } from "@/lib/utils";
 import StatusToggle from "@/components/UICustoms/Form/StatusToggle";
+import { useModalForm } from "@/hooks/useModalForm";
 
 //#region Types & Constants
 interface StyleConfig {
@@ -18,6 +19,12 @@ interface StyleConfig {
     borderColor: string;
     pattern: string;
     logo: string | null;
+}
+
+interface QrStyleFormValues extends StyleConfig {
+    name: string;
+    isActive: boolean;
+    isDefault: boolean;
 }
 
 const DEFAULT_STYLE: StyleConfig = {
@@ -50,11 +57,7 @@ interface QrStyleLibModalProps {
 }
 
 const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSuccess, item }) => {
-    //#region States & Refs
     const [loading, setLoading] = useState(false);
-    const [name, setName] = useState("");
-    const [isActive, setIsActive] = useState(true);
-    const [isDefault, setIsDefault] = useState(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [showRawJson, setShowRawJson] = useState(false);
     const [isDeletingModal, setIsDeletingModal] = useState(false);
@@ -64,22 +67,61 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
     const qrPreviewRef = useRef<HTMLDivElement>(null);
     const qrCodeRef = useRef<QRCodeStyling | null>(null);
 
-    const [style, setStyle] = useState<StyleConfig>({ ...DEFAULT_STYLE });
-    const styleJson = useMemo(() => JSON.stringify(style, null, 2), [style]);
+    const initialValues = useMemo(() => {
+        if (!item) return undefined;
+        const styleConfig = parseStyleJson(item.styleJson);
+        return {
+            name: item.name,
+            isActive: item.isActive,
+            isDefault: item.isDefault,
+            ...styleConfig
+        };
+    }, [item]);
+
+    const {
+        register,
+        watch,
+        setValue,
+        getValues,
+        formState: { errors },
+        isSubmitDisabled,
+        isEditMode
+    } = useModalForm<QrStyleFormValues>({
+        isOpen,
+        defaultValues: {
+            name: "",
+            isActive: true,
+            isDefault: false,
+            ...DEFAULT_STYLE
+        },
+        values: initialValues
+    });
+
+    const formData = watch();
+    const currentStyle: StyleConfig = useMemo(() => ({
+        bgColor: formData.bgColor,
+        pointColor: formData.pointColor,
+        eyeColor: formData.eyeColor,
+        borderColor: formData.borderColor,
+        pattern: formData.pattern,
+        logo: formData.logo,
+    }), [formData]);
+
+    const styleJson = useMemo(() => JSON.stringify(currentStyle, null, 2), [currentStyle]);
 
     const displayJson = useMemo(() => {
-        const displayStyle = { ...style };
+        const displayStyle = { ...currentStyle };
         if (displayStyle.logo && displayStyle.logo.length > 30) {
             displayStyle.logo = displayStyle.logo.substring(0, 30) + "...";
         }
         return JSON.stringify(displayStyle, null, 2);
-    }, [style]);
+    }, [currentStyle]);
     //#endregion
 
     //#region Handlers
     const updateStyle = useCallback((key: keyof StyleConfig, value: any) => {
-        setStyle(prev => ({ ...prev, [key]: value }));
-    }, []);
+        setValue(key as any, value, { shouldDirty: true, shouldValidate: true });
+    }, [setValue]);
 
     const onLogoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -98,12 +140,13 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
     const executeSave = async () => {
         try {
             setLoading(true);
+            const values = getValues();
             const payload = {
-                name,
+                name: values.name,
                 styleJson,
-                isActive,
+                isActive: values.isActive,
                 type: QRStyleType.SYSTEM,
-                isDefault
+                isDefault: values.isDefault
             };
 
             if (item) {
@@ -143,24 +186,12 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
     };
     //#endregion
 
-    //#region Effects
     useEffect(() => {
         if (isOpen) {
-            if (item) {
-                setName(item.name || "");
-                setIsActive(item.isActive ?? true);
-                setIsDefault(item.isDefault || false);
-                setStyle(parseStyleJson(item.styleJson));
-            } else {
-                setName("");
-                setIsActive(true);
-                setIsDefault(false);
-                setStyle({ ...DEFAULT_STYLE });
-            }
             setShowRawJson(false);
             qrCodeRef.current = null;
         }
-    }, [isOpen, item]);
+    }, [isOpen]);
 
     const patternToDotType = (p: string): DotType => {
         if (p === "dots") return "dots";
@@ -180,12 +211,12 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
             width: 320,
             height: 320,
             data: "https://cocoqr.vn/system-preview",
-            dotsOptions: { color: style.pointColor, type: patternToDotType(style.pattern) },
-            backgroundOptions: { color: style.bgColor },
-            cornersSquareOptions: { color: style.eyeColor, type: patternToEyeType(style.pattern) },
-            cornersDotOptions: { color: style.eyeColor },
+            dotsOptions: { color: currentStyle.pointColor, type: patternToDotType(currentStyle.pattern) },
+            backgroundOptions: { color: currentStyle.bgColor },
+            cornersSquareOptions: { color: currentStyle.eyeColor, type: patternToEyeType(currentStyle.pattern) },
+            cornersDotOptions: { color: currentStyle.eyeColor },
             imageOptions: { crossOrigin: "anonymous" as const, margin: 8, hideBackgroundDots: true },
-            image: style.logo || "",
+            image: currentStyle.logo || "",
             qrOptions: { errorCorrectionLevel: "H" as const },
         };
 
@@ -198,7 +229,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
         } else {
             qrCodeRef.current.update(opts);
         }
-    }, [style, isOpen]);
+    }, [currentStyle, isOpen]);
     //#endregion
 
     if (!isOpen) return null;
@@ -233,7 +264,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                     <div className="flex-[45%] bg-surface-muted/15 flex flex-col items-center justify-center p-12 relative overflow-hidden group">
                         <div
                             className="relative z-10 transition-all duration-700 cubic-bezier(0.16,1,0.3,1) p-5 rounded-[3rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.25)] flex items-center justify-center overflow-hidden"
-                            style={{ backgroundColor: style.borderColor, width: 'min(360px, 100%)', aspectRatio: '1/1' }}
+                            style={{ backgroundColor: currentStyle.borderColor, width: 'min(360px, 100%)', aspectRatio: '1/1' }}
                         >
                             <div ref={qrPreviewRef} className="w-full h-full flex items-center justify-center [&>canvas]:w-full [&>canvas]:h-full [&>canvas]:rounded-[1.5rem] transform-gpu" />
                         </div>
@@ -270,10 +301,12 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                             <div className="relative group">
                                 <input
                                     type="text"
-                                    className="w-full h-14 pl-5 pr-12 text-[13px] rounded-2xl border-2 border-border/40 bg-surface/50 shadow-sm focus:border-primary/50 focus:bg-surface transition-all font-black outline-none"
+                                    className={cn(
+                                        "w-full h-14 pl-5 pr-12 text-[13px] rounded-2xl border-2 bg-surface/50 shadow-sm focus:border-primary/50 focus:bg-surface transition-all font-black outline-none",
+                                        errors.name ? "border-danger/50" : "border-border/40"
+                                    )}
                                     placeholder="Ví dụ: System Modern Blue..."
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
+                                    {...register("name", { required: true })}
                                 />
                                 <div className="absolute right-5 top-1/2 -translate-y-1/2 text-foreground-muted group-focus-within:text-primary transition-colors">
                                     <Check size={16} />
@@ -294,7 +327,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                                         key={p.id} onClick={() => updateStyle("pattern", p.id)}
                                         className={cn(
                                             "group relative h-14 text-[11px] font-black rounded-2xl border-2 transition-all p-1 transform-gpu active:scale-95",
-                                            style.pattern === p.id
+                                            formData.pattern === p.id
                                                 ? "bg-primary text-primary-foreground border-primary shadow-xl shadow-primary/20 scale-[1.02]"
                                                 : "bg-surface border-border/40 text-foreground-secondary hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:scale-[1.01]"
                                         )}
@@ -320,11 +353,11 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                                         <div key={c.id} className="group flex items-center justify-between p-4 bg-surface/40 border-2 border-border/30 rounded-2xl hover:border-primary/40 hover:bg-surface/80 transition-all transform-gpu hover:scale-[1.02]">
                                             <div className="flex flex-col gap-0.5">
                                                 <span className="text-[10px] font-black text-foreground-muted uppercase tracking-wider">{c.label}</span>
-                                                <span className="text-[12px] font-mono font-bold text-foreground">{(style as any)[c.id].toUpperCase()}</span>
+                                                <span className="text-[12px] font-mono font-bold text-foreground">{(formData as any)[c.id].toUpperCase()}</span>
                                             </div>
                                             <div className="relative w-10 h-10 group-hover:scale-110 transition-transform">
-                                                <input type="color" value={(style as any)[c.id]} onChange={(e) => updateStyle(c.id as any, e.target.value)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                                <div className="w-full h-full rounded-xl border-2 border-white/50 shadow-lg ring-1 ring-border/20" style={{ backgroundColor: (style as any)[c.id] }} />
+                                                <input type="color" value={(formData as any)[c.id]} onChange={(e) => updateStyle(c.id as any, e.target.value)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                                <div className="w-full h-full rounded-xl border-2 border-white/50 shadow-lg ring-1 ring-border/20" style={{ backgroundColor: (formData as any)[c.id] }} />
                                             </div>
                                         </div>
                                     ))}
@@ -333,11 +366,11 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
 
                             <div className="md:col-span-3 flex flex-col">
                                 <label className={cn(SECTION_LABEL_CLASS, "text-primary")}><ImageIcon size={13} /> Logo thương hiệu hệ thống</label>
-                                {style.logo ? (
+                                {formData.logo ? (
                                     <div className="relative group w-full aspect-square max-w-[200px] mx-auto animate-in zoom-in-95 duration-500 transform-gpu">
                                         <div className="w-full h-full bg-white rounded-[2.5rem] border-4 border-primary/10 p-5 shadow-2xl flex items-center justify-center relative overflow-hidden">
                                             <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent pointer-events-none" />
-                                            <img src={style.logo} className="w-full h-full object-contain relative z-10" alt="Logo thương hiệu" />
+                                            <img src={formData.logo} className="w-full h-full object-contain relative z-10" alt="Logo thương hiệu" />
                                         </div>
                                         <button
                                             onClick={onRemoveLogo}
@@ -369,22 +402,26 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                             <label className={SECTION_LABEL_CLASS}><Check size={13} /> Trạng thái hiển thị & Mặc định</label>
                             <div className="p-6 rounded-[2.5rem] bg-surface-muted/20 border border-border/30 flex flex-col gap-6">
                                 <StatusToggle
-                                    checked={isActive}
-                                    onChange={(e) => setIsActive(e.target.checked)}
+                                    checked={formData.isActive}
+                                    onChange={(e) => setValue("isActive", e.target.checked, { shouldDirty: true })}
                                     checkedLabel="HOẠT ĐỘNG"
                                     uncheckedLabel="BẢO TRÌ/ẨN"
                                     checkedSubtext="Cho phép người dùng nhìn thấy và sử dụng style này"
                                     uncheckedSubtext="Style sẽ bị ẩn khỏi danh sách lựa chọn của người dùng"
                                 />
-                                <div className="h-px bg-border/20 w-full" />
-                                <StatusToggle
-                                    checked={isDefault}
-                                    onChange={(e) => setIsDefault(e.target.checked)}
-                                    checkedLabel="STYLE MẶC ĐỊNH"
-                                    uncheckedLabel="STYLE BÌNH THƯỜNG"
-                                    checkedSubtext="Tự động áp dụng style này cho người dùng mới"
-                                    uncheckedSubtext="Style này đóng vai trò như một tùy chọn trong thư viện"
-                                />
+                                {isEditMode && (
+                                    <>
+                                        <div className="h-px bg-border/20 w-full" />
+                                        <StatusToggle
+                                            checked={formData.isDefault}
+                                            onChange={(e) => setValue("isDefault", e.target.checked, { shouldDirty: true })}
+                                            checkedLabel="STYLE MẶC ĐỊNH"
+                                            uncheckedLabel="STYLE BÌNH THƯỜNG"
+                                            checkedSubtext="Tự động áp dụng style này cho người dùng mới"
+                                            uncheckedSubtext="Style này đóng vai trò như một tùy chọn trong thư viện"
+                                        />
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -412,7 +449,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                             variant="primary"
                             className="px-14 h-14 rounded-2xl text-[11px] font-black shadow-[0_20px_40px_-12px_rgba(var(--primary-rgb),0.35)] active:scale-[0.98] transition-all transform-gpu hover:scale-[1.02] hover:-translate-y-0.5"
                             onClick={() => setIsConfirmOpen(true)}
-                            disabled={loading || !name}
+                            disabled={isSubmitDisabled}
                         >
                             <Save className="w-4 h-4 mr-2" /> {item ? "CẬP NHẬT HỆ THỐNG" : "TẠO MỚI HỆ THỐNG"}
                         </Button>
@@ -437,7 +474,7 @@ const QrStyleLibModal: React.FC<QrStyleLibModalProps> = ({ isOpen, onClose, onSu
                 onClose={() => setIsConfirmOpen(false)}
                 onConfirm={executeSave}
                 title={item ? "Cập nhật Style hệ thống" : "Tạo Style hệ thống mới"}
-                description={`Lưu lại các thay đổi thiết kế cho phong cách hệ thống "${name}"?`}
+                description={`Lưu lại các thay đổi thiết kế cho phong cách hệ thống "${formData.name}"?`}
                 loading={loading}
                 confirmText={item ? "Cập nhật hệ thống" : "Tạo mới hệ thống"}
             />

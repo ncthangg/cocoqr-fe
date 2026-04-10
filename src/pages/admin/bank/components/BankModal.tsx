@@ -5,7 +5,6 @@ import Button from "@/components/UICustoms/Button";
 import { bankApi } from "@/services/bank-api.service";
 import type { BankRes } from "@/models/entity.model";
 import type { PutBankInfoReq } from "@/models/entity.request.model";
-import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import StatusToggle from "@/components/UICustoms/Form/StatusToggle";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
 
@@ -30,7 +29,6 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
     const [file, setFile] = useState<File | undefined>(undefined);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     //#endregion
 
     //#region Side Effects
@@ -51,7 +49,6 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                 setPreviewUrl(null);
             }
             setFile(undefined);
-            setIsConfirmOpen(false);
         }
     }, [isOpen, bank]);
     //#endregion
@@ -77,13 +74,13 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
-    const handleFormSubmit = (e: React.FormEvent) => {
+    const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.bankCode || !formData.bankName || !formData.shortName) {
             toast.error("Vui lòng điền các trường bắt buộc.");
             return;
         }
-        setIsConfirmOpen(true);
+        await executeSave();
     };
 
     const executeSave = async () => {
@@ -102,7 +99,6 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                     isActive: formData.isActive,
                     logoUrl: file ? (previewUrl ?? undefined) : (previewUrl ? bank.logoUrl : undefined),
                 };
-                setIsConfirmOpen(false);
                 onSuccess(updatedBank);
             }
             onClose();
@@ -112,6 +108,13 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
         } finally {
             setLoading(false);
         }
+    };
+    const isSubmitDisabled = () => {
+        if (loading) return true;
+        if (!bank) return false; // In create mode, we can always submit if no specific validation is needed
+        const hasStatusChanged = formData.isActive !== bank.isActive;
+        const hasImageChanged = !!file || previewUrl !== (bank.logoUrl ?? null);
+        return !hasStatusChanged && !hasImageChanged;
     };
     //#endregion
 
@@ -307,22 +310,18 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                         <Button type="button" variant="outline" size="medium" onClick={onClose} disabled={loading}>
                             Hủy
                         </Button>
-                        <Button type="submit" variant="primary" size="medium" loading={loading} disabled={isConfirmOpen}>
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            size="medium"
+                            loading={loading}
+                            disabled={isSubmitDisabled()}
+                        >
                             Cập nhật
                         </Button>
                     </div>
                 </form>
             </div>
-
-            <ActionConfirmModal
-                isOpen={isConfirmOpen}
-                onClose={() => setIsConfirmOpen(false)}
-                onConfirm={executeSave}
-                title="Xác nhận cập nhật ngân hàng"
-                description={`Bạn có chắc chắn muốn cập nhật ngân hàng "${formData.shortName || formData.bankCode}"?`}
-                loading={loading}
-                confirmText="Cập nhật"
-            />
         </div>
     );
     //#endregion

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { X, Save, Loader2 } from "lucide-react";
 import { emailTemplateApi } from "@/services/email-template-api.service";
@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import type { EmailTemplateRes } from "@/models/entity.model";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
+import { useModalForm } from "@/hooks/useModalForm";
 
 interface EditModalProps {
     isOpen: boolean;
@@ -15,35 +16,50 @@ interface EditModalProps {
 }
 
 const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onUpdated, template }) => {
-    //#region States & Refs
-    const [subject, setSubject] = useState("");
-    const [body, setBody] = useState("");
-    const [description, setDescription] = useState("");
-    const [isActive, setIsActive] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    //#endregion
 
-    //#region Side Effects
-    useEffect(() => {
-        if (template && isOpen) {
-            setSubject(template.subject);
-            setBody(template.body);
-            setDescription(template.description || "");
-            setIsActive(template.isActive);
-        }
-    }, [template, isOpen]);
-    //#endregion
+    const initialValues = useMemo(() => {
+        if (!template) return undefined;
+        return {
+            subject: template.subject,
+            body: template.body,
+            description: template.description || "",
+            isActive: template.isActive
+        };
+    }, [template]);
+
+    const {
+        register,
+        watch,
+        setValue,
+        getValues,
+        formState: { errors },
+        isSubmitDisabled
+    } = useModalForm({
+        isOpen,
+        defaultValues: {
+            subject: "",
+            body: "",
+            description: "",
+            isActive: true
+        },
+        values: initialValues
+    });
+
+    const formData = watch();
+
 
     //#region Handlers
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         if (!template) return;
 
-        if (!subject.trim()) {
+        const values = getValues();
+        if (!values.subject.trim()) {
             toast.warning("Vui lòng nhập Subject");
             return;
         }
-        if (!body.trim() || body === "<p><br></p>") {
+        if (!values.body.trim() || values.body === "<p><br></p>") {
             toast.warning("Vui lòng nhập nội dung template");
             return;
         }
@@ -52,19 +68,19 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
             setSubmitting(true);
             await emailTemplateApi.update(template.id, {
                 templateKey: template.templateKey,
-                subject: subject.trim(),
-                body,
-                description: description.trim() || null,
-                isActive,
+                subject: values.subject.trim(),
+                body: values.body,
+                description: values.description.trim() || null,
+                isActive: values.isActive,
             });
             toast.success("Cập nhật template thành công!");
 
             const updatedTemplate: EmailTemplateRes = {
                 ...template,
-                subject: subject.trim(),
-                body,
-                description: description.trim() || null,
-                isActive,
+                subject: values.subject.trim(),
+                body: values.body,
+                description: values.description.trim() || null,
+                isActive: values.isActive,
                 updatedAt: new Date().toISOString()
             };
 
@@ -132,11 +148,12 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
                         </label>
                         <input
                             type="text"
-                            value={subject}
-                            onChange={e => setSubject(e.target.value)}
                             placeholder="Tiêu đề email..."
-                            className="input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50"
-                            required
+                            className={cn(
+                                "input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50",
+                                errors.subject ? "border-danger/50" : "border-border/40"
+                            )}
+                            {...register("subject", { required: true })}
                         />
                     </div>
 
@@ -147,10 +164,9 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
                         </label>
                         <input
                             type="text"
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
                             placeholder="Mô tả ngắn về template này..."
                             className="input px-4 py-3 rounded-xl focus:ring-2 focus:ring-primary/50"
+                            {...register("description")}
                         />
                     </div>
 
@@ -161,8 +177,8 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
                         </label>
                         <ReactQuill
                             theme="snow"
-                            value={body}
-                            onChange={setBody}
+                            value={formData.body}
+                            onChange={(val) => setValue("body", val, { shouldDirty: true, shouldValidate: true })}
                             placeholder="Soạn nội dung email template..."
                             modules={{
                                 toolbar: [
@@ -179,14 +195,14 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
                     <div className="flex items-center justify-between p-4 bg-bg rounded-xl border border-border">
                         <div>
                             <p className="text-sm font-bold text-foreground">Trạng thái</p>
-                            <p className="text-xs text-foreground-muted">Template sẽ {isActive ? "được sử dụng" : "bị tắt"} khi gửi email.</p>
+                            <p className="text-xs text-foreground-muted">Template sẽ {formData.isActive ? "được sử dụng" : "bị tắt"} khi gửi email.</p>
                         </div>
                         <button
                             type="button"
-                            onClick={() => setIsActive(!isActive)}
-                            className={`relative w-12 h-7 rounded-full transition-all duration-300 ${isActive ? 'bg-primary' : 'bg-border'}`}
+                            onClick={() => setValue("isActive", !formData.isActive, { shouldDirty: true })}
+                            className={`relative w-12 h-7 rounded-full transition-all duration-300 ${formData.isActive ? 'bg-primary' : 'bg-border'}`}
                         >
-                            <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-300 ${isActive ? 'left-6' : 'left-1'}`} />
+                            <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-300 ${formData.isActive ? 'left-6' : 'left-1'}`} />
                         </button>
                     </div>
                 </form>
@@ -201,8 +217,8 @@ const EmailTemplateEditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onU
                         Hủy
                     </button>
                     <button
-                        onClick={handleSubmit as any}
-                        disabled={submitting}
+                        onClick={handleSubmit}
+                        disabled={submitting || isSubmitDisabled}
                         className="flex items-center gap-2 px-8 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 active:scale-95"
                     >
                         {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

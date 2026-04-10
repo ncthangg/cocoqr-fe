@@ -5,7 +5,6 @@ import Button from "@/components/UICustoms/Button";
 import { providerApi } from "@/services/provider-api.service";
 import type { ProviderRes } from "@/models/entity.model";
 import type { PutProviderReq } from "@/models/entity.request.model";
-import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import StatusToggle from "@/components/UICustoms/Form/StatusToggle";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
 
@@ -22,7 +21,6 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
     const [file, setFile] = useState<File | undefined>(undefined);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -34,7 +32,6 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                 setPreviewUrl(null);
             }
             setFile(undefined);
-            setIsConfirmOpen(false);
         }
     }, [isOpen, provider]);
 
@@ -60,13 +57,13 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
-    const handleFormSubmit = (e: React.FormEvent) => {
+    const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.name || !formData.code) {
             toast.error("Vui lòng nhập tên và mã provider.");
             return;
         }
-        setIsConfirmOpen(true);
+        await executeSave();
     };
 
     const executeSave = async () => {
@@ -89,11 +86,9 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                     isActive: formData.isActive,
                     logoUrl: file ? (previewUrl ?? undefined) : (previewUrl ? provider.logoUrl : undefined),
                 };
-                setIsConfirmOpen(false);
                 onSuccess(updatedProvider);
             } else {
                 toast.error("Tính năng tạo mới provider chưa được triển khai!");
-                setIsConfirmOpen(false);
             }
             onClose();
         } catch (error) {
@@ -102,6 +97,14 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
         } finally {
             setLoading(false);
         }
+    };
+
+    const isSubmitDisabled = () => {
+        if (loading) return true;
+        if (!provider) return !formData.name || !formData.code;
+        const hasStatusChanged = formData.isActive !== provider.isActive;
+        const hasImageChanged = !!file || previewUrl !== (provider.logoUrl ?? null);
+        return !hasStatusChanged && !hasImageChanged;
     };
 
     return (
@@ -188,7 +191,7 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                                     {previewUrl ? (
                                         <>
                                             <div className="relative group/logo">
-                                                <BrandLogo 
+                                                <BrandLogo
                                                     logoUrl={previewUrl}
                                                     name={formData.name}
                                                     code={formData.code}
@@ -240,23 +243,13 @@ const ProviderModal: React.FC<ProviderModalProps> = ({ isOpen, onClose, onSucces
                             variant="primary"
                             size="medium"
                             loading={loading}
-                            disabled={!formData.name || !formData.code || isConfirmOpen}
+                            disabled={isSubmitDisabled()}
                         >
                             {provider ? "Cập nhật" : "Tạo mới"}
                         </Button>
                     </div>
                 </form>
             </div>
-
-            <ActionConfirmModal
-                isOpen={isConfirmOpen}
-                onClose={() => setIsConfirmOpen(false)}
-                onConfirm={executeSave}
-                title={provider ? "Xác nhận cập nhật Provider" : "Xác nhận tạo Provider mới"}
-                description={`Bạn có chắc chắn muốn ${provider ? "cập nhật" : "tạo mới"} provider "${formData.name}"?`}
-                loading={loading}
-                confirmText={provider ? "Cập nhật" : "Tạo mới"}
-            />
         </div>
     );
 };
