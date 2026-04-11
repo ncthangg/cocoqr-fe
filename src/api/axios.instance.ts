@@ -11,7 +11,6 @@ export const handleApiError = (error: any) => {
     // Security Rules: generic error toasts only, never expose stack traces
     switch (status) {
         case 400:
-            toast.error("Yêu cầu không hợp lệ. Vui lòng kiểm tra lại thông tin.");
             break;
         case 401:
             toast.error("Phiên đăng nhập hết hạn hoặc không có quyền truy cập.");

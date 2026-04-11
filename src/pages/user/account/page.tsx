@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { accountApi } from "@/services/account-api.service";
 import { providerApi } from "@/services/provider-api.service";
 import type { AccountRes, PagingVM, ProviderRes } from "@/models/entity.model";
-import type { PutAccountReq } from "@/models/entity.request.model";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import type { Column } from "@/components/UICustoms/Table/data-table";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
@@ -166,16 +165,7 @@ const AccountsPage: React.FC = () => {
     const handlePinAccount = useCallback(async (acc: AccountRes) => {
         const isCurrentlyPinned = acc.isPinned;
         try {
-            const req: PutAccountReq = {
-                providerId: acc.providerId,
-                bankCode: acc.bankCode ?? "",
-                bankName: acc.bankName ?? "",
-                accountHolder: acc.accountHolder ?? "",
-                accountNumber: acc.accountNumber ?? "",
-                isPinned: !isCurrentlyPinned,
-                isActive: acc.isActive,
-            };
-            await accountApi.put(acc.id, req);
+            await accountApi.patchIsPinned(acc.id, !isCurrentlyPinned);
             setAccounts(prev =>
                 prev.map(a => a.id === acc.id ? { ...a, isPinned: !isCurrentlyPinned } : a)
             );

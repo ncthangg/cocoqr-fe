@@ -12,7 +12,8 @@ export const ApiConstant = {
         GET_BY_ID: (id: string) => `/accounts/${id}`,
         POST: "/accounts",
         PUT: (id: string) => `/accounts/${id}`,
-        PUT_STATUS: (id: string) => `/accounts/${id}/status`,
+        PATCH_PIN: (id: string) => `/accounts/${id}/pin`,
+        PATCH_STATUS: (id: string) => `/accounts/${id}/status`,
         DELETE: (id: string) => `/accounts/${id}`,
     },
     PROVIDER: {
@@ -31,7 +32,7 @@ export const ApiConstant = {
     USER: {
         GET_ALL: "/users",
         GET_BY_ID: (id: string) => `/users/${id}`,
-        PUT_STATUS: (id: string) => `/users/${id}/status`,
+        PATCH_STATUS: (id: string) => `/users/${id}/status`,
     },
     USER_ROLE: {
         GET_ROLES_BY_USER_ID: (userId: string) => `/userroles/${userId}/roles`,

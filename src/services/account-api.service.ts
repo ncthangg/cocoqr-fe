@@ -52,8 +52,14 @@ export const accountApi = {
         const response = await axiosPrivate.put(ApiConstant.ACCOUNT.PUT(id), req);
         return response.data;
     },
-    updateStatus: async (id: string, status: boolean): Promise<string> => {
-        const response = await axiosPrivate.put(ApiConstant.ACCOUNT.PUT_STATUS(id), { status });
+    patchIsPinned: async (id: string, isPinned: boolean): Promise<string> => {
+        const response = await axiosPrivate.patch(ApiConstant.ACCOUNT.PATCH_PIN(id), null, {
+            params: { isPinned }
+        });
+        return response.data;
+    },
+    patchStatus: async (id: string): Promise<string> => {
+        const response = await axiosPrivate.patch(ApiConstant.ACCOUNT.PATCH_STATUS(id));
         return response.data;
     },
     delete: async (id: string): Promise<string> => {

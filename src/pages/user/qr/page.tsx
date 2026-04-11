@@ -6,7 +6,7 @@ import { providerApi } from "@/services/provider-api.service";
 import { qrApi } from "@/services/qr-api.service";
 
 import type { AccountRes, PagingVM, PostQrRes, ProviderRes } from "@/models/entity.model";
-import type { PostQrReq, PutAccountReq } from "@/models/entity.request.model";
+import type { PostQrReq } from "@/models/entity.request.model";
 import { toast } from "react-toastify";
 import { formatVNDInput, formatVNDDisplay } from "@/utils/currencyUtils";
 import QRDisplay from "@/components/UICustoms/QR/QRDisplay";
@@ -141,16 +141,7 @@ const CreatePaymentPage: React.FC = () => {
         }
         try {
             setLoading(true);
-            const req: PutAccountReq = {
-                providerId: acc.providerId,
-                bankCode: acc.bankCode ?? "",
-                bankName: acc.bankName ?? "",
-                accountHolder: acc.accountHolder ?? "",
-                accountNumber: acc.accountNumber ?? "",
-                isPinned: !isCurrentlyPinned,
-                isActive: acc.isActive,
-            };
-            await accountApi.put(acc.id, req);
+            await accountApi.patchIsPinned(acc.id, !isCurrentlyPinned);
             fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, providerFilter);
         } catch (error) {
             console.error("Error toggling pin status:", error);

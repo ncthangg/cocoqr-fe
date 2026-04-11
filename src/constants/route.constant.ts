@@ -25,5 +25,6 @@ export const RouteConstant = {
     GUIDE: "/guide",
     COMMITMENT: "/commitment",
     ABOUT: "/about",
+    THANK_TO: "/thanks",
 };
 

@@ -18,8 +18,8 @@ export const userApi = {
         });
         return response.data;
     },
-    updateStatus: async (id: string, status: boolean): Promise<string> => {
-        const response = await axiosPrivate.put(ApiConstant.USER.PUT_STATUS(id), { status });
+    patchStatus: async (id: string): Promise<string> => {
+        const response = await axiosPrivate.patch(ApiConstant.USER.PATCH_STATUS(id));
         return response.data;
     },
 };

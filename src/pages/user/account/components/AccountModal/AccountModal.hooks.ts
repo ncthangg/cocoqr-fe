@@ -135,7 +135,6 @@ export const useAccountModal = ({ isOpen, onClose, onSuccess, accountId, allProv
                     accountHolder: data.accountHolder,
                     accountNumber: data.accountNumber,
                     isActive: data.isActive,
-                    isPinned: data.isPinned
                 };
                 await accountApi.put(accountId, putPayload);
                 onClose();
