@@ -7,6 +7,7 @@ export interface AuthState {
     token: TokenRes | null;
     roles: RoleRes[] | null;
     isAuthModalOpen: boolean;
+    authModalTitle: string | null;
     isUserSynced: boolean;
     isRoleSelectionModalOpen: boolean;
     tempAuthData: SignInGoogleRes | null;
@@ -49,6 +50,7 @@ const initialState: AuthState = {
     token: null as TokenRes | null,
     roles: null as RoleRes[] | null,
     isAuthModalOpen: false,
+    authModalTitle: null as string | null,
     isUserSynced: false,
     isRoleSelectionModalOpen: false,
     tempAuthData: null,
@@ -59,11 +61,13 @@ const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
-        openAuthModal(state) {
+        openAuthModal(state, action: PayloadAction<string | undefined>) {
             state.isAuthModalOpen = true;
+            state.authModalTitle = action.payload || null;
         },
         closeAuthModal(state) {
             state.isAuthModalOpen = false;
+            state.authModalTitle = null;
         },
         openRoleSelectionModal(state, action: PayloadAction<SignInGoogleRes>) {
             state.tempAuthData = action.payload;
@@ -101,6 +105,9 @@ const authSlice = createSlice({
         startUserSync(state) {
             state.isUserSynced = false;
         },
+        syncUserFailed(state) {
+            state.isUserSynced = true;
+        },
     },
 });
 
@@ -116,6 +123,7 @@ export const {
 
     loadUserInfo,
     startUserSync,
+    syncUserFailed,
 } = authSlice.actions;
 
 export default authSlice.reducer;

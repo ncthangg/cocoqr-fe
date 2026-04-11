@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from
 import { bankApi } from "@/services/bank-api.service";
 import type { BankRes, PagingVM } from "@/models/entity.model";
 import { Edit, Wallet } from "lucide-react";
-import { toast } from "react-toastify";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
@@ -12,10 +11,12 @@ import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import { useDebounce } from "@/hooks/useDebounce";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const BankModal = lazy(() => import("./components/BankModal"));
 
 const BankPage: React.FC = () => {
+    //#region States
     const [banks, setBanks] = useState<BankRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [paging, setPaging] = useState<PagingVM<BankRes>>({
@@ -33,24 +34,26 @@ const BankPage: React.FC = () => {
     const debouncedSearch = useDebounce(searchValue, 500);
     const [sortState, setSortState] = useState<{ field: string, dir: "asc" | "desc" } | null>(null);
     const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
+    //#endregion
 
-
-
+    //#region Data Fetching
     const fetchBanks = useCallback(async (page: number, size: number, search?: string, sortField?: string, sortDir?: "asc" | "desc", isActive?: boolean) => {
         try {
             setLoading(true);
 
-            const res = await bankApi.getAll(page, size, sortField ?? null, sortDir ?? null, isActive ?? null, search ?? null);
+            const res = await bankApi.getAllByAdmin({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
+                isActive: isActive ?? null,
+                searchValue: search ?? null
+            });
 
             if (res) {
-                let list = res.list || [];
-
-                setBanks(list);
+                setBanks(res.list || []);
                 setPaging(res);
             }
-        } catch (error) {
-            console.error("Error fetching banks:", error);
-            toast.error("Không thể tải dữ liệu ngân hàng.");
         } finally {
             setLoading(false);
         }
@@ -59,7 +62,9 @@ const BankPage: React.FC = () => {
     useEffect(() => {
         fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter);
     }, [fetchBanks, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, statusFilter]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -80,7 +85,9 @@ const BankPage: React.FC = () => {
             fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter);
         }
     };
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -90,12 +97,17 @@ const BankPage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 shrink-0">
+                <div className="flex items-center gap-3">
                     <StatCard
                         label="Tổng ngân hàng"
                         value={paging.totalItems}
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
+                    />
+                    <RefreshButton
+                        onRefresh={() => fetchBanks(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, statusFilter)}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
@@ -115,7 +127,7 @@ const BankPage: React.FC = () => {
                         loading={loading}
                         data={banks}
                         sortState={useMemo(() => sortState ? {
-                            index: ["bankCode", "shortName", "bankName", "Trạng thái"]
+                            index: ["bankCode", "shortName", "Trạng thái"]
                                 .indexOf(sortState.field) + 1, dir: sortState.dir
                         } : null, [sortState])}
                         filterState={useMemo(() => statusFilter !== undefined ? { 4: statusFilter } : {}, [statusFilter])}
@@ -137,9 +149,9 @@ const BankPage: React.FC = () => {
                                 header: "Logo",
                                 accessor: (bank) => bank.logoUrl,
                                 cell: (bank) => (
-                                    <BrandLogo 
+                                    <BrandLogo
                                         logoUrl={bank.logoUrl}
-                                        name={bank.shortName}
+                                        name={bank.bankName}
                                         code={bank.bankCode}
                                         size="sm"
                                     />
@@ -165,7 +177,7 @@ const BankPage: React.FC = () => {
                                 header: "Tên ngân hàng",
                                 accessor: (bank) => bank.bankName,
                                 type: "string",
-                                sortable: true,
+                                sortable: false,
                                 filterable: false,
                                 cell: (bank) => bank.bankName
                             },
@@ -180,8 +192,7 @@ const BankPage: React.FC = () => {
                                         status={bank.isActive}
                                         activeText="HOẠT ĐỘNG"
                                         inactiveText="BẢO TRÌ"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                                 )
                             },
@@ -196,12 +207,6 @@ const BankPage: React.FC = () => {
                                             color="blue"
                                             title="Chỉnh sửa"
                                         />
-                                        {/* <ActionButton
-                                            icon={<Trash2 className="w-4 h-4" />}
-                                            onClick={() => handleOpenDeleteModal(bank)}
-                                            color="red"
-                                            title="Xóa"
-                                        /> */}
                                     </div>
                                 )
                             }
@@ -236,6 +241,7 @@ const BankPage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default BankPage;

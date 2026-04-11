@@ -7,6 +7,8 @@
 @config "../../tailwind.config.js";
 
 :root {
+    --font-primary: 'Inter', 'GeistVariable', system-ui, sans-serif;
+    --font-secondary: 'Roboto', sans-serif;
     /* Background & Surface */
     --color-bg: #ffffff;
     --color-surface: #fafafa;
@@ -14,25 +16,34 @@
     --color-surface-elevated: #ffffff;
 
     /* Border — 3 mức rõ ràng */
-    --color-border: #e4e4e7;           /* zinc-200  – viền mặc định nhẹ nhàng */
-    --color-border-strong: #a1a1aa;    /* zinc-400  – input, header table, outer card */
-    --color-border-subtle: #f4f4f5;    /* zinc-100  – row divider trong table */
+    --color-border: #e4e4e7;
+    /* zinc-200  – viền mặc định nhẹ nhàng */
+    --color-border-strong: #a1a1aa;
+    /* zinc-400  – input, header table, outer card */
+    --color-border-subtle: #f4f4f5;
+    /* zinc-100  – row divider trong table */
 
     /* Modal overlay */
     --color-modal-overlay: rgba(9, 9, 11, 0.65);
 
     /* Text */
-    --color-text-primary: #18181b;     /* zinc-900 */
-    --color-text-secondary: #52525b;   /* zinc-600 */
-    --color-text-subtle: #71717a;      /* zinc-500 */
+    --color-text-primary: #18181b;
+    /* zinc-900 */
+    --color-text-secondary: #52525b;
+    /* zinc-600 */
+    --color-text-subtle: #71717a;
+    /* zinc-500 */
 
     /* Status */
-    --color-success: #16a34a;          /* green-600 */
-    --color-warning: #ca8a04;          /* yellow-600 */
-    --color-danger: #dc2626;           /* red-600 */
+    --color-success: #16a34a;
+    /* green-600 */
+    --color-warning: #ca8a04;
+    /* yellow-600 */
+    --color-danger: #dc2626;
+    /* red-600 */
 
     /* Action (Primary = high-contrast monochrome) */
-    --color-primary: #18181b;          /* zinc-900 */
+    --color-primary: #18181b;
     --color-primary-foreground: #fafafa;
 
     /* Button Tokens */
@@ -41,6 +52,13 @@
     --color-btn-secondary-bg: #ffffff;
     --color-btn-secondary-text: #18181b;
     --color-btn-secondary-border: #e4e4e7;
+
+    /* Input Tokens */
+    --color-input-bg: var(--color-surface);
+    --color-input-text: var(--color-text-primary);
+    --color-input-border: var(--color-border-strong);
+    --color-input-placeholder: var(--color-text-subtle);
+    --color-input-ring: rgba(24, 24, 27, 0.1);
 
     /* Radius */
     --radius-sm: 6px;
@@ -71,31 +89,45 @@
     --accent: oklch(0.969 0.002 286.32);
     --accent-foreground: oklch(0.141 0.005 285.82);
     --destructive: oklch(0.6 0.2 27);
-    --border: oklch(0.92 0.004 286.32);      /* zinc-200 */
-    --input: oklch(0.703 0.009 286.32);      /* zinc-400 */
+    --border: oklch(0.92 0.004 286.32);
+    /* zinc-200 */
+    --input: oklch(0.703 0.009 286.32);
+    /* zinc-400 */
     --ring: oklch(0.141 0.005 285.82);
     --radius: 0.75rem;
 }
 
 .dark {
+    --font-primary: 'Inter', 'GeistVariable', system-ui, sans-serif;
+    --font-secondary: 'Roboto', sans-serif;
+
     /* Background & Surface */
-    --color-bg: #09090b;               /* zinc-950 */
-    --color-surface: #18181b;          /* zinc-900 */
-    --color-surface-muted: #27272a;    /* zinc-800 */
+    --color-bg: #09090b;
+    /* zinc-950 */
+    --color-surface: #18181b;
+    /* zinc-900 */
+    --color-surface-muted: #27272a;
+    /* zinc-800 */
     --color-surface-elevated: #1c1c1f;
 
     /* Border */
-    --color-border: #3f3f46;           /* zinc-700 */
-    --color-border-strong: #52525b;    /* zinc-600 */
-    --color-border-subtle: #27272a;    /* zinc-800 */
+    --color-border: #3f3f46;
+    /* zinc-700 */
+    --color-border-strong: #52525b;
+    /* zinc-600 */
+    --color-border-subtle: #27272a;
+    /* zinc-800 */
 
     /* Modal overlay */
     --color-modal-overlay: rgba(9, 9, 11, 0.80);
 
     /* Text */
-    --color-text-primary: #fafafa;     /* zinc-50 */
-    --color-text-secondary: #a1a1aa;   /* zinc-400 */
-    --color-text-subtle: #71717a;      /* zinc-500 */
+    --color-text-primary: #fafafa;
+    /* zinc-50 */
+    --color-text-secondary: #a1a1aa;
+    /* zinc-400 */
+    --color-text-subtle: #71717a;
+    /* zinc-500 */
 
     /* Status — brighter for dark bg */
     --color-success: #22c55e;
@@ -113,6 +145,13 @@
     --color-btn-secondary-text: #fafafa;
     --color-btn-secondary-border: #3f3f46;
 
+    /* Input Tokens — Forced light style for readability */
+    --color-input-bg: #ffffff;
+    --color-input-text: #18181b;
+    --color-input-border: #d4d4d8;
+    --color-input-placeholder: #a1a1aa;
+    --color-input-ring: rgba(24, 24, 27, 0.1);
+
     /* Shadcn/UI Fallback */
     --background: oklch(0.075 0.003 285.82);
     --foreground: oklch(0.985 0.002 286.32);
@@ -129,14 +168,16 @@
     --accent: oklch(0.21 0.006 285.82);
     --accent-foreground: oklch(0.985 0.002 286.32);
     --destructive: oklch(0.4 0.15 27);
-    --border: oklch(0.315 0.007 285.82);     /* zinc-700 */
-    --input: oklch(0.393 0.008 285.82);      /* zinc-600 */
+    --border: oklch(0.315 0.007 285.82);
+    /* zinc-700 */
+    --input: oklch(0.393 0.008 285.82);
+    /* zinc-600 */
     --ring: oklch(0.985 0.002 286.32);
 }
 
 /* =========================
    BASE
-========================= */
+ ========================= */
 
 html {
     scroll-behavior: smooth;
@@ -145,7 +186,7 @@ html {
 body {
     background-color: var(--color-bg);
     color: var(--color-text-primary);
-    font-family: 'GeistVariable', 'Inter', sans-serif;
+    font-family: var(--font-primary);
     @apply antialiased;
 }
 
@@ -155,7 +196,7 @@ body {
 
 /* =========================
    PAGE LAYOUT
-========================= */
+ ========================= */
 
 .page-container {
     @apply max-w-7xl mx-auto px-lg py-xl;
@@ -171,7 +212,7 @@ body {
 
 /* =========================
    BUTTON
-========================= */
+ ========================= */
 
 .btn {
     @apply inline-flex items-center justify-center font-bold transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
@@ -236,27 +277,50 @@ body {
 
 /* =========================
    INPUT
-========================= */
+ ========================= */
 
 .input {
     @apply w-full px-md py-sm outline-none transition-all duration-300 font-medium;
-    border: 1.5px solid var(--color-border-strong);
+    border: 1.5px solid var(--color-input-border);
     border-radius: var(--radius-md);
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
+    background-color: var(--color-input-bg);
+    color: var(--color-input-text);
 }
 
 .input:focus {
-    @apply ring-4 ring-primary/10 border-primary;
+    @apply ring-4 border-primary;
+    --tw-ring-color: var(--color-input-ring);
 }
 
 .input::placeholder {
-    color: var(--color-text-subtle);
+    color: var(--color-input-placeholder);
+}
+
+.select {
+    @apply w-full px-md py-sm outline-none transition-all duration-300 font-medium cursor-pointer;
+    border: 1.5px solid var(--color-input-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-input-bg);
+    color: var(--color-input-text);
+}
+
+/* Maintain dark style for disabled/readonly in dark mode */
+.dark .input:disabled,
+.dark .input[readonly],
+.dark .select:disabled {
+    background-color: var(--color-surface-muted);
+    color: var(--color-text-secondary);
+    border-color: var(--color-border);
+}
+
+.dark .select:not(:disabled) option {
+    background-color: #ffffff;
+    color: #18181b;
 }
 
 /* =========================
    MODAL
-========================= */
+ ========================= */
 
 .modal-overlay {
     @apply fixed inset-0 flex items-center justify-center p-md;
@@ -277,7 +341,7 @@ body {
 
 /* =========================
    TABLE
-========================= */
+ ========================= */
 
 .table-wrapper {
     @apply w-full overflow-x-auto rounded-2xl;
@@ -309,7 +373,7 @@ body {
 
 /* =========================
    ANIMATION
-========================= */
+ ========================= */
 
 .fade-in {
     @apply animate-in fade-in duration-300;
@@ -322,3 +386,225 @@ body {
 .slide-up {
     @apply animate-in slide-in-from-bottom-4 duration-300;
 }
+
+/* ==================================
+   RICH TEXT RENDERING (Prose-like)
+ ==================================== */
+.prose-content {
+    @apply leading-relaxed break-words;
+}
+
+.prose-content>*:first-child {
+    margin-top: 0;
+}
+
+.prose-content>*:last-child {
+    margin-bottom: 0;
+}
+
+.prose-content p {
+    @apply mb-4;
+}
+
+.prose-content b,
+.prose-content strong {
+    @apply font-bold text-foreground;
+}
+
+.prose-content i,
+.prose-content em {
+    @apply italic;
+}
+
+.prose-content u {
+    @apply underline;
+}
+
+.prose-content ul {
+    @apply list-disc pl-6 mb-4 space-y-1;
+}
+
+.prose-content ol {
+    @apply list-decimal pl-6 mb-4 space-y-1;
+}
+
+.prose-content h1 {
+    @apply text-2xl font-black mb-4 mt-8;
+}
+
+.prose-content h2 {
+    @apply text-xl font-extrabold mb-3 mt-6;
+}
+
+.prose-content h3 {
+    @apply text-lg font-bold mb-2 mt-4;
+}
+
+.prose-content a {
+    @apply text-primary underline decoration-primary/30 hover:decoration-primary transition-all;
+}
+
+.prose-content blockquote {
+    @apply border-l-4 border-primary/20 pl-4 py-1 italic bg-surface-muted/30 rounded-r-md mb-4;
+}
+
+.prose-content img {
+    @apply max-w-full h-auto rounded-xl shadow-lg my-6;
+}
+
+.prose-content pre,
+.prose-content code {
+    @apply bg-surface-muted px-1.5 py-0.5 rounded-md font-primary text-[0.9em] border border-border;
+}
+
+.prose-content pre {
+    @apply p-4 block overflow-auto mb-4;
+}
+
+/* Scrollbar for prose containers */
+.prose-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.prose-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.prose-content::-webkit-scrollbar-thumb {
+    @apply bg-border-strong/30 rounded-full;
+}
+
+.prose-content::-webkit-scrollbar-thumb:hover {
+    @apply bg-border-strong/50;
+}
+
+/* ==============================================
+   QUILL EMAIL EDITOR REGION
+   ============================================== */
+
+/* --- 1. Shared / Base Styles --- */
+.email-editor-container .ql-editor {
+    @apply !min-h-[120px] max-h-[450px] overflow-y-auto leading-relaxed font-primary transition-colors duration-200;
+}
+
+.email-editor-container .ql-editor.ql-blank::before {
+    @apply italic font-medium opacity-50 !text-foreground-muted;
+    left: 1.25rem !important;
+}
+
+/* --- 2. Editable Mode (Input-like behavior) --- */
+.email-editor-container:not(.readonly) .ql-toolbar.ql-snow {
+    @apply bg-surface-muted/40 border-border rounded-t-xl py-2 px-3;
+}
+
+.email-editor-container:not(.readonly) .ql-container.ql-snow {
+    @apply rounded-b-xl !text-sm;
+    background-color: var(--color-input-bg);
+    color: var(--color-input-text);
+    border: 1px solid var(--color-input-border) !important;
+    overflow: hidden;
+}
+
+/* Force light style in Dark Mode for editable areas (consistency with Inputs) */
+.dark .email-editor-container:not(.readonly) .ql-container.ql-snow {
+    background-color: #ffffff !important;
+    color: #18181b !important;
+}
+
+.dark .email-editor-container:not(.readonly) .ql-editor {
+    color: #18181b !important;
+}
+
+/* --- 3. Readonly Mode (View-only behavior) --- */
+.email-editor-container.readonly .ql-toolbar.ql-snow {
+    @apply hidden;
+    /* Hide toolbar completely */
+}
+
+.email-editor-container.readonly .ql-container.ql-snow {
+    @apply rounded-xl !min-h-0 border-border bg-bg/50;
+    border-style: dashed;
+}
+
+.email-editor-container.readonly .ql-editor {
+    @apply !min-h-0 py-4 px-5;
+    color: var(--color-text-primary);
+    /* Uses theme text color */
+}
+
+/* Adjustments for dark mode - Readonly area follows theme */
+.dark .email-editor-container.readonly .ql-container.ql-snow {
+    background-color: rgba(9, 9, 11, 0.4);
+    border-color: rgba(63, 63, 70, 0.4);
+}
+
+/* --- 4. Toolbar & Interactive Styles --- */
+.email-editor-container .ql-toolbar .ql-stroke {
+    @apply !stroke-foreground-muted;
+}
+
+.email-editor-container .ql-toolbar .ql-fill {
+    @apply !fill-foreground-muted;
+}
+
+.email-editor-container .ql-toolbar .ql-picker {
+    @apply !text-foreground-muted;
+}
+
+.email-editor-container .ql-toolbar .ql-active .ql-stroke,
+.email-editor-container .ql-toolbar button:hover .ql-stroke {
+    @apply !stroke-primary transition-all;
+}
+
+.email-editor-container .ql-toolbar .ql-active .ql-fill,
+.email-editor-container .ql-toolbar button:hover .ql-fill {
+    @apply !fill-primary transition-all;
+}
+
+/* --- 5. Scrollbar Optimization --- */
+.email-editor-container .ql-editor::-webkit-scrollbar {
+    width: 5px;
+}
+
+.email-editor-container .ql-editor::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.email-editor-container .ql-editor::-webkit-scrollbar-thumb {
+    @apply bg-border-strong/30 rounded-full;
+}
+
+.email-editor-container .ql-editor::-webkit-scrollbar-thumb:hover {
+    @apply bg-border-strong/50;
+}
+
+/* =========================
+   AVATAR RING
+ ========================= */
+
+.avatar-wrap {
+    @apply inline-flex items-center justify-center relative transition-all duration-500 rounded-full;
+    width: 180px; 
+    height: 180px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-foreground));
+    padding: 3px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.avatar-wrap:hover {
+    @apply scale-105 shadow-lg;
+}
+
+.avatar-inner {
+    @apply w-full h-full rounded-full flex items-center justify-center overflow-hidden;
+    background-color: var(--color-surface);
+}
+
+.avatar-inner img {
+    @apply w-full h-full object-cover transition-transform duration-700;
+}
+
+.avatar-inner:hover img {
+    @apply scale-110;
+}

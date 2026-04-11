@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import { accountApi } from "../../../../services/account-api.service";
 import { providerApi } from "../../../../services/provider-api.service";
 import type { AccountRes, GetUserBaseRes, PagingVM, ProviderRes } from "../../../../models/entity.model";
-import { toast } from "react-toastify";
 import { X, Wallet, Eye } from "lucide-react";
 import { resolveAvatarPreview } from "@/utils/imageConvertUtils";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
@@ -20,6 +19,7 @@ interface UserAccountsModalProps {
 }
 
 const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, user }) => {
+    //#region States & Effects
     const [accounts, setAccounts] = useState<AccountRes[]>([]);
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
@@ -39,18 +39,18 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
     const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
     const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
 
-    // Modal state
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
 
-    // Debounce search input
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedSearch(searchValue);
         }, 500);
         return () => clearTimeout(handler);
     }, [searchValue]);
+    //#endregion
 
+    //#region Data Fetching
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
         try {
@@ -77,25 +77,22 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
     ) => {
         try {
             setLoading(true);
-            const res = await accountApi.getAllByAdmin(
-                page,
-                size,
-                sortField ?? null,
-                sortDir ?? null,
+            const res = await accountApi.getAllByAdmin({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
                 userId,
-                providerId ?? null,
-                search ?? null,
-                isActive ?? null,
-                null, // isDeleted
-                status ?? null,
-            );
+                providerId: providerId ?? null,
+                searchValue: search ?? null,
+                isActive: isActive ?? null,
+                isDeleted: false,
+                status: status !== undefined ? String(status) : null,
+            });
             if (res) {
                 setAccounts(res.list || []);
                 setPaging(res);
             }
-        } catch (error) {
-            console.error("Error fetching accounts:", error);
-            toast.error("Không thể tải danh sách tài khoản.");
         } finally {
             setLoading(false);
         }
@@ -114,7 +111,9 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
             setPaging(prev => ({ ...prev, pageNumber: 1 }));
         }
     }, [isOpen, user, fetchUserAccounts, paging.pageNumber, paging.pageSize, sortState, debouncedSearch, providerFilter, activeFilter, statusFilter]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -131,7 +130,9 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
             prev.map(acc => acc.id === id ? { ...acc, status: newStatus } : acc)
         );
     };
+    //#endregion
 
+    //#region Render
     if (!isOpen || !user) return null;
 
     return (
@@ -234,7 +235,7 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                             )}
                                             {(acc.bankCode && acc.bankName) ? acc.bankName : acc.providerName}
                                             {(acc.bankIsActive === false || acc.providerIsActive === false) && (
-                                                <span className="text-red-500 font-bold text-xs animate-pulse">
+                                                <span className="text-danger font-bold text-xs animate-pulse">
                                                     (Đang bảo trì)
                                                 </span>
                                             )}
@@ -246,7 +247,7 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                 header: "SỐ TÀI KHOẢN",
                                 accessor: (acc) => acc.accountNumber,
                                 sortable: true,
-                                cell: (acc) => <span className="font-mono text-xs">{acc.accountNumber}</span>
+                                cell: (acc) => <span className="font-primary text-xs">{acc.accountNumber}</span>
                             },
                             {
                                 header: "NGÀY TẠO",
@@ -264,8 +265,6 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                         status={acc.isActive}
                                         activeText="ĐANG HOẠT ĐỘNG"
                                         inactiveText="KHÔNG HOẠT ĐỘNG"
-                                        activeColor="green"
-                                        inactiveColor="red"
                                     />
                                 )
                             },
@@ -279,8 +278,6 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
                                         status={acc.status}
                                         activeText="ACTIVE"
                                         inactiveText="INACTIVE"
-                                        activeColor="green"
-                                        inactiveColor="red"
                                     />
                                 )
                             },
@@ -326,6 +323,7 @@ const UserAccountsModal: React.FC<UserAccountsModalProps> = ({ isOpen, onClose, 
             />
         </div>
     );
+    //#endregion
 };
 
 export default UserAccountsModal;

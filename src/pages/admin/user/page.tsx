@@ -1,25 +1,27 @@
-import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef, lazy, Suspense } from "react";
 import { userApi } from "@/services/user-api.service";
 import { roleApi } from "@/services/role-api.service";
-import type { PagingVM, GetUserBaseRes } from "@/models/entity.model";
-import { toast } from "react-toastify";
+import type { PagingVM, GetUserBaseRes, RoleRes } from "@/models/entity.model";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import type { Column } from "@/components/UICustoms/Table/data-table";
 import ActionButton from "@/components/UICustoms/ActionButton";
-import { Eye } from "lucide-react";
+import { Eye, Wallet, Mail, ShieldCheck } from "lucide-react";
 import { formatDate } from "@/utils/dateTimeUtils";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import { StatCard } from "@/components/UICustoms/StatCard";
-import { Wallet } from "lucide-react";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { useDebounce } from "@/hooks/useDebounce";
+import { TagBadge } from "@/components/UICustoms/TagBadge";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const UserRolesModal = lazy(() => import("./components/UserRolesModal"));
 const UserAccountsModal = lazy(() => import("./components/UserAccountsModal"));
 const UserModal = lazy(() => import("./components/UserModal"));
+const UserEmailModal = lazy(() => import("./components/UserEmailModal"));
 
 const UserPage: React.FC = () => {
+    //#region States
     const [users, setUsers] = useState<GetUserBaseRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [paging, setPaging] = useState<PagingVM<GetUserBaseRes>>({
@@ -33,9 +35,9 @@ const UserPage: React.FC = () => {
     const [isViewRolesModalOpen, setIsViewRolesModalOpen] = useState(false);
     const [isViewAccountsModalOpen, setIsViewAccountsModalOpen] = useState(false);
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+    const [isUserEmailModalOpen, setIsUserEmailModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<GetUserBaseRes | null>(null);
 
-    // Filter states
     const [searchValue, setSearchValue] = useState<string>("");
     const debouncedSearch = useDebounce(searchValue, 500);
     const [sortState, setSortState] = useState<{ field: string, dir: "asc" | "desc" } | null>(null);
@@ -43,44 +45,47 @@ const UserPage: React.FC = () => {
     const [roleIdFilter, setRoleIdFilter] = useState<string | undefined>(undefined);
 
     const [roles, setRoles] = useState<{ label: string, value: string }[]>([]);
-    const [allRolesRaw, setAllRolesRaw] = useState<any[]>([]);
-    const [hasFetchedRoles, setHasFetchedRoles] = useState<boolean>(false);
+    const [allRolesRaw, setAllRolesRaw] = useState<RoleRes[]>([]);
+    const hasFetchedRoles = useRef(false);
+    //#endregion
 
+    //#region Data Fetching
     const fetchRoles = useCallback(async () => {
-        if (hasFetchedRoles) return;
+        if (hasFetchedRoles.current) return;
         try {
             const res = await roleApi.getAll();
             if (res) {
-                const mappedRoles = (res || []).map((r: any) => ({
+                const mappedRoles = res.map((r: RoleRes) => ({
                     label: r.nameUpperCase,
                     value: r.id
                 }));
                 setRoles(mappedRoles);
-                setAllRolesRaw(res || []);
-                setHasFetchedRoles(true);
+                setAllRolesRaw(res);
+                hasFetchedRoles.current = true;
             }
         } catch (error) {
             console.error("Error fetching roles", error);
         }
-    }, [hasFetchedRoles]);
-
-
+    }, []);
 
     const fetchUsers = useCallback(async (page: number, size: number, sortField?: string, sortDir?: "asc" | "desc", search?: string, status?: boolean, roleId?: string) => {
         try {
             setLoading(true);
 
-            // userApi.getAll signature: pageNumber, pageSize, sortField, sortDirection, status, searchValue, roleId
-            const res = await userApi.getAll(page, size, sortField ?? null, sortDir ?? null, status ?? null, search ?? null, roleId ?? null);
-            if (res) {
-                let list = res.list || [];
+            const res = await userApi.getAll({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
+                status: status !== undefined ? String(status) : null,
+                searchValue: search ?? null,
+                roleId: roleId ?? null
+            });
 
-                setUsers(list);
+            if (res) {
+                setUsers(res.list || []);
                 setPaging(res);
             }
-        } catch (error) {
-            console.error("Error fetching users:", error);
-            toast.error("Kh�ng th? t?i users data.");
         } finally {
             setLoading(false);
         }
@@ -89,35 +94,39 @@ const UserPage: React.FC = () => {
     useEffect(() => {
         fetchUsers(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, statusFilter, roleIdFilter);
     }, [fetchUsers, paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, statusFilter, roleIdFilter]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
         }
     };
 
-    const handleOpenUserModal = (user: GetUserBaseRes) => {
+    const handleOpenUserModal = useCallback((user: GetUserBaseRes) => {
         setSelectedUser(user);
         setIsUserModalOpen(true);
-    };
+    }, []);
 
-    const handleOpenViewRolesModal = (user: GetUserBaseRes) => {
+    const handleOpenViewRolesModal = useCallback((user: GetUserBaseRes) => {
         fetchRoles();
         setSelectedUser(user);
         setIsViewRolesModalOpen(true);
-    };
+    }, [fetchRoles]);
 
-    const handleOpenViewAccountsModal = (user: GetUserBaseRes) => {
+    const handleOpenViewAccountsModal = useCallback((user: GetUserBaseRes) => {
         setSelectedUser(user);
         setIsViewAccountsModalOpen(true);
-    };
+    }, []);
 
-    const handleUserStatusChanged = (userId: string, newStatus: boolean) => {
+    const handleUserStatusChanged = useCallback((userId: string, newStatus: boolean) => {
         setUsers(prev =>
             prev.map(u => u.id === userId ? { ...u, status: newStatus } : u)
         );
-    };
+    }, []);
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -127,12 +136,18 @@ const UserPage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 shrink-0">
+                <div className="flex items-center gap-3">
                     <StatCard
-                        label="Tổng role"
+                        label="Tổng"
+                        className="font-primary"
                         value={paging.totalItems}
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
+                    />
+                    <RefreshButton
+                        onRefresh={() => fetchUsers(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, statusFilter, roleIdFilter)}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
@@ -204,12 +219,12 @@ const UserPage: React.FC = () => {
                                     <div className="flex flex-wrap gap-1">
                                         {user.roles && user.roles.length > 0 ? (
                                             user.roles.map((role, idx) => (
-                                                <span
+                                                <TagBadge
                                                     key={idx}
-                                                    className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 uppercase"
-                                                >
-                                                    {role.name}
-                                                </span>
+                                                    label={role.name}
+                                                    color="blue"
+                                                    size="sm"
+                                                />
                                             ))
                                         ) : (
                                             <span className="text-xs text-foreground-muted">No roles</span>
@@ -236,8 +251,7 @@ const UserPage: React.FC = () => {
                                         status={user.status}
                                         activeText="ACTIVE"
                                         inactiveText="INACTIVE"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                                 )
                             },
@@ -252,18 +266,27 @@ const UserPage: React.FC = () => {
                                             color="blue"
                                             title="Chi tiết & Khóa/Mở"
                                         />
-                                        <button
+                                        <ActionButton
+                                            icon={<Mail className="w-4 h-4" />}
+                                            onClick={() => {
+                                                setSelectedUser(user);
+                                                setIsUserEmailModalOpen(true);
+                                            }}
+                                            color="gray"
+                                            title="Gửi email"
+                                        />
+                                        <ActionButton
+                                            icon={<Wallet className="w-4 h-4" />}
                                             onClick={() => handleOpenViewAccountsModal(user)}
-                                            className="text-primary hover:text-primary/80 transition-colors font-medium text-sm"
-                                        >
-                                            Accounts
-                                        </button>
-                                        <button
+                                            color="blue"
+                                            title="Tài khoản ngân hàng"
+                                        />
+                                        <ActionButton
+                                            icon={<ShieldCheck className="w-4 h-4" />}
                                             onClick={() => handleOpenViewRolesModal(user)}
-                                            className="text-primary hover:text-primary/80 transition-colors font-medium text-sm"
-                                        >
-                                            Roles
-                                        </button>
+                                            color="amber"
+                                            title="Quyền hạn (Roles)"
+                                        />
                                     </div>
                                 )
                             },
@@ -297,6 +320,16 @@ const UserPage: React.FC = () => {
                 </Suspense>
             )}
 
+            {isUserEmailModalOpen && (
+                <Suspense fallback={null}>
+                    <UserEmailModal
+                        isOpen={isUserEmailModalOpen}
+                        onClose={() => setIsUserEmailModalOpen(false)}
+                        user={selectedUser}
+                    />
+                </Suspense>
+            )}
+
             {isViewRolesModalOpen && (
                 <Suspense fallback={null}>
                     <UserRolesModal
@@ -325,6 +358,7 @@ const UserPage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default UserPage;

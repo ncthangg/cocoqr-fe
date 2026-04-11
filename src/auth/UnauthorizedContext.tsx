@@ -6,6 +6,7 @@ import {
     type ReactNode,
     useCallback,
 } from "react";
+import { useNavigate } from "react-router-dom";
 import { finalizeSession, setSessionExpiredHandler } from "../services/auth-token.service";
 import UnauthorizedModal, { type UnauthorizedType } from "../components/Modals/UnauthorizedModal";
 
@@ -70,16 +71,17 @@ export function UnauthorizedProvider({ children }: UnauthorizedProviderProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [type, setType] = useState<UnauthorizedType>("SESSION_EXPIRED");
     const [redirectPath, setRedirectPath] = useState<string>("/");
+    const navigate = useNavigate();
 
     const handleAction = useCallback(() => {
         setIsOpen(false);
         if (type === "SESSION_EXPIRED") {
             finalizeSession();
-            window.location.href = "/";
+            navigate("/");
         } else {
-            window.location.href = redirectPath;
+            navigate(redirectPath);
         }
-    }, [type, redirectPath]);
+    }, [type, redirectPath, navigate]);
 
     const { countdown, reset } = useUnauthorizedCountdown(
         isOpen,

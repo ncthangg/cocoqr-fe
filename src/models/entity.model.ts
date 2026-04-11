@@ -1,4 +1,4 @@
-import type { QRStyleType } from "@/models/enum";
+import type { QRStyleType, SmtpSettingType } from "@/models/enum";
 
 export interface PagingVM<T> {
     list?: T[];
@@ -95,7 +95,7 @@ export interface AccountRes extends BaseRes {
     providerStatus?: boolean;
 
     balance?: number;
-    isPinned?: boolean;
+    isPinned: boolean;
     isActive: boolean;
 }
 
@@ -163,6 +163,50 @@ export interface QrStyleLibraryRes extends BaseRes {
     isActive: boolean;
 }
 ///===================================================
+export interface GetEmailLogRes {
+    id: string;
+    recipientUserId?: string | null;
+    recipientFullName?: string | null;
+    toEmail: string;
+    subject: string;
+    status: string;
+    errorMessage?: string | null;
+    smtpType: string;
+    templateKey?: string | null;
+    emailDirection?: string | null;
+    createdAt: string;
+}
+
+export interface GetEmailLogByIdRes {
+    id: string;
+    recipientUserId?: string | null;
+    recipientFullName?: string | null;
+    toEmail: string;
+    subject: string;
+    body: string;
+    status: string;
+    errorMessage?: string | null;
+    smtpType: string;
+    templateKey?: string | null;
+    emailDirection?: string | null;
+    createdAt: string;
+}
+///===================================================
+export interface SmtpSettingRes {
+    id: string;
+    type: SmtpSettingType;
+    host: string;
+    port: number;
+    username: string;
+    hasPassword: boolean;
+    enableSSL: boolean;
+    fromEmail: string;
+    fromName: string;
+    isActive: boolean;
+    updatedAt?: string;
+}
+///===================================================
+
 // Data Sync Models
 
 export const SyncAction = {
@@ -217,3 +261,24 @@ export interface BankSyncDiffItem {
 }
 export type BankSyncSummary = SyncSummary;
 export type BankSyncPreviewRes = SyncPreviewRes;
+///===================================================
+export interface EmailTemplateRes {
+    id: string;
+    templateKey: string;
+    subject: string;
+    body: string;
+    description?: string | null;
+    isActive: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+///===================================================
+export interface ContactMessageRes {
+    id: string;
+    fullName: string;
+    email: string;
+    content: string;
+    status: string;
+    createdAt: string;
+    repliedAt?: string | null;
+}

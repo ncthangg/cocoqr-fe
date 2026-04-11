@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { userRoleApi } from "../../../../services/userRole-api.service";
 
 import type { GetUserBaseRes } from "../../../../models/entity.model";
-import { toast } from "react-toastify";
 import { X, Shield, Plus, Trash2 } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
 import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
@@ -17,13 +16,13 @@ interface UserRolesModalProps {
 }
 
 const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, allRoles, onRolesUpdate }) => {
+    //#region States & Effects
     const [userRoles, setUserRoles] = useState<any[]>(user?.roles || []);
-
     const [loading, setLoading] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [selectedRoleToAdd, setSelectedRoleToAdd] = useState<string>("");
-
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [roleToRemove, setRoleToRemove] = useState<{ id: string, name: string } | null>(null);
 
     useEffect(() => {
         if (isOpen && user) {
@@ -37,7 +36,9 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
             setSelectedRoleToAdd("");
         }
     }, [isOpen, user]);
+    //#endregion
 
+    //#region Data Fetching
     const fetchUserRoles = async () => {
         if (!user) return;
         try {
@@ -46,20 +47,17 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
             const roles = data || [];
             setUserRoles(roles);
             if (onRolesUpdate) onRolesUpdate(user.id, roles);
-        } catch (error) {
-            console.error("Failed to fetch roles for user", error);
-            toast.error(`Không thể tải role cho ${user.fullName}`);
         } finally {
             setLoading(false);
         }
     };
+    //#endregion
 
+    //#region Handlers
     const handleAddRole = async () => {
         if (!user || !selectedRoleToAdd) return;
         try {
             setIsSubmitting(true);
-
-            // Map existing IDs
             const currentIds = userRoles.map(r => r.id || r.roleId || r.Id).filter(Boolean);
             const updatedRoleIds = [...currentIds, selectedRoleToAdd];
 
@@ -68,18 +66,12 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
                 roleIds: Array.from(new Set(updatedRoleIds))
             });
 
-            toast.success("Thêm role thành công!");
             setSelectedRoleToAdd("");
             fetchUserRoles();
-        } catch (error) {
-            console.error("Failed to add role", error);
-            toast.error("Thêm role thất bại.");
         } finally {
             setIsSubmitting(false);
         }
     };
-
-    const [roleToRemove, setRoleToRemove] = useState<{ id: string, name: string } | null>(null);
 
     const handleRemoveRoleClick = (roleId: string, roleName: string) => {
         setRoleToRemove({ id: roleId, name: roleName });
@@ -99,18 +91,16 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
                 roleIds: updatedRoleIds
             });
 
-            toast.success("Xóa role thành công!");
             fetchUserRoles();
             setIsDeleteModalOpen(false);
             setRoleToRemove(null);
-        } catch (error) {
-            console.error("Failed to remove role", error);
-            toast.error("Xóa role thất bại.");
         } finally {
             setIsSubmitting(false);
         }
     };
+    //#endregion
 
+    //#region Render
     if (!isOpen || !user) return null;
 
     const availableRoles = allRoles.filter(role =>
@@ -140,7 +130,7 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
                     </button>
                 </div>
 
-                <div className="p-4 space-y-6 overflow-y-auto flex-1 min-h-0">
+                <div className="p-4 space-y-6 overflow-y-auto flex-1 min-h-0 text-left">
                     {/* ADD ROLE SECTION */}
                     <div className="bg-muted/20 p-4 border border-border rounded-lg">
                         <h3 className="text-sm font-semibold mb-3 text-foreground">Thêm Role Mới</h3>
@@ -172,7 +162,7 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
                     <div>
                         <h3 className="text-sm font-semibold mb-3 text-foreground">Roles Hiện Tại</h3>
                         {loading ? (
-                            <div className="flex justify-center p-6 text-foreground-muted text-sm">
+                            <div className="flex justify-center p-6 text-foreground-muted text-sm text-center">
                                 Đang tải roles...
                             </div>
                         ) : userRoles.length > 0 ? (
@@ -223,7 +213,8 @@ const UserRolesModal: React.FC<UserRolesModalProps> = ({ isOpen, onClose, user, 
                 confirmText="Xóa hoàn toàn"
                 itemName={roleToRemove?.name || ""}
             />
-        </div >
+        </div>
+        //#endregion
     );
 };
 

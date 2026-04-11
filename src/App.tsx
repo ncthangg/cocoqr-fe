@@ -3,9 +3,7 @@ import { router } from "./router/app.router";
 import { useAuth } from "./auth/useAuth";
 import { useAppDispatch, useAppSelector } from "./store/redux.hooks";
 import { useEffect } from "react";
-import type { UserRes } from "./models/entity.model";
-import { loadUserInfo } from "./store/slices/auth.slice";
-import { startUserSync } from "./store/slices/auth.slice";
+import { loadUserInfo, startUserSync, syncUserFailed } from "./store/slices/auth.slice";
 import { authApi } from "./services/auth-api.service";
 import { ToastContainer } from "react-toastify";
 
@@ -27,9 +25,7 @@ function App() {
           }));
         } catch (error) {
           console.error('Failed to sync user data:', error);
-          dispatch(loadUserInfo({
-            user: null as unknown as UserRes,
-          }));
+          dispatch(syncUserFailed());
         }
       }
 
@@ -41,7 +37,11 @@ function App() {
   return (
     <>
       <RouterProvider router={router} />
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer 
+        position="top-right" 
+        style={{ top: '80px', zIndex: 99999 }}
+        autoClose={3000} 
+      />
     </>
   );
 }

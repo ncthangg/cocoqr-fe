@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { Eye, Wallet } from "lucide-react";
-import { toast } from "react-toastify";
 import { accountApi } from "@/services/account-api.service";
 import { providerApi } from "@/services/provider-api.service";
 import type { AccountRes, ProviderRes } from "@/models/entity.model";
@@ -15,10 +14,12 @@ import { StatCard } from "@/components/UICustoms/StatCard";
 import { formatDate } from "@/utils/dateTimeUtils";
 import { useDebounce } from "@/hooks/useDebounce";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const AccountModal = lazy(() => import("./components/AccountModal"));
 
 const AccountsPage: React.FC = () => {
+    //#region States
     const [accounts, setAccounts] = useState<AccountRes[]>([]);
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
@@ -38,18 +39,17 @@ const AccountsPage: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
     const [providerFilter, setProviderFilter] = useState<string | undefined>(undefined);
 
-    // Modal state
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
+    //#endregion
 
-
-
+    //#region Data Fetching
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
         try {
             const res = await providerApi.getAll();
             if (res) {
-                setAllProviders(res || []);
+                setAllProviders(res);
                 setHasFetchedProviders(true);
             }
         } catch (error) {
@@ -66,25 +66,22 @@ const AccountsPage: React.FC = () => {
         status?: boolean) => {
         try {
             setLoading(true);
-            const res = await accountApi.getAllByAdmin(
-                page,
-                size,
-                sortField ?? null,
-                sortDir ?? null,
-                null,
-                providerId ?? null,
-                search ?? null,
-                isActive ?? null,
-                isDeleted ?? null,
-                status ?? null,
-            );
+            const res = await accountApi.getAllByAdmin({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
+                userId: null,
+                providerId: providerId ?? null,
+                searchValue: search ?? null,
+                isActive: isActive ?? null,
+                isDeleted: isDeleted ?? null,
+                status: status !== undefined ? String(status) : null,
+            });
             if (res) {
                 setAccounts(res.list || []);
                 setPaging(res);
             }
-        } catch (error) {
-            console.error("Error fetching accounts:", error);
-            toast.error("Không thể tải danh sách tài khoản.");
         } finally {
             setLoading(false);
         }
@@ -93,7 +90,9 @@ const AccountsPage: React.FC = () => {
     useEffect(() => {
         fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter, false, statusFilter);
     }, [fetchAccounts, paging.pageNumber, paging.pageSize, sortState, debouncedSearch, providerFilter, activeFilter, statusFilter]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -110,7 +109,9 @@ const AccountsPage: React.FC = () => {
             prev.map(acc => acc.id === id ? { ...acc, status: newStatus } : acc)
         );
     };
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -120,12 +121,17 @@ const AccountsPage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 shrink-0">
+                <div className="flex items-center gap-3">
                     <StatCard
                         label="Tổng tài khoản"
                         value={paging.totalItems}
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
+                    />
+                    <RefreshButton
+                        onRefresh={() => fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter, false, statusFilter)}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
@@ -194,7 +200,7 @@ const AccountsPage: React.FC = () => {
                                 cell: (acc) => (
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-2">
-                                            <BrandLogo 
+                                            <BrandLogo
                                                 logoUrl={acc.bankLogoUrl ?? acc.providerLogoUrl}
                                                 name={acc.bankShortName || acc.providerName}
                                                 code={acc.bankCode || acc.providerCode}
@@ -241,8 +247,7 @@ const AccountsPage: React.FC = () => {
                                         status={acc.isActive}
                                         activeText="ĐANG HOẠT ĐỘNG"
                                         inactiveText="KHÔNG HOẠT ĐỘNG"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                                 )
                             },
@@ -257,8 +262,7 @@ const AccountsPage: React.FC = () => {
                                         status={acc.status}
                                         activeText="ACTIVE"
                                         inactiveText="INACTIVE"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                                 )
                             },
@@ -307,6 +311,7 @@ const AccountsPage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default AccountsPage;

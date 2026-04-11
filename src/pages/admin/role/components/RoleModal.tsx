@@ -12,24 +12,25 @@ interface RoleModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: (updatedRole: RoleRes) => void;
-    role?: RoleRes | null;
+    role: RoleRes | null;
 }
 
 const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role }) => {
+    //#region States & Refs
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(true);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    //#endregion
 
+    //#region Side Effects
     useEffect(() => {
         if (isOpen && role) {
             setStatus(role.status ?? true);
         }
     }, [isOpen, role]);
+    //#endregion
 
-    if (!isOpen || !role) return null;
-
-    const isAdminRole = role.name.toLowerCase() === "admin";
-
+    //#region Handlers
     const handleUpdateStatus = () => {
         if (isAdminRole && !status) {
             toast.warning("Không thể vô hiệu hóa quyền Admin.");
@@ -39,26 +40,29 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
     };
 
     const executeUpdate = async () => {
+        if (!role) return;
         try {
             setLoading(true);
-            await roleApi.put(role.id, { 
-                name: role.name, 
-                status: status 
+            await roleApi.put(role.id, {
+                name: role.name,
+                status: status
             });
-            
-            toast.success("Cập nhật trạng thái Role thành công!");
+
             onSuccess?.({ ...role, status });
             onClose();
-        } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Lỗi khi cập nhật Role.");
         } finally {
             setLoading(false);
             setIsConfirmOpen(false);
         }
     };
 
-    const roleCode = role.nameUpperCase || role.name?.toUpperCase().trim().replace(/\s+/g, "_") || "";
+    const roleCode = role?.nameUpperCase || role?.name?.toUpperCase().trim().replace(/\s+/g, "_") || "";
+    //#endregion
 
+    //#region Render
+    if (!isOpen || !role) return null;
+
+    const isAdminRole = role.name.toLowerCase() === "admin";
     return (
         <div
             className="modal-overlay"
@@ -109,7 +113,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
                             type="text"
                             value={roleCode}
                             readOnly
-                            className="input bg-surface-muted/50 cursor-not-allowed opacity-80 font-mono tracking-wider"
+                            className="input bg-surface-muted/50 cursor-not-allowed opacity-80 font-primary tracking-wider"
                         />
                     </div>
 
@@ -135,10 +139,10 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
                         Hủy
                     </Button>
                     {!isAdminRole && (
-                        <Button 
-                            type="button" 
-                            variant="primary" 
-                            size="medium" 
+                        <Button
+                            type="button"
+                            variant="primary"
+                            size="medium"
                             onClick={handleUpdateStatus}
                             loading={loading}
                             disabled={status === role.status}
@@ -148,7 +152,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
                     )}
                 </div>
 
-                <ActionConfirmModal 
+                <ActionConfirmModal
                     isOpen={isConfirmOpen}
                     onClose={() => setIsConfirmOpen(false)}
                     onConfirm={executeUpdate}
@@ -159,6 +163,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ isOpen, onClose, onSuccess, role 
             </div>
         </div>
     );
+    //#endregion
 };
 
 export default RoleModal;

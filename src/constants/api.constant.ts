@@ -12,7 +12,8 @@ export const ApiConstant = {
         GET_BY_ID: (id: string) => `/accounts/${id}`,
         POST: "/accounts",
         PUT: (id: string) => `/accounts/${id}`,
-        PUT_STATUS: (id: string) => `/accounts/${id}/status`,
+        PATCH_PIN: (id: string) => `/accounts/${id}/pin`,
+        PATCH_STATUS: (id: string) => `/accounts/${id}/status`,
         DELETE: (id: string) => `/accounts/${id}`,
     },
     PROVIDER: {
@@ -21,6 +22,7 @@ export const ApiConstant = {
     },
     BANKINFO: {
         GET_ALL: "/bankinfos",
+        GET_ALL_BY_ADMIN: "/bankinfos/by-admin",
         PUT: (id: string) => `/bankinfos/${id}`,
     },
     ROLE: {
@@ -30,7 +32,7 @@ export const ApiConstant = {
     USER: {
         GET_ALL: "/users",
         GET_BY_ID: (id: string) => `/users/${id}`,
-        PUT_STATUS: (id: string) => `/users/${id}/status`,
+        PATCH_STATUS: (id: string) => `/users/${id}/status`,
     },
     USER_ROLE: {
         GET_ROLES_BY_USER_ID: (userId: string) => `/userroles/${userId}/roles`,
@@ -57,5 +59,31 @@ export const ApiConstant = {
         POST: "/qrstylelibraries",
         PUT: (id: string) => `/qrstylelibraries/${id}`,
         DELETE: (id: string) => `/qrstylelibraries/${id}`,
+    },
+    CONTACT: {
+        POST: "/contacts",
+    },
+    ADMIN_CONTACT: {
+        GET_ALL: "/admin/admincontacts",
+        GET_BY_ID: (id: string) => `/admin/admincontacts/${id}`,
+        POST: "/admin/admincontacts",
+        PATCH_IGNORE: (id: string) => `/admin/admincontacts/${id}/ignore`,
+    },
+    EMAIL_LOG: {
+        GET_ALL: "/admin/emaillogs",
+        GET_BY_ID: (id: string) => `/admin/emaillogs/${id}`,
+    },
+    SMTP_SETTING: {
+        GET: "/admin/smtpsettings",
+        PUT: "/admin/smtpsettings",
+        TEST: "/admin/smtpsettings/test",
+        DELETE: (id: string) => `/admin/smtpsettings/${id}`,
+    },
+    EMAIL_TEMPLATE: {
+        GET_ALL: "/admin/emailtemplates",
+        GET_BY_ID: (id: string) => `/admin/emailtemplates/${id}`,
+        POST: "/admin/emailtemplates",
+        PUT: (id: string) => `/admin/emailtemplates/${id}`,
+        DELETE: (id: string) => `/admin/emailtemplates/${id}`,
     },
 };

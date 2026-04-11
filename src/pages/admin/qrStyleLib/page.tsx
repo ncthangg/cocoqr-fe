@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
 import { qrStyleLibApi } from "@/services/qrStyleLib-api.service";
-import { Edit, Layout, Shield, User, FileJson, Trash2, AlertCircle, ShieldCheck } from "lucide-react";
+import { Edit, Layout, Shield, User, FileJson, Trash2, AlertCircle, ShieldCheck, Pin, PinOff } from "lucide-react";
+import { TagBadge } from "@/components/UICustoms/TagBadge";
 import { toast } from "react-toastify";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
@@ -9,14 +10,14 @@ import type { Column } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
-import { cn } from "@/lib/utils";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 import type { QrStyleLibraryRes } from "@/models/entity.model";
 import { QRStyleType } from "@/models/enum";
 
 const QrStyleLibModal = lazy(() => import("./components/QrStyleLibModal"));
-import { useDebounce } from "@/hooks/useDebounce";
 
 const QrStyleLibPage: React.FC = () => {
+    //#region States
     const [data, setData] = useState<QrStyleLibraryRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -25,33 +26,33 @@ const QrStyleLibPage: React.FC = () => {
 
     const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isPinning, setIsPinning] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<QrStyleLibraryRes | null>(null);
-    const [searchValue, setSearchValue] = useState("");
-    const debouncedSearch = useDebounce(searchValue, 500);
+    //#endregion
 
+    //#region Data Fetching
     const fetchItems = useCallback(async () => {
         try {
             setLoading(true);
             const res = await qrStyleLibApi.getAll({
+                userId: null,
                 isActive: activeFilter ?? null,
                 type: QRStyleType.SYSTEM,
-                name: debouncedSearch || null
             });
             if (res) {
-                setData(res || []);
+                setData(res);
             }
-        } catch (error) {
-            console.error("Error fetching QR styles:", error);
-            toast.error("Không thể tải dữ liệu QR Style.");
         } finally {
             setLoading(false);
         }
-    }, [activeFilter, debouncedSearch]);
+    }, [activeFilter]);
 
     useEffect(() => {
         fetchItems();
     }, [fetchItems]);
+    //#endregion
 
+    //#region Handlers
     const handleOpenCreateModal = () => {
         setSelectedItem(null);
         setIsModalOpen(true);
@@ -66,26 +67,53 @@ const QrStyleLibPage: React.FC = () => {
         fetchItems();
     };
 
-
-
     const handleDelete = async () => {
         if (!itemToDelete || isDeleting) return;
         try {
             setIsDeleting(true);
             await qrStyleLibApi.delete(itemToDelete.id);
-            toast.success("Đã xóa QR Style thành công.");
             setItemToDelete(null);
             fetchItems();
-        } catch (error) {
-            console.error("Error deleting QR style:", error);
-            toast.error("Không thể xóa QR Style.");
         } finally {
             setIsDeleting(false);
         }
     };
 
+    const handlePin = async (item: QrStyleLibraryRes) => {
+        if (isPinning) return;
+        try {
+            setIsPinning(true);
+            const isPinningNew = !item.isDefault;
+
+            if (isPinningNew) {
+                const existingDefault = data.find(a => a.isDefault && a.id !== item.id);
+                if (existingDefault) {
+                    await qrStyleLibApi.put(existingDefault.id, {
+                        ...existingDefault,
+                        isDefault: false
+                    });
+                }
+            }
+
+            await qrStyleLibApi.put(item.id, {
+                ...item,
+                isDefault: !item.isDefault
+            });
+
+            toast.success(item.isDefault ? "Đã bỏ mặc định" : "Đã đặt làm mặc định");
+            fetchItems();
+        } catch (error) {
+            console.error("Error pinning QR style:", error);
+            toast.error("Không thể thay đổi trạng thái mặc định.");
+        } finally {
+            setIsPinning(false);
+        }
+    };
+    //#endregion
+
     const activeCount = data.filter(a => a.isActive).length;
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -94,18 +122,25 @@ const QrStyleLibPage: React.FC = () => {
                     <p className="text-sm text-foreground-muted font-medium">Quản lý các phong cách thiết kế mã QR cho hệ thống và người dùng.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 shrink-0">
-                    <StatCard
-                        label="Tổng Style"
-                        value={data.length}
-                        icon={<Layout className="w-5 h-5 text-primary" />}
-                        color="blue"
-                    />
-                    <StatCard
-                        label="Đang hoạt động"
-                        value={activeCount}
-                        icon={<ShieldCheck className="w-5 h-5 text-green-500" />}
-                        color="green"
+                <div className="flex items-center gap-3 shrink-0">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 shrink-0">
+                        <StatCard
+                            label="Tổng Style"
+                            value={data.length}
+                            icon={<Layout className="w-5 h-5 text-primary" />}
+                            color="blue"
+                        />
+                        <StatCard
+                            label="Đang hoạt động"
+                            value={activeCount}
+                            icon={<ShieldCheck className="w-5 h-5 text-green-500" />}
+                            color="green"
+                        />
+                    </div>
+                    <RefreshButton
+                        onRefresh={fetchItems}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
@@ -113,8 +148,8 @@ const QrStyleLibPage: React.FC = () => {
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
                 <div className="shrink-0 border-b border-border">
                     <TableToolbar
-                        value={searchValue}
-                        onChange={setSearchValue}
+                        value={null}
+                        onChange={null}
                         placeholder="Tìm kiếm style theo tên..."
                         handleOpenCreateModal={handleOpenCreateModal}
                     />
@@ -123,9 +158,12 @@ const QrStyleLibPage: React.FC = () => {
                 <div className="min-h-0 flex-1 overflow-hidden">
                     <DataTable
                         loading={loading}
-                        data={data}
+                        data={useMemo(() => [...data].sort((a, b) => (a.isDefault === b.isDefault ? 0 : a.isDefault ? -1 : 1)), [data])}
                         sortState={null}
                         onSortChange={() => { }}
+                        filterState={useMemo(() => ({
+                            3: activeFilter
+                        }), [activeFilter])}
                         onFilterChange={(index, val) => {
                             if (index === 3) setActiveFilter(val as boolean | undefined);
                         }}
@@ -139,6 +177,12 @@ const QrStyleLibPage: React.FC = () => {
                                 cell: (item) => (
                                     <div className="flex items-center gap-2">
                                         <span className="font-semibold text-sm">{item.name}</span>
+                                        {item.isDefault && (
+                                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                                <span className="text-[10px] font-bold text-primary uppercase tracking-tight">Mặc định</span>
+                                            </div>
+                                        )}
                                     </div>
                                 )
                             },
@@ -146,22 +190,19 @@ const QrStyleLibPage: React.FC = () => {
                                 header: "Loại",
                                 accessor: (item) => item.type,
                                 cell: (item) => (
-                                    <div className={cn(
-                                        "flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold border w-fit",
-                                        item.type === QRStyleType.SYSTEM
-                                            ? "bg-blue-500/10 border-blue-500/20 text-blue-600"
-                                            : "bg-amber-500/10 border-amber-500/20 text-amber-600"
-                                    )}>
-                                        {item.type === QRStyleType.SYSTEM ? <Shield className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
-                                        {item.type === QRStyleType.SYSTEM ? "SYSTEM" : "USER"}
-                                    </div>
+                                    <TagBadge
+                                        label={item.type === QRStyleType.SYSTEM ? "SYSTEM" : "USER"}
+                                        color={item.type === QRStyleType.SYSTEM ? "blue" : "amber"}
+                                        size="sm"
+                                        icon={item.type === QRStyleType.SYSTEM ? <Shield className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
+                                    />
                                 )
                             },
                             {
                                 header: "Style Config",
                                 accessor: (item) => item.styleJson,
                                 cell: (item) => (
-                                    <div className="flex items-center gap-2 text-xs text-foreground-secondary font-mono bg-surface-muted/30 px-sm py-xs rounded-lg max-w-[200px] truncate border border-border/40" title={item.styleJson}>
+                                    <div className="flex items-center gap-2 text-xs text-foreground-secondary font-primary bg-surface-muted/30 px-sm py-xs rounded-lg max-w-[200px] truncate border border-border/40" title={item.styleJson}>
                                         <FileJson className="w-3.5 h-3.5 text-foreground-muted" />
                                         <span>JSON: {item.styleJson.length} chars</span>
                                     </div>
@@ -177,8 +218,7 @@ const QrStyleLibPage: React.FC = () => {
                                         status={item.isActive}
                                         activeText="HOẠT ĐỘNG"
                                         inactiveText="BẢO TRÌ"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                                 )
                             },
@@ -197,6 +237,13 @@ const QrStyleLibPage: React.FC = () => {
                                 cell: (item) => (
                                     <div className="flex items-center gap-sm">
                                         <ActionButton
+                                            icon={item.isDefault ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+                                            onClick={() => handlePin(item)}
+                                            color={item.isDefault ? "amber" : "blue"}
+                                            title={item.isDefault ? "Bỏ mặc định" : "Đặt làm mặc định"}
+                                            disabled={isPinning}
+                                        />
+                                        <ActionButton
                                             icon={<Edit className="w-4 h-4" />}
                                             onClick={() => handleOpenEditModal(item)}
                                             color="blue"
@@ -212,7 +259,7 @@ const QrStyleLibPage: React.FC = () => {
                                     </div>
                                 )
                             }
-                        ], [handleOpenEditModal, isDeleting])}
+                        ], [handlePin, isPinning, handleOpenEditModal, isDeleting])}
                     />
                 </div>
             </div>
@@ -248,6 +295,7 @@ const QrStyleLibPage: React.FC = () => {
             />
         </div>
     );
+    //#endregion
 };
 
 export default QrStyleLibPage;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { X } from "lucide-react";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
@@ -26,20 +27,32 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
     const [searchValue, setSearchValue] = useState("");
     const debouncedSearch = useDebounce(searchValue, 500);
 
+    const [lastFetchedKey, setLastFetchedKey] = useState("");
+
     const fetchBanks = async () => {
+        const currentKey = JSON.stringify({
+            p: paging.pageNumber,
+            s: paging.pageSize,
+            sort: sortState,
+            search: debouncedSearch
+        });
+
+        if (currentKey === lastFetchedKey) return;
+
         try {
             setLoading(true);
             const sortField = sortState?.field || null;
             const sortDir = sortState?.dir || null;
 
-            const res = await bankApi.getAll(
-                paging.pageNumber,
-                paging.pageSize,
-                sortField,
-                sortDir,
-                null, // Fetch all banks to show maintenance status
-                debouncedSearch || null
-            );
+            const res = await bankApi.getAll({
+                pageNumber: paging.pageNumber,
+                pageSize: paging.pageSize,
+                sortField: sortField,
+                sortDirection: sortDir,
+                isActive: null,
+                searchValue: debouncedSearch || null,
+                status: null
+            });
 
             if (res) {
                 setBanks(res.list ?? []);
@@ -49,6 +62,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                     totalPages: res.totalPages,
                     totalItems: res.totalItems
                 });
+                setLastFetchedKey(currentKey);
             }
         } catch (error) {
             console.error("Error fetching banks:", error);
@@ -77,15 +91,18 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
 
     const handleStopPropagation = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
 
-    if (!isOpen) return null;
+    if (!isOpen && banks.length === 0) return null;
 
     return (
         <div
-            className="modal-overlay"
+            className={cn("modal-overlay transition-opacity duration-300", !isOpen && "invisible opacity-0 pointer-events-none")}
             onClick={handleOverlayClick}
         >
             <div
-                className="relative flex flex-col overflow-hidden rounded-2xl shadow-lg bg-surface mx-auto w-[1000px] h-[800px] max-w-[95vw] max-h-[90vh]"
+                className={cn(
+                    "relative flex flex-col overflow-hidden rounded-2xl shadow-lg bg-surface mx-auto w-[1000px] h-[800px] max-w-[95vw] max-h-[90vh] transition-all duration-300 transform",
+                    !isOpen ? "scale-95 opacity-0" : "scale-100 opacity-100"
+                )}
                 onClick={handleStopPropagation}
             >
                 <div className="p-md border-b border-border flex justify-between items-center shrink-0">
@@ -159,7 +176,7 @@ const BankSelectionModal: React.FC<BankSelectionModalProps> = ({ isOpen, onClose
                                         header: "Tên ngân hàng",
                                         accessor: (bank) => bank.bankName,
                                         type: "string",
-                                        sortable: true,
+                                        sortable: false,
                                         filterable: false,
                                         cell: (bank) => (
                                             <div className="max-w-[300px] truncate" title={bank.bankName}>

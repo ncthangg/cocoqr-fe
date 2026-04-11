@@ -53,8 +53,8 @@ export default {
                 lg: "var(--shadow-lg)",
             },
             fontFamily: {
-                primary: ["GeistVariable", "Inter", "sans-serif"],
-                secondary: ["Roboto", "sans-serif"],
+                primary: "var(--font-primary)",
+                secondary: "var(--font-secondary)",
             },
             fontSize: {
                 xs: ["10px", "14px"],
@@ -87,7 +87,15 @@ export default {
                 dropdown: "40",
                 modal: "50",
                 toast: "60"
-            }
+            },
+            keyframes: {
+                shimmer: {
+                    '100%': { transform: 'translateX(100%)' },
+                },
+            },
+            animation: {
+                shimmer: 'shimmer 2.5s infinite',
+            },
         },
     },
     plugins: [],

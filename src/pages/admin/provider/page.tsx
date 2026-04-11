@@ -2,8 +2,6 @@ import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from
 import { providerApi } from "@/services/provider-api.service";
 import type { ProviderRes } from "@/models/entity.model";
 import { Edit, Wallet } from "lucide-react";
-import { toast } from "react-toastify";
-
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import type { Column } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
@@ -11,26 +9,27 @@ import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const ProviderModal = lazy(() => import("./components/ProviderModal"));
 
 const ProviderPage: React.FC = () => {
+    //#region States
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
     const [selectedProvider, setSelectedProvider] = useState<ProviderRes | null>(null);
+    //#endregion
 
+    //#region Data Fetching
     const fetchProviders = useCallback(async () => {
         try {
             setLoading(true);
             const res = await providerApi.getAll();
             if (res) {
-                setAllProviders(res || []);
+                setAllProviders(res);
             }
-        } catch (error) {
-            console.error("Error fetching providers:", error);
-            toast.error("Kh�ng th? t?i d? li?u provider.");
         } finally {
             setLoading(false);
         }
@@ -39,7 +38,9 @@ const ProviderPage: React.FC = () => {
     useEffect(() => {
         fetchProviders();
     }, [fetchProviders]);
+    //#endregion
 
+    //#region Handlers
     const handleOpenEditModal = (provider: ProviderRes) => {
         setSelectedProvider(provider);
         setIsProviderModalOpen(true);
@@ -54,7 +55,9 @@ const ProviderPage: React.FC = () => {
             fetchProviders();
         }
     };
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -64,18 +67,22 @@ const ProviderPage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 shrink-0">
+                <div className="flex items-center gap-3">
                     <StatCard
-                        label="Tổng phương thức"
+                        label="Tổng"
                         value={allProviders.length}
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
+                    />
+                    <RefreshButton
+                        onRefresh={fetchProviders}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
-
                 <div className="min-h-0 flex-1 overflow-hidden">
                     <DataTable
                         loading={loading}
@@ -89,7 +96,7 @@ const ProviderPage: React.FC = () => {
                                 header: "Logo",
                                 accessor: (provider) => provider.logoUrl,
                                 cell: (provider) => (
-                                    <BrandLogo 
+                                    <BrandLogo
                                         logoUrl={provider.logoUrl}
                                         name={provider.name}
                                         code={provider.code}
@@ -118,8 +125,7 @@ const ProviderPage: React.FC = () => {
                                         status={provider.isActive}
                                         activeText="HOẠT ĐỘNG"
                                         inactiveText="BẢO TRÌ"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                             },
                             {
@@ -153,6 +159,7 @@ const ProviderPage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default ProviderPage;

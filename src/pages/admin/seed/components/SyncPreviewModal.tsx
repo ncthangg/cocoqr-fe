@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { X, Plus, Pencil, Trash2, Minus, ArrowRight, FileText, Database, RefreshCw, ChevronDown, ChevronRight } from "lucide-react";
 import { DataLoader } from "@/components/UICustoms/Snipper";
 import Button from "@/components/UICustoms/Button";
-import { toast } from "react-toastify";
 import { SyncAction } from "@/models/entity.model";
 import type { SyncPreviewRes, SyncDiffItem } from "@/models/entity.model";
 
@@ -108,14 +107,15 @@ const SyncPreviewModal: React.FC<SyncPreviewModalProps> = ({
     headerIcon,
     fetchPreview: fetchPreviewFn,
     executeSync,
-    syncSuccessMessage = "Đồng bộ thành công!",
-    syncErrorMessage = "Đồng bộ thất bại.",
 }) => {
+    //#region States & Refs
     const [loading, setLoading] = useState(false);
     const [syncing, setSyncing] = useState(false);
     const [preview, setPreview] = useState<SyncPreviewRes | null>(null);
     const [filter, setFilter] = useState<SyncAction | "all">("all");
+    //#endregion
 
+    //#region Side Effects
     useEffect(() => {
         if (isOpen) {
             loadPreview();
@@ -124,16 +124,14 @@ const SyncPreviewModal: React.FC<SyncPreviewModalProps> = ({
             setFilter("all");
         }
     }, [isOpen]);
+    //#endregion
 
+    //#region Handlers
     const loadPreview = async () => {
         try {
             setLoading(true);
             const res = await fetchPreviewFn();
             setPreview(res);
-        } catch (error) {
-            console.error("Error fetching sync preview:", error);
-            toast.error("Không thể tải dữ liệu xem trước.");
-            onClose();
         } finally {
             setLoading(false);
         }
@@ -143,17 +141,15 @@ const SyncPreviewModal: React.FC<SyncPreviewModalProps> = ({
         try {
             setSyncing(true);
             await executeSync();
-            toast.success(syncSuccessMessage);
             onSyncSuccess();
             onClose();
-        } catch (error) {
-            console.error("Error syncing:", error);
-            toast.error(syncErrorMessage);
         } finally {
             setSyncing(false);
         }
     };
+    //#endregion
 
+    //#region Render
     if (!isOpen) return null;
 
     const filteredChanges = preview?.changes?.filter(c => filter === "all" || c.action === filter) || [];
@@ -273,6 +269,7 @@ const SyncPreviewModal: React.FC<SyncPreviewModalProps> = ({
             </div>
         </div>
     );
+    //#endregion
 };
 
 // --- Sub-components ---

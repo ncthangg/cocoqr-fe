@@ -1,4 +1,9 @@
 # Component Rules
+ 
+> **Scope:** Component structure, composition, and UX states. 
+> Styling tokens → `ui.rules.md`.
+> Performance (memoization, rendering) → `performance.rules.md`.
+> State choices → `state.rules.md`.
 
 ## Structure
 - Use `React.FC`

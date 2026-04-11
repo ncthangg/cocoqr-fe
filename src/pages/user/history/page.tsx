@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { Eye, Wallet } from "lucide-react";
-import { toast } from "react-toastify";
 import { qrApi } from "@/services/qr-api.service";
 import { providerApi } from "@/services/provider-api.service";
 import type { QrRes, PagingVM, ProviderRes } from "@/models/entity.model";
@@ -13,10 +12,12 @@ import { StatCard } from "@/components/UICustoms/StatCard";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { useDebounce } from "@/hooks/useDebounce";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const HistoryDetailModal = lazy(() => import("./components/HistoryDetailModal"));
 
 const UserHistoryPage: React.FC = () => {
+    //#region States
     const [records, setRecords] = useState<QrRes[]>([]);
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
@@ -36,15 +37,22 @@ const UserHistoryPage: React.FC = () => {
 
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<number | null>(null);
+    //#endregion
 
 
 
+    //#region Data Fetching
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
         try {
             const res = await providerApi.getAll();
-            if (res) { setAllProviders(res || []); setHasFetchedProviders(true); }
-        } catch (err) { console.error("Error fetching providers:", err); }
+            if (res) {
+                setAllProviders(res);
+                setHasFetchedProviders(true);
+            }
+        } catch (err) {
+            console.error("Error fetching providers:", err);
+        }
     }, [hasFetchedProviders]);
 
     const fetchRecords = useCallback(async (
@@ -53,18 +61,29 @@ const UserHistoryPage: React.FC = () => {
     ) => {
         try {
             setLoading(true);
-            const res = await qrApi.getAll(page, size, sortField ?? null, sortDir ?? null, providerId ?? null, search ?? null);
-            if (res) { setRecords(res.list || []); setPaging(res); }
-        } catch (err) {
-            console.error("Error fetching QR history:", err);
-            toast.error("Không thể tải lịch sử QR.");
-        } finally { setLoading(false); }
+            const res = await qrApi.getAll({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
+                providerId: providerId ?? null,
+                searchValue: search ?? null
+            });
+            if (res) {
+                setRecords(res.list || []);
+                setPaging(res);
+            }
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
     useEffect(() => {
         fetchRecords(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, providerFilter);
     }, [fetchRecords, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, providerFilter]);
+    //#endregion
 
+    //#region Handlers
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages)
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -74,7 +93,9 @@ const UserHistoryPage: React.FC = () => {
         setSelectedId(rec.id);
         setIsDetailOpen(true);
     };
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-8 flex-1 min-h-0">
             {/* Page Header */}
@@ -85,12 +106,17 @@ const UserHistoryPage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
                     <StatCard
-                        label="Tổng qr"
+                        label="Tổng"
                         value={paging.totalItems}
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
+                    />
+                    <RefreshButton
+                        onRefresh={() => fetchRecords(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, providerFilter)}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
@@ -141,7 +167,7 @@ const UserHistoryPage: React.FC = () => {
                                 type: "string",
                                 cell: (r) => (
                                     <div className="flex items-center gap-3">
-                                        <BrandLogo 
+                                        <BrandLogo
                                             logoUrl={r.bankLogoUrl ?? r.providerLogoUrl}
                                             name={r.bankShortName || r.providerName}
                                             code={r.bankCodeSnapshot || r.providerCode}
@@ -239,6 +265,7 @@ const UserHistoryPage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default UserHistoryPage;

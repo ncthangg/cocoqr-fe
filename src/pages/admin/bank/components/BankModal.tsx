@@ -5,7 +5,6 @@ import Button from "@/components/UICustoms/Button";
 import { bankApi } from "@/services/bank-api.service";
 import type { BankRes } from "@/models/entity.model";
 import type { PutBankInfoReq } from "@/models/entity.request.model";
-import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import StatusToggle from "@/components/UICustoms/Form/StatusToggle";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
 
@@ -17,6 +16,7 @@ interface BankModalProps {
 }
 
 const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank }) => {
+    //#region States & Refs
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<PutBankInfoReq>({
         bankCode: "",
@@ -29,8 +29,9 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
     const [file, setFile] = useState<File | undefined>(undefined);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    //#endregion
 
+    //#region Side Effects
     useEffect(() => {
         if (isOpen) {
             if (bank) {
@@ -48,12 +49,11 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                 setPreviewUrl(null);
             }
             setFile(undefined);
-            setIsConfirmOpen(false);
         }
     }, [isOpen, bank]);
+    //#endregion
 
-    if (!isOpen) return null;
-
+    //#region Handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
@@ -74,13 +74,13 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
-    const handleFormSubmit = (e: React.FormEvent) => {
+    const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.bankCode || !formData.bankName || !formData.shortName) {
             toast.error("Vui lòng điền các trường bắt buộc.");
             return;
         }
-        setIsConfirmOpen(true);
+        await executeSave();
     };
 
     const executeSave = async () => {
@@ -93,23 +93,29 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                 reqFormData.append("isDeleteFile", String(!file && !previewUrl));
 
                 await bankApi.put(bank.id, reqFormData as any);
-                toast.success("Cập nhật ngân hàng thành công!");
                 const updatedBank: BankRes = {
                     ...bank,
                     isActive: formData.isActive,
                     logoUrl: file ? (previewUrl ?? undefined) : (previewUrl ? bank.logoUrl : undefined),
                 };
-                setIsConfirmOpen(false);
                 onSuccess(updatedBank);
             }
             onClose();
-        } catch (error) {
-            console.error("Error saving bank:", error);
-            toast.error("Có lỗi xảy ra khi lưu ngân hàng.");
         } finally {
             setLoading(false);
         }
     };
+    const isSubmitDisabled = () => {
+        if (loading) return true;
+        if (!bank) return false; // In create mode, we can always submit if no specific validation is needed
+        const hasStatusChanged = formData.isActive !== bank.isActive;
+        const hasImageChanged = !!file || previewUrl !== (bank.logoUrl ?? null);
+        return !hasStatusChanged && !hasImageChanged;
+    };
+    //#endregion
+
+    //#region Render
+    if (!isOpen) return null;
 
     return (
         <div
@@ -210,7 +216,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                             name="napasBin"
                                             value={formData.napasBin || ""}
                                             readOnly
-                                            className="input font-mono bg-surface-muted/50 cursor-not-allowed opacity-80 text-center"
+                                            className="input font-primary bg-surface-muted/50 cursor-not-allowed opacity-80 text-center"
                                             placeholder="VD: 970436"
                                         />
                                     </div>
@@ -226,7 +232,7 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                             name="swiftCode"
                                             value={formData.swiftCode || ""}
                                             readOnly
-                                            className="input font-mono uppercase bg-surface-muted/50 cursor-not-allowed opacity-80 text-center"
+                                            className="input font-primary uppercase bg-surface-muted/50 cursor-not-allowed opacity-80 text-center"
                                             placeholder="VD: BFTVVNVX"
                                         />
                                     </div>
@@ -243,9 +249,9 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                                     {previewUrl ? (
                                         <>
                                             <div className="relative group/logo">
-                                                <BrandLogo 
+                                                <BrandLogo
                                                     logoUrl={previewUrl}
-                                                    name={formData.shortName || formData.bankName}
+                                                    name={formData.bankName}
                                                     code={formData.bankCode}
                                                     size="xl"
                                                     shadow="md"
@@ -300,24 +306,21 @@ const BankModal: React.FC<BankModalProps> = ({ isOpen, onClose, onSuccess, bank 
                         <Button type="button" variant="outline" size="medium" onClick={onClose} disabled={loading}>
                             Hủy
                         </Button>
-                        <Button type="submit" variant="primary" size="medium" loading={loading} disabled={isConfirmOpen}>
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            size="medium"
+                            loading={loading}
+                            disabled={isSubmitDisabled()}
+                        >
                             Cập nhật
                         </Button>
                     </div>
                 </form>
             </div>
-
-            <ActionConfirmModal
-                isOpen={isConfirmOpen}
-                onClose={() => setIsConfirmOpen(false)}
-                onConfirm={executeSave}
-                title="Xác nhận cập nhật ngân hàng"
-                description={`Bạn có chắc chắn muốn cập nhật ngân hàng "${formData.shortName || formData.bankCode}"?`}
-                loading={loading}
-                confirmText="Cập nhật"
-            />
         </div>
     );
+    //#endregion
 };
 
 export default BankModal;

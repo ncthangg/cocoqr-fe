@@ -63,7 +63,7 @@ export function DataTableColumnHeader<T>({
             {column.filterable && (
                 <div onClick={e => e.stopPropagation()} className="font-normal shrink-0">
                     <select
-                        className="h-7 w-[110px] px-xs text-xs rounded-md border border-border-strong bg-surface text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40"
+                        className="select h-7 w-[110px] px-xs text-xs rounded-md border border-border focus-visible:ring-1 focus-visible:ring-primary/40 shadow-sm"
                         value={filterValue === undefined ? "all" : String(filterValue)}
                         onChange={(e) => {
                             const val = e.target.value;

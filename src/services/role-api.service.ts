@@ -1,7 +1,7 @@
 import { ApiConstant } from "../constants/api.constant";
-import type { RoleRes } from "../models/entity.model";
 import { axiosPrivate, axiosPublic } from "../api/axios.instance";
 import type { PutRoleReq } from "../models/entity.request.model";
+import type { RoleRes } from "@/models/entity.model";
 
 export const roleApi = {
     getAll: async (): Promise<RoleRes[]> => {

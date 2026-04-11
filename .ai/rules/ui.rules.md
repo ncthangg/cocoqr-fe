@@ -1,57 +1,72 @@
 # UI Rules
 
+> **Scope:** This file is the **single source of truth** for design tokens, CSS utility classes, icons, and styling approach. All other rule files defer here for visual details.
+ 
 ## Core
-- Use Tailwind tokens from `tailwind.config.js`
-- Use CSS variables from `globals.css`
-- Avoid raw values
+- ALL styling **must** use tokens from `tailwind.config.js` and CSS variables from `globals.css`.
+- NEVER use raw/default Tailwind values when a project token exists.
 
-## Styling
-- Use `cn()` / `twMerge`
-- No inline styles
-- No hard-coded hex
+## Design Tokens (from `tailwind.config.js`)
 
-## Tokens
-- Colors → bg-bg text-foreground border-border
-- Spacing → p-sm gap-md mt-lg
-- Radius → rounded-sm md lg
-- Shadow → shadow-sm md
+### Colors — semantic tokens only
+| Role | Token |
+|---|---|
+| Page background | `bg-bg` |
+| Card / surface | `bg-surface`, `bg-surface-muted`, `bg-surface-elevated` |
+| Borders | `border-border`, `border-border-strong`, `border-border-subtle` |
+| Primary text | `text-foreground` |
+| Secondary text | `text-foreground-secondary`, `text-foreground-muted` |
+| Primary action | `bg-primary` / `text-primary-foreground` |
+| Status | `text-success`, `text-warning`, `text-danger` |
 
-## Arbitrary Allowed
-- calc()
-- CSS variables
-- grid templates
-- transform
+❌ Never use raw colors like `bg-zinc-900` or `text-[#fff]` for primary UI.
 
-## Arbitrary Forbidden
-- spacing → mt-[17px]
-- color → bg-[#fff]
-- typography → text-[13px]
-- shadow → shadow-[...]
+### Spacing
+`2xs`=2px, `xs`=4px, `sm`=8px, `md`=16px, `lg`=24px, `xl`=32px, `2xl`=48px
 
-## Components
-- btn / btn-primary
-- card
-- input
+### Border Radius
+`rounded-sm`=6px, `rounded-md`=10px, `rounded-lg`=14px, `rounded-xl`=18px, `rounded-2xl`=24px, `rounded-3xl`=32px
 
+### Shadow
+`shadow-sm` (cards), `shadow-md` (dropdowns), `shadow-lg` (modals)
+
+### Font Size
+`text-xs`=10px, `text-sm`=12px, `text-base`=14px, `text-lg`=16px, `text-xl`=20px, `text-2xl`=24px, `text-3xl`=30px
+
+### Modal Widths 
+
+- Use `max-w-modal-*` tokens only — **never** `max-w-sm`, `max-w-2xl`, etc. for modals. 
+`max-w-modal-sm`=400, `md`=600, `lg`=800, `xl`=1000, `2xl`=1200, `3xl`=1400, `4xl`=1600
+
+### Z-Index
+
+`z-dropdown`=40, `z-modal`=50, `z-toast`=60
+
+### Fonts
+
+`font-primary` (Inter), `font-secondary` (Roboto)
+
+## CSS Classes (from `globals.css`)
+
+- Modal: `modal-overlay`, `modal-content` — NEVER inline these
+- Layout: `card`, `page-container`
+- Buttons: `btn`, `btn-primary`, `btn-secondary`, `btn-danger`, `btn-ghost`
+- Form: `input`
+- Table: `table-wrapper`, `table`
+
+## Styling Approach
+
+- Use `cn()` or `twMerge` for conditional / merged class strings
+- No inline `style={}` — no hard-coded hex values
+- Allowed arbitrary values: `calc()`, `var(--)`, grid templates, transforms, opacity modifiers (`bg-primary/10`)
+- Forbidden arbitrary values: `mt-[17px]`, `bg-[#fff]`, `text-[13px]`, `shadow-[...]`, `z-[100]`
+ 
 ## Icons
-- lucide-react
-- w-4 h-4 / w-5 h-5
 
-## Layout
-- min-h-screen flex flex-col
-- header / main flex-1 / footer
-
-## Animation
-- transition-all duration-300
-- hover:scale-[1.01]
+`lucide-react` — sizes: `w-4 h-4` (inline), `w-5 h-5` (prominent)
 
 ## Accessibility
-- label + htmlFor
-- aria-label for icon buttons
 
-## Modal
-- Use `modal-overlay` class for overlay
-- Use `modal-content` class for content
-- Use `modal-header` class for header
-- Use `modal-body` class for body
-- Use `modal-footer` class for footer
+- `<label>` must be paired with `htmlFor` pointing to the input `id`
+- Icon-only buttons must have `aria-label`
+- Modal containers must have `aria-modal="true"`

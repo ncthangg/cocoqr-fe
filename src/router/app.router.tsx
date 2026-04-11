@@ -12,6 +12,7 @@ import RoleSelectionModal from "@/components/Modals/RoleSelectionModal";
 
 const RootRoute = lazy(() => import("@/router/RootRoute"))
 const ErrorPage = lazy(() => import("@/pages/ErrorPage/ErrorPage"));
+import { UnauthorizedProvider } from "@/auth/UnauthorizedContext";
 
 const CreatePaymentPage = lazy(() => import("@/pages/user/qr/page"))
 const AccountsPage = lazy(() => import("@/pages/user/account/page"))
@@ -27,15 +28,24 @@ const HistoryPage = lazy(() => import("@/pages/admin/history/page"))
 const ProviderPage = lazy(() => import("@/pages/admin/provider/page"))
 const SeedPage = lazy(() => import("@/pages/admin/seed/page"))
 const AdminQrStyleLibPage = lazy(() => import("@/pages/admin/qrStyleLib/page"))
+const EmailLogPage = lazy(() => import("@/pages/admin/emailLog/page"))
+const SmtpSettingsPage = lazy(() => import("@/pages/admin/smtpSettings/page"))
+const EmailTemplatePage = lazy(() => import("@/pages/admin/emailTemplate/page"))
+const ContactMessagePage = lazy(() => import("@/pages/admin/contactMessage/page"))
+
+const GuidePage = lazy(() => import("@/pages/share/guide/page"))
+const CommitmentPage = lazy(() => import("@/pages/share/commitment/page"))
+const AboutPage = lazy(() => import("@/pages/share/about/page"))
+const ThankToPage = lazy(() => import("@/pages/share/thankto/page"))
 
 const RootWrapper = () => (
-    <>
-        <AuthenModal />
-        <RoleSelectionModal />
+    <UnauthorizedProvider>
         <Suspense fallback={null}>
             <Outlet />
         </Suspense>
-    </>
+        <AuthenModal />
+        <RoleSelectionModal />
+    </UnauthorizedProvider>
 );
 
 export const router = createBrowserRouter([
@@ -46,6 +56,10 @@ export const router = createBrowserRouter([
         children: [
             // ─── PUBLIC ROUTES ──────────────────────────────────────────────
             { index: true, element: <RootRoute /> },
+            { path: RouteConstant.GUIDE, element: <GuidePage /> },
+            { path: RouteConstant.COMMITMENT, element: <CommitmentPage /> },
+            { path: RouteConstant.ABOUT, element: <AboutPage /> },
+            { path: RouteConstant.THANK_TO, element: <ThankToPage /> },
 
             // ─── USER ROUTES (Role = "user") ──────────────────────────────────
             {
@@ -85,6 +99,10 @@ export const router = createBrowserRouter([
                     { path: RouteConstant.ADMIN_PROVIDERS, element: <ProviderPage /> },
                     { path: RouteConstant.ADMIN_SEED, element: <SeedPage /> },
                     { path: RouteConstant.ADMIN_QR_STYLE_LIB, element: <AdminQrStyleLibPage /> },
+                    { path: RouteConstant.ADMIN_EMAIL_LOG, element: <EmailLogPage /> },
+                    { path: RouteConstant.ADMIN_SMTP_SETTINGS, element: <SmtpSettingsPage /> },
+                    { path: RouteConstant.ADMIN_EMAIL_TEMPLATES, element: <EmailTemplatePage /> },
+                    { path: RouteConstant.ADMIN_CONTACT_MESSAGES, element: <ContactMessagePage /> },
                 ],
             },
 

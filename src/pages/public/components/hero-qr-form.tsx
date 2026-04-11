@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useRef, memo } from "react";
 import { QrCode, Eraser, Hash, Banknote, StickyNote } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
 import AccountProviderSelector from "@/components/UICustoms/Form/AccountProviderSelector";
@@ -8,8 +8,17 @@ import type { PostQrReq } from "@/models/entity.request.model";
 import { toast } from "react-toastify";
 import { ProviderCode } from "@/models/enum";
 import { qrApi } from "@/services/qr-api.service";
+import { formatVNDInput } from "@/utils/currencyUtils";
+import { Link } from "react-router-dom";
+import { RouteConstant } from "@/constants/route.constant";
 
-const defaultForm = {
+//#region Types & Constants
+interface HeroQRFormProps {
+    onQrCreated?: (res: PostQrRes) => void;
+    onReset?: () => void;
+}
+
+const DEFAULT_FORM = {
     providerId: "",
     providerCode: "",
     providerName: "",
@@ -21,24 +30,72 @@ const defaultForm = {
     bankLogoUrl: "" as string | null,
     isBankInactive: null as boolean | null,
     number: "",
-    amount: "",
+    amount: "", // raw digits
     note: "",
 };
+//#endregion
 
-interface HeroQRFormProps {
-    onQrCreated?: (res: PostQrRes) => void;
-    onReset?: () => void;
-}
+//#region Sub-components
+const FormLabel = memo(({ htmlFor, icon: Icon, children }: { htmlFor: string; icon: any; children: React.ReactNode }) => (
+    <label
+        htmlFor={htmlFor}
+        className="text-sm font-primary font-medium text-foreground-secondary flex items-center gap-xs select-none cursor-default"
+    >
+        <Icon className="w-4 h-4" />
+        {children}
+    </label>
+));
+
+const TermsAgreement = memo(({ isAgreed, onChange }: { isAgreed: boolean; onChange: (val: boolean) => void }) => (
+    <div className="flex items-center gap-sm select-none px-xs py-xs bg-primary/5 rounded-lg border border-primary/10 transition-colors hover:bg-primary/10">
+        <input
+            id="hero-terms-agree"
+            type="checkbox"
+            checked={isAgreed}
+            onChange={(e) => onChange(e.target.checked)}
+            className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer transition-all"
+        />
+        <label htmlFor="hero-terms-agree" className="text-xs text-foreground-secondary cursor-pointer leading-tight">
+            Tôi đã đọc & hiểu rõ {" "}
+            <Link 
+                to={RouteConstant.COMMITMENT} 
+                className="text-primary hover:underline font-bold transition-opacity hover:opacity-80"
+            >
+                Cam kết
+            </Link>
+            {" "} & {" "}
+            <Link 
+                to={RouteConstant.GUIDE} 
+                className="text-primary hover:underline font-bold transition-opacity hover:opacity-80"
+            >
+                HDSD
+            </Link>
+        </label>
+    </div>
+));
+//#endregion
 
 export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
+    //#region States & Refs
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
-    const [formData, setFormData] = useState(defaultForm);
+    const [formData, setFormData] = useState(DEFAULT_FORM);
     const [isProviderMaintenance, setIsProviderMaintenance] = useState(false);
     const [isBankMaintenance, setIsBankMaintenance] = useState(false);
-
     const [qrLoading, setQrLoading] = useState(false);
+    const [isAgreed, setIsAgreed] = useState(false);
+    
+    const lastCreateTimeRef = useRef<number>(0);
+    //#endregion
 
+    //#region Derived Data
+    const prov = allProviders.find(p => p.id === formData.providerId);
+    const isProviderInactive = prov ? !prov.isActive : (formData.providerId ? isProviderMaintenance : false);
+    const isBankInactive = isBankMaintenance;
+    const canCreate = isAgreed && !qrLoading && !isBankInactive && !isProviderInactive;
+    //#endregion
+
+    //#region Handlers
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
         try {
@@ -47,27 +104,31 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                 setAllProviders(res);
                 setHasFetchedProviders(true);
             }
-        } catch {
+        } finally {
             setHasFetchedProviders(true);
         }
     }, [hasFetchedProviders]);
 
-    useEffect(() => {
-        fetchProviders();
-    }, [fetchProviders]);
-
-    const prov = allProviders.find(p => p.id === formData.providerId);
-    const isProviderInactive = prov ? !prov.isActive : (formData.providerId ? isProviderMaintenance : false);
-    const isBankInactive = isBankMaintenance;
-
-    const handleReset = () => {
-        setFormData(defaultForm);
+    const handleReset = useCallback(() => {
+        setFormData(DEFAULT_FORM);
         setIsProviderMaintenance(false);
         setIsBankMaintenance(false);
-        if (onReset) onReset();
-    };
+        setIsAgreed(false);
+        onReset?.();
+    }, [onReset]);
 
-    const handleCreateQR = async () => {
+    const handleCreateQR = useCallback(async () => {
+        const now = Date.now();
+        if (now - lastCreateTimeRef.current < 5000) {
+            toast.warning("Vui lòng đợi 5 giây trước khi thực hiện thao tác tiếp theo.");
+            return;
+        }
+
+        if (!isAgreed) {
+            toast.warning("Vui lòng xác nhận đã đọc cam kết và hướng dẫn.");
+            return;
+        }
+
         if (!formData.providerId) {
             toast.warning("Vui lòng chọn loại tài khoản.");
             return;
@@ -76,20 +137,21 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
             toast.warning("Vui lòng nhập số tài khoản / số điện thoại.");
             return;
         }
+
+        lastCreateTimeRef.current = now;
         const selectedProvider = allProviders.find(p => p.id === formData.providerId);
         const isBank = selectedProvider?.code === ProviderCode.BANK;
+        
         if (isBank && !formData.bankCode) {
             toast.warning("Vui lòng chọn ngân hàng.");
             return;
         }
-        if (isProviderInactive) {
-            toast.warning("Phương thức thanh toán này hiện đang bảo trì.");
+        
+        if (isProviderInactive || isBankInactive) {
+            toast.warning("Dịch vụ này hiện đang bảo trì.");
             return;
         }
-        if (isBankInactive) {
-            toast.warning("Ngân hàng này hiện đang bảo trì.");
-            return;
-        }
+
         try {
             setQrLoading(true);
             const req: PostQrReq = {
@@ -102,23 +164,33 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                 isFixedAmount: !!formData.amount,
             };
             const res = await qrApi.post(req);
-            if (onQrCreated) {
-                onQrCreated(res);
-            }
-            toast.success("Tạo mã QR thành công!");
-        } catch (error) {
-            console.error("Error creating QR:", error);
-            toast.error("Tạo mã QR thất bại.");
+            onQrCreated?.(res);
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || "Có lỗi xảy ra khi tạo mã QR.");
         } finally {
             setQrLoading(false);
         }
-    };
+    }, [formData, allProviders, isProviderInactive, isBankInactive, isAgreed, onQrCreated]);
 
+    const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const raw = e.target.value.replace(/\D/g, "");
+        if (raw.length <= 15) {
+            setFormData(prev => ({ ...prev, amount: raw }));
+        }
+    }, []);
+
+    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    }, []);
+    //#endregion
+
+    //#region Render
     return (
         <div className="flex flex-col gap-md w-full h-full">
             {/* Header */}
-            <div className="flex items-center justify-between shrink-0 h-11">
-                <h2 className="text-xl font-bold text-foreground">Thông tin tạo mã QR</h2>
+            <div className="flex items-center justify-between shrink-0 h-11 select-none">
+                <h2 className="text-xl font-secondary font-bold text-foreground cursor-default">Thông tin tạo mã QR</h2>
                 <button
                     type="button"
                     className="p-sm text-foreground-muted hover:text-danger hover:bg-danger/5 rounded-md transition-all duration-300"
@@ -144,8 +216,8 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                     onFetchProviders={fetchProviders}
                     onProviderChange={(id) => {
                         const p = allProviders.find(item => item.id === id);
-                        setFormData({
-                            ...formData,
+                        setFormData(prev => ({
+                            ...prev,
                             providerId: id,
                             providerCode: p?.code || "",
                             providerName: p?.name || "",
@@ -153,12 +225,20 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                             bankCode: "",
                             bankName: "",
                             bankLogoUrl: "",
-                        });
+                        }));
                         setIsProviderMaintenance(p ? !p.isActive : false);
                         setIsBankMaintenance(false);
                     }}
                     onBankSelect={(napasBin, code, shortName, bankName, logoUrl, isActive) => {
-                        setFormData({ ...formData, napasBin: napasBin, bankCode: code, bankShortName: shortName, bankName: bankName, bankLogoUrl: logoUrl, isBankInactive: !isActive });
+                        setFormData(prev => ({ 
+                            ...prev, 
+                            napasBin, 
+                            bankCode: code, 
+                            bankShortName: shortName, 
+                            bankName, 
+                            bankLogoUrl: logoUrl, 
+                            isBankInactive: !isActive 
+                        }));
                         setIsBankMaintenance(!isActive);
                     }}
                     isProviderInactive={isProviderInactive || false}
@@ -169,53 +249,47 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                 />
 
                 <div className="flex flex-col gap-sm">
-                    <label
-                        htmlFor="hero-account-number"
-                        className="text-sm font-medium text-foreground-secondary flex items-center gap-xs"
-                    >
-                        <Hash className="w-4 h-4" />
+                    <FormLabel htmlFor="hero-account-number" icon={Hash}>
                         Số tài khoản / Số điện thoại
-                    </label>
+                    </FormLabel>
                     <input
                         id="hero-account-number"
-                        name="accountNumber"
+                        name="number"
                         type="text"
                         className="input"
                         placeholder="Nhập số tài khoản hoặc SĐT"
                         value={formData.number}
-                        onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                        onChange={handleInputChange}
                         required
                     />
                 </div>
 
-                <div className="flex flex-col gap-sm">
-                    <label
-                        htmlFor="hero-amount"
-                        className="text-sm font-medium text-foreground-secondary flex items-center gap-xs"
-                    >
-                        <Banknote className="w-4 h-4" />
-                        Số tiền (VNĐ)
-                    </label>
-                    <input
-                        id="hero-amount"
-                        name="amount"
-                        type="number"
-                        className="input"
-                        placeholder="Nhập số tiền"
-                        value={formData.amount}
-                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                        min={0}
-                    />
+                <div className="flex flex-col gap-xs">
+                    <FormLabel htmlFor="hero-amount" icon={Banknote}>
+                        Số tiền
+                    </FormLabel>
+                    <div className="relative group/amount">
+                        <input
+                            id="hero-amount"
+                            name="amount"
+                            type="text"
+                            inputMode="numeric"
+                            className="input font-primary pr-12 text-sm sm:text-base tracking-tight"
+                            placeholder="Ví dụ: 300.000"
+                            autoComplete="off"
+                            value={formatVNDInput(formData.amount)}
+                            onChange={handleAmountChange}
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-foreground-muted select-none group-focus-within/amount:text-primary transition-colors border border-border/60 px-1.5 py-0.5 rounded bg-surface-muted/50">
+                            VND
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex flex-col gap-sm">
-                    <label
-                        htmlFor="hero-note"
-                        className="text-sm font-medium text-foreground-secondary flex items-center gap-xs"
-                    >
-                        <StickyNote className="w-4 h-4" />
+                    <FormLabel htmlFor="hero-note" icon={StickyNote}>
                         Ghi chú (Tùy chọn)
-                    </label>
+                    </FormLabel>
                     <input
                         id="hero-note"
                         name="note"
@@ -223,13 +297,13 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                         className="input"
                         placeholder="Nhập nội dung chuyển khoản"
                         value={formData.note}
-                        onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                        onChange={handleInputChange}
                     />
                 </div>
 
                 {(isProviderInactive || isBankInactive) && (
                     <div className="p-md bg-danger/5 border border-danger/20 rounded-lg animate-in fade-in duration-300">
-                        <p className="text-xs text-danger font-medium leading-relaxed">
+                        <p className="text-xs text-danger font-medium leading-relaxed select-none cursor-default">
                             {isProviderInactive
                                 ? "Phương thức thanh toán này hiện đang bảo trì. Vui lòng chọn phương thức thanh toán khác."
                                 : "Ngân hàng đang bảo trì. Vui lòng chọn ngân hàng khác."}
@@ -237,12 +311,16 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                     </div>
                 )}
 
-                <div className="flex gap-md mt-sm">
+                <TermsAgreement isAgreed={isAgreed} onChange={setIsAgreed} />
+
+                <div className="flex gap-md mt-xs">
                     <Button
                         size="large"
-                        className="flex-1 btn-primary flex items-center justify-center gap-md hover:scale-[1.01] transition-all duration-300"
+                        className={`flex-1 flex items-center justify-center gap-md transition-all duration-300 border-2 ${canCreate 
+                            ? 'btn-primary border-transparent hover:scale-[1.01] shadow-lg shadow-primary/20' 
+                            : 'bg-surface-muted text-foreground-muted border-border cursor-not-allowed opacity-60'}`}
                         onClick={handleCreateQR}
-                        disabled={qrLoading || isBankInactive || isProviderInactive}
+                        disabled={!canCreate}
                     >
                         <QrCode className="w-5 h-5" />
                         <span className="font-bold tracking-wide">
@@ -253,4 +331,5 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
             </div>
         </div>
     );
+    //#endregion
 }

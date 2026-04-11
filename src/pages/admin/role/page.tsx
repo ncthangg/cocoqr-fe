@@ -2,22 +2,25 @@ import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from
 import { roleApi } from "@/services/role-api.service";
 import type { RoleRes } from "@/models/entity.model";
 import { Eye, Wallet } from "lucide-react";
-import { toast } from "react-toastify";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import type { Column } from "@/components/UICustoms/Table/data-table";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
 import ActionButton from "@/components/UICustoms/ActionButton";
 import { StatCard } from "@/components/UICustoms/StatCard";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const RoleModal = lazy(() => import("./components/RoleModal"));
 
 const RolePage: React.FC = () => {
+    //#region States
     const [allRoles, setAllRoles] = useState<RoleRes[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<RoleRes | null>(null);
+    //#endregion
 
+    //#region Data Fetching
     const fetchRoles = useCallback(async () => {
         try {
             setLoading(true);
@@ -25,9 +28,6 @@ const RolePage: React.FC = () => {
             if (res) {
                 setAllRoles(res || []);
             }
-        } catch (error) {
-            console.error("Error fetching roles:", error);
-            toast.error("Kh�ng th? t?i d? li?u role.");
         } finally {
             setLoading(false);
         }
@@ -36,7 +36,9 @@ const RolePage: React.FC = () => {
     useEffect(() => {
         fetchRoles();
     }, [fetchRoles]);
+    //#endregion
 
+    //#region Handlers
     const handleOpenViewModal = (role: RoleRes) => {
         setSelectedRole(role);
         setIsRoleModalOpen(true);
@@ -45,7 +47,9 @@ const RolePage: React.FC = () => {
     const handleUpdateRoleSuccess = (updatedRole: RoleRes) => {
         setAllRoles(prev => prev.map(r => r.id === updatedRole.id ? updatedRole : r));
     };
+    //#endregion
 
+    //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
@@ -55,18 +59,22 @@ const RolePage: React.FC = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 gap-6 shrink-0">
+                <div className="flex items-center gap-3">
                     <StatCard
-                        label="Tổng role"
+                        label="Tổng"
                         value={allRoles.length}
                         icon={<Wallet className="w-5 h-5 text-primary" />}
                         color="blue"
+                    />
+                    <RefreshButton
+                        onRefresh={fetchRoles}
+                        loading={loading}
+                        className="rounded-full"
                     />
                 </div>
             </div>
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
-
                 <div className="min-h-0 flex-1 overflow-hidden">
                     <DataTable
                         loading={loading}
@@ -97,8 +105,7 @@ const RolePage: React.FC = () => {
                                         status={role.status}
                                         activeText="ACTIVE"
                                         inactiveText="INACTIVE"
-                                        activeColor="green"
-                                        inactiveColor="red"
+
                                     />
                             },
                             {
@@ -132,6 +139,7 @@ const RolePage: React.FC = () => {
             )}
         </div>
     );
+    //#endregion
 };
 
 export default RolePage;

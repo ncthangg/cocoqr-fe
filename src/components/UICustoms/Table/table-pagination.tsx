@@ -36,7 +36,7 @@ export function TablePagination({
                 {onPageSizeChange && (
                     <div className="flex items-center gap-sm">
                         <select
-                            className="h-8 px-sm text-xs rounded-md border border-border-strong bg-surface text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="select h-8 px-sm text-xs rounded-md border border-border focus-visible:ring-1 focus-visible:ring-primary/40 disabled:opacity-50 disabled:cursor-not-allowed"
                             value={pageSize}
                             onChange={(e) => onPageSizeChange(Number(e.target.value))}
                             disabled={loading || (pageSizeOptions.length > 0 && totalItems <= pageSizeOptions[0])}

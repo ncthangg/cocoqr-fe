@@ -30,5 +30,5 @@
   - Tailwind maps variables via `tailwind.config.js`
   - Always prefer Tailwind classes instead of raw CSS variables
 - **Design**: Premium: `rounded-2xl` (containers), `rounded-3xl` (previews), `bg-surface-muted/30` (headers).
-- **Icons**: `Lucide React` (always include explicit size: `w-5 h-5`).
+- **Icons**: `Lucide React`.
 - **Feedback**: `react-toastify` for async operation results.

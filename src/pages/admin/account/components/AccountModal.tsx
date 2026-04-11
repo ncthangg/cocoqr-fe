@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { X, Landmark, User, CreditCard, Hash, Calendar, Wallet, ShieldCheck, ShieldOff, LayoutDashboard, Lock, LockOpen } from "lucide-react";
-import { toast } from "react-toastify";
 import { accountApi } from "@/services/account-api.service";
 import type { AccountRes } from "@/models/entity.model";
 import ModalLoading from "@/components/UICustoms/Modal/ModalLoading";
@@ -35,7 +34,7 @@ function ReadOnlyRow({ icon, label, value, mono, fullWidth }: ReadOnlyRowProps) 
                 {icon}
                 {label}
             </span>
-            <span className={cn("text-sm text-foreground px-xs", mono ? "font-mono tracking-tight" : "font-medium")}>
+            <span className={cn("text-sm text-foreground px-xs", mono ? "font-primary tracking-tight" : "font-medium")}>
                 {value ?? <span className="text-foreground-muted italic font-normal">Chưa cập nhật</span>}
             </span>
         </div>
@@ -43,20 +42,19 @@ function ReadOnlyRow({ icon, label, value, mono, fullWidth }: ReadOnlyRowProps) 
 }
 
 const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId, onStatusChanged }) => {
+    //#region States & Refs
     const [detail, setDetail] = useState<AccountRes | null>(null);
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    //#endregion
 
+    //#region Side Effects
     const fetchDetail = useCallback(async (id: string) => {
         try {
             setLoading(true);
             const res = await accountApi.getById(id);
             if (res) setDetail(res);
-        } catch (error) {
-            console.error("Error fetching account detail:", error);
-            toast.error("Không thể tải thông tin chi tiết tài khoản.");
-            onClose();
         } finally {
             setLoading(false);
         }
@@ -75,25 +73,25 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
         if (isOpen) window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
     }, [isOpen, onClose]);
+    //#endregion
 
+    //#region Handlers
     const handleToggleStatus = async () => {
         if (!detail || !accountId) return;
         try {
             setActionLoading(true);
             const newStatus = !detail.status;
-            await accountApi.updateStatus(accountId, newStatus);
-            toast.success(newStatus ? "Đã mở khóa tài khoản thành công." : "Đã khóa tài khoản thành công.");
+            await accountApi.patchStatus(accountId);
             setDetail(prev => prev ? { ...prev, status: newStatus } : prev);
             onStatusChanged?.(accountId, newStatus);
-        } catch (error) {
-            console.error("Error toggling account status:", error);
-            toast.error("Không thể thực hiện thao tác. Vui lòng thử lại.");
         } finally {
             setActionLoading(false);
             setIsConfirmOpen(false);
         }
     };
+    //#endregion
 
+    //#region Render
     if (!isOpen) return null;
 
     const isBank = !!detail?.bankCode;
@@ -212,19 +210,19 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
                                             : "bg-surface-muted/10 border-border/50"
                                     )}>
                                         <div className="flex flex-col items-center gap-md text-center animate-in fade-in zoom-in duration-300 w-full">
-                                            <BrandLogo 
+                                            <BrandLogo
                                                 logoUrl={detail?.bankLogoUrl || detail?.providerLogoUrl}
-                                                name={isBank ? (detail.bankName || detail.bankShortName) : detail.providerName}
+                                                name={isBank ? detail.bankShortName : detail.providerName}
                                                 code={isBank ? detail.bankCode : detail.providerCode}
                                                 size="xl"
                                                 shadow="md"
                                             />
                                             <div className="flex flex-col gap-xs">
                                                 <p className="font-bold text-foreground text-lg">
-                                                    {isBank ? detail.bankCode : detail.providerCode}
+                                                    {isBank ? detail.bankShortName : detail.providerCode}
                                                 </p>
                                                 <p className="text-xs text-foreground-secondary line-clamp-2 px-sm leading-relaxed">
-                                                    {isBank ? (detail.bankName || detail.bankShortName) : detail.providerName}
+                                                    {isBank ? detail.bankName : detail.providerName}
                                                 </p>
                                             </div>
                                         </div>
@@ -297,6 +295,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
             />
         </>
     );
+    //#endregion
 };
 
 export default AccountModal;

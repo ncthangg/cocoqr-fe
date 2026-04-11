@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
-import { Outlet, Link } from "react-router-dom";
+import { useNavigate, Outlet, Link } from "react-router-dom";
 import { RouteConstant } from "@/constants/route.constant";
 import { useAuthContext } from "@/auth/AuthContext";
 import { ChevronDown, LogOut, UserIcon } from "lucide-react";
@@ -10,6 +10,7 @@ import Logo from "@/components/UICustoms/Logo";
 const ProfileModal = lazy(() => import("@/components/UICustoms/Modal/ProfileModal"));
 
 const UserLayout: React.FC = () => {
+    const navigate = useNavigate();
     const { logout, user, roles } = useAuthContext();
     const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -56,7 +57,7 @@ const UserLayout: React.FC = () => {
             // ignore
         }
         logout();
-        window.location.href = "/";
+        navigate("/");
     };
 
     return (
@@ -72,11 +73,11 @@ const UserLayout: React.FC = () => {
                                 <Link to={RouteConstant.ACCOUNTS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     Accounts
                                 </Link>
-                                <Link to={RouteConstant.QR_HISTORY} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
-                                    QR History
-                                </Link>
                                 <Link to={RouteConstant.USER_QR_STYLE_LIB} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     QR Style Lib
+                                </Link>
+                                <Link to={RouteConstant.QR_HISTORY} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
+                                    QR History
                                 </Link>
                             </nav>
                         </div>

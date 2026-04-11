@@ -63,13 +63,13 @@ const BrandLogo: React.FC<BrandLogoProps> = ({
 
     // Fallback logic: use code (max 4 chars) or name (max 2 chars)
     const initials = code
-        ? code.substring(0, 4).toUpperCase()
-        : (name || "BK").substring(0, 2).toUpperCase();
+        ? code.substring(0, 3).toUpperCase()
+        : (name || "BK").substring(0, 3).toUpperCase();
 
     return (
         <div
             className={cn(
-                "flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300",
+                "flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300 select-none cursor-default",
                 // Brand logos usually require white background to look correct
                 !transparent && logoUrl ? "bg-white" : "bg-transparent",
                 size !== "none" && sizeClasses[size],

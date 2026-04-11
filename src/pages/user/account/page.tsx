@@ -4,8 +4,6 @@ import { toast } from "react-toastify";
 import { accountApi } from "@/services/account-api.service";
 import { providerApi } from "@/services/provider-api.service";
 import type { AccountRes, PagingVM, ProviderRes } from "@/models/entity.model";
-import type { PutAccountReq } from "@/models/entity.request.model";
-import ActionConfirmModal from "@/components/UICustoms/Modal/ActionConfirmModal";
 import { DataTable } from "@/components/UICustoms/Table/data-table";
 import type { Column } from "@/components/UICustoms/Table/data-table";
 import { TableToolbar } from "@/components/UICustoms/Table/table-toolbar";
@@ -18,10 +16,12 @@ import ActionButton from "@/components/UICustoms/ActionButton";
 import DeleteConfirmModal from "@/components/UICustoms/Modal/DeleteConfirmModal";
 import { useDebounce } from "@/hooks/useDebounce";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
+import RefreshButton from "@/components/UICustoms/RefreshButton";
 
 const AccountModal = lazy(() => import("./components/AccountModal"));
 
 const AccountsPage: React.FC = () => {
+    //#region States
     const [accounts, setAccounts] = useState<AccountRes[]>([]);
     const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
     const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
@@ -39,13 +39,13 @@ const AccountsPage: React.FC = () => {
     const [activeFilter, setActiveFilter] = useState<boolean | undefined>(undefined);
     const [providerFilter, setProviderFilter] = useState<string | undefined>(undefined);
 
-    // Modals state
     const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-    const [selectedAccount, setSelectedAccount] = useState<AccountRes | null>(null);
+    const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
     const debouncedSearch = useDebounce(searchValue, 500);
+    //#endregion
 
+    //#region Data Fetching
     const fetchProviders = useCallback(async () => {
         if (hasFetchedProviders) return;
         try {
@@ -59,34 +59,29 @@ const AccountsPage: React.FC = () => {
         }
     }, [hasFetchedProviders]);
 
-    const fetchAccounts = useCallback(async (
-        page: number,
-        size: number,
+    const fetchAccounts = useCallback(async (page: number, size: number,
+        sortField?: string, sortDir?: "asc" | "desc",
         search?: string,
-        sortField?: string,
-        sortDir?: "asc" | "desc",
-        isActive?: boolean,
-        providerId?: string
+        providerId?: string,
+        isActive?: boolean
     ) => {
         try {
             setLoading(true);
-            const res = await accountApi.getAll(
-                page,
-                size,
-                sortField ?? null,
-                sortDir ?? null,
-                providerId ?? null,
-                search ?? null,
-                isActive ?? null
-            );
+            const res = await accountApi.getAll({
+                pageNumber: page,
+                pageSize: size,
+                sortField: sortField ?? null,
+                sortDirection: sortDir ?? null,
+                providerId: providerId ?? null,
+                searchValue: search ?? null,
+                isActive: isActive ?? null
+            });
             if (res) {
                 setAccounts(res.list || []);
                 setPaging(res);
             }
-        } catch (error) {
-            console.error("Error fetching accounts:", error);
-            toast.error("Không thể tải danh sách tài khoản.");
-        } finally {
+        }
+        finally {
             setLoading(false);
         }
     }, []);
@@ -95,14 +90,24 @@ const AccountsPage: React.FC = () => {
         fetchAccounts(
             paging.pageNumber,
             paging.pageSize,
-            debouncedSearch,
             sortState?.field,
             sortState?.dir,
-            activeFilter,
-            providerFilter
+            debouncedSearch,
+            providerFilter,
+            activeFilter
         );
     }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, activeFilter, providerFilter]);
+    //#endregion
 
+    //#region fetch providers once
+    useEffect(() => {
+        providerApi.getAll().then(res => {
+            if (res) setAllProviders(res);
+        });
+    }, []);
+    //#endregion
+
+    //#region Handlers
     const handlePageChange = useCallback((newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -114,87 +119,64 @@ const AccountsPage: React.FC = () => {
     }, []);
 
     const handleOpenAdd = useCallback(() => {
-        setSelectedAccount(null);
+        setSelectedAccountId(null);
         setIsAccountModalOpen(true);
     }, []);
 
-    const handleOpenEdit = useCallback((acc: AccountRes) => {
-        setSelectedAccount(acc);
+    const handleOpenEdit = useCallback((id: string) => {
+        setSelectedAccountId(id);
         setIsAccountModalOpen(true);
     }, []);
 
-    const handleOpenDelete = useCallback((acc: AccountRes) => {
-        setSelectedAccount(acc);
+    const handleOpenDelete = useCallback((id: string) => {
+        setSelectedAccountId(id);
         setIsDeleteModalOpen(true);
-    }, []);
-
-    const handleOpenPin = useCallback((acc: AccountRes) => {
-        setSelectedAccount(acc);
-        setIsPinModalOpen(true);
     }, []);
 
     const handleModalSuccess = useCallback((updated?: Partial<AccountRes> & { id: string }) => {
         if (updated) {
-            setAccounts(prev =>
-                prev.map(acc => acc.id === updated.id ? { ...acc, ...updated } : acc)
-            );
+            setAccounts(prev => {
+                const isExisting = prev.some(acc => acc.id === updated.id);
+                if (isExisting) {
+                    return prev.map(acc => acc.id === updated.id ? { ...acc, ...updated } : acc);
+                }
+                // Nếu là thêm mới nhưng vẫn muốn optimistic update (tùy chọn)
+                return [{ ...updated } as AccountRes, ...prev];
+            });
         } else {
-            fetchAccounts(paging.pageNumber, paging.pageSize, debouncedSearch, sortState?.field, sortState?.dir, activeFilter, providerFilter);
+            // Refetch lại toàn bộ danh sách
+            fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter);
         }
-    }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, activeFilter, providerFilter]);
+    }, [fetchAccounts, paging.pageNumber, paging.pageSize, debouncedSearch, sortState, providerFilter, activeFilter]);
 
     const handleDeleteAccount = useCallback(async () => {
-        if (!selectedAccount) return;
+        if (!selectedAccountId) return;
         try {
             setLoading(true);
-            await accountApi.delete(selectedAccount.id);
-            toast.success("Xóa tài khoản thành công!");
-            handleModalSuccess();
+            await accountApi.delete(selectedAccountId);
             setIsDeleteModalOpen(false);
-        } catch (error) {
-            console.error("Error deleting account:", error);
-            toast.error("Xóa tài khoản thất bại.");
+            // Refetch to update pagination and totals
+            fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter);
         } finally {
             setLoading(false);
-            setSelectedAccount(null);
         }
-    }, [selectedAccount, handleModalSuccess]);
+    }, [selectedAccountId]);
 
-    const handlePinAccount = useCallback(async () => {
-        if (!selectedAccount) return;
-        const isCurrentlyPinned = selectedAccount.isPinned;
-        if (!isCurrentlyPinned) {
-            const currentPinnedCount = accounts.filter(acc => acc.isPinned).length;
-            if (currentPinnedCount >= 5) {
-                toast.warning("Bạn chỉ có thể ghim tối đa 5 tài khoản.");
-                setIsPinModalOpen(false);
-                setSelectedAccount(null);
-                return;
-            }
-        }
+    const handlePinAccount = useCallback(async (acc: AccountRes) => {
+        const isCurrentlyPinned = acc.isPinned;
         try {
-            const req: PutAccountReq = {
-                providerId: selectedAccount.providerId,
-                bankCode: selectedAccount.bankCode ?? "",
-                bankName: selectedAccount.bankName ?? "",
-                accountHolder: selectedAccount.accountHolder ?? "",
-                accountNumber: selectedAccount.accountNumber ?? "",
-                isPinned: !isCurrentlyPinned,
-                isActive: selectedAccount.isActive,
-            };
-            await accountApi.put(selectedAccount.id, req);
+            await accountApi.patchIsPinned(acc.id, !isCurrentlyPinned);
             setAccounts(prev =>
-                prev.map(acc => acc.id === selectedAccount.id ? { ...acc, isPinned: !isCurrentlyPinned } : acc)
+                prev.map(a => a.id === acc.id ? { ...a, isPinned: !isCurrentlyPinned } : a)
             );
-            setIsPinModalOpen(false);
-        } catch (error) {
-            console.error("Error toggling pin status:", error);
-            toast.error(isCurrentlyPinned ? "Bỏ ghim tài khoản thất bại." : "Ghim tài khoản thất bại.");
-        } finally {
-            setSelectedAccount(null);
+        } catch (error: any) {
+            const errorMsg = error?.response?.data?.message;
+            toast.error(errorMsg || (isCurrentlyPinned ? "Bỏ ghim tài khoản thất bại." : "Ghim tài khoản thất bại."));
         }
-    }, [selectedAccount, accounts]);
+    }, []);
+    //#endregion
 
+    const selectedAccount = useMemo(() => accounts.find(a => a.id === selectedAccountId) || null, [accounts, selectedAccountId]);
     const stats = useMemo(() => ({
         pinnedCount: accounts.filter(a => a.isPinned).length,
         activeCount: accounts.filter(a => a.isActive).length,
@@ -246,7 +228,7 @@ const AccountsPage: React.FC = () => {
             accessor: (acc) => acc.bankCode,
             cell: (acc) => (
                 <div className="flex items-center gap-3">
-                    <BrandLogo 
+                    <BrandLogo
                         logoUrl={acc.bankLogoUrl ?? acc.providerLogoUrl}
                         name={acc.bankShortName || acc.providerName}
                         code={acc.bankCode || acc.providerCode}
@@ -271,12 +253,12 @@ const AccountsPage: React.FC = () => {
         {
             header: "SỐ TÀI KHOẢN",
             accessor: (acc) => acc.accountNumber,
-            cell: (acc) => <span className="font-mono font-semibold text-foreground-secondary tracking-tight">{acc.accountNumber}</span>
+            cell: (acc) => <span className="font-primary font-semibold text-foreground-secondary tracking-tight">{acc.accountNumber}</span>
         },
         {
             header: "NGÀY TẠO",
             accessor: (acc) => acc.createdAt,
-            cell: (acc) => <span className="text-xs text-foreground-muted font-medium">{formatDateTime(acc.createdAt).split(' ')[0]}</span>
+            cell: (acc) => <span className="font-primary font-semibold text-foreground-secondary">{formatDateTime(acc.createdAt)}</span>
         },
         {
             header: "TRẠNG THÁI",
@@ -298,33 +280,36 @@ const AccountsPage: React.FC = () => {
                 <div className="flex items-center gap-1.5">
                     <ActionButton
                         icon={<Pin className={cn("w-3.5 h-3.5", acc.isPinned && "fill-amber-500")} />}
-                        onClick={() => handleOpenPin(acc)}
+                        onClick={() => handlePinAccount(acc)}
                         color={acc.isPinned ? "amber" : "gray"}
                         title={acc.isPinned ? "Bỏ ghim" : "Ghim"}
                     />
                     <ActionButton
                         icon={<Edit className="w-3.5 h-3.5" />}
-                        onClick={() => handleOpenEdit(acc)}
+                        onClick={() => handleOpenEdit(acc.id)}
                         color="blue"
                         title="Sửa"
                     />
                     <ActionButton
                         icon={<Trash2 className="w-3.5 h-3.5" />}
-                        onClick={() => handleOpenDelete(acc)}
+                        onClick={() => handleOpenDelete(acc.id)}
                         color="red"
                         title="Xóa"
                     />
                 </div>
             )
         }
-    ], [handleOpenPin, handleOpenEdit, handleOpenDelete]);
+    ], [handleOpenEdit, handleOpenDelete]);
 
+    //#region Render
     return (
         <div className="flex flex-col gap-8 flex-1 min-h-0">
             <PageHeader
                 totalItems={stats.totalItems}
                 activeCount={stats.activeCount}
                 pinnedCount={stats.pinnedCount}
+                onRefresh={() => fetchAccounts(paging.pageNumber, paging.pageSize, sortState?.field, sortState?.dir, debouncedSearch, providerFilter, activeFilter)}
+                loading={loading}
             />
 
             <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
@@ -378,7 +363,8 @@ const AccountsPage: React.FC = () => {
                         isOpen={isAccountModalOpen}
                         onClose={() => setIsAccountModalOpen(false)}
                         onSuccess={handleModalSuccess}
-                        accountId={selectedAccount?.id || null}
+                        accountId={selectedAccountId}
+                        allProviders={allProviders}
                     />
                 </Suspense>
             )}
@@ -393,48 +379,52 @@ const AccountsPage: React.FC = () => {
                 confirmText="Xóa hoàn toàn"
                 itemName={(selectedAccount?.bankCode ?? "") + " - " + (selectedAccount?.accountHolder ?? "") + " - " + (selectedAccount?.accountNumber ?? "")}
             />
-
-            <ActionConfirmModal
-                isOpen={isPinModalOpen}
-                onClose={() => setIsPinModalOpen(false)}
-                onConfirm={handlePinAccount}
-                title={selectedAccount?.isPinned ? "Bỏ ghim tài khoản" : "Ghim tài khoản ưu tiên"}
-                description={`Bạn có muốn ${selectedAccount?.isPinned ? 'bỏ ghim' : 'ghim'} tài khoản này lên vị trí ưu tiên khi tạo QR không?`}
-                loading={loading}
-                confirmText={selectedAccount?.isPinned ? "Xác nhận" : "Ghim ngay"}
-            />
         </div>
     );
 };
+//#endregion
 
 // --- Subcomponents ---
 
-const PageHeader: React.FC<{ totalItems: number, activeCount: number, pinnedCount: number }> = React.memo(({ totalItems, activeCount, pinnedCount }) => (
+const PageHeader: React.FC<{
+    totalItems: number,
+    activeCount: number,
+    pinnedCount: number,
+    onRefresh: () => void,
+    loading: boolean
+}> = React.memo(({ totalItems, activeCount, pinnedCount, onRefresh, loading }) => (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
         <div className="space-y-1">
             <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Quản lý Tài khoản</h1>
             <p className="text-sm text-foreground-muted font-medium">Lưu trữ và quản lý danh sách các tài khoản ngân hàng, ví điện tử cá nhân của bạn.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
-            <StatCard
-                label="Tổng tài khoản"
-                value={totalItems}
-                icon={<Wallet className="w-5 h-5 text-primary" />}
-                color="blue"
-            />
-            <StatCard
-                label="Đang hoạt động"
-                value={activeCount}
-                icon={<ShieldCheck className="w-5 h-5 text-green-500" />}
-                color="green"
-            />
-            <StatCard
-                label="Tài khoản đã ghim"
-                value={pinnedCount}
-                prefix="/5"
-                icon={<Pin className="w-5 h-5 text-amber-500 fill-amber-500" />}
-                color="amber"
+        <div className="flex items-center gap-3 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
+                <StatCard
+                    label="Tổng tài khoản"
+                    value={totalItems}
+                    icon={<Wallet className="w-5 h-5 text-primary" />}
+                    color="blue"
+                />
+                <StatCard
+                    label="Đang hoạt động"
+                    value={activeCount}
+                    icon={<ShieldCheck className="w-5 h-5 text-green-500" />}
+                    color="green"
+                />
+                <StatCard
+                    label="Tài khoản đã ghim"
+                    value={pinnedCount}
+                    prefix="/5"
+                    icon={<Pin className="w-5 h-5 text-amber-500 fill-amber-500" />}
+                    color="amber"
+                />
+            </div>
+            <RefreshButton
+                onRefresh={onRefresh}
+                loading={loading}
+                className="rounded-full"
             />
         </div>
     </div>

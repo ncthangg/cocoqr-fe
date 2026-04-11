@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
     X, QrCode, User, CreditCard, Landmark, Hash, Calendar,
     Clock, CheckCircle2, XCircle, AlertCircle, BadgeDollarSign,
     Tag, FileText, Layers, Wallet, ShieldCheck,
 } from "lucide-react";
-import { toast } from "react-toastify";
 import { qrApi } from "@/services/qr-api.service";
 import type { QrRes } from "@/models/entity.model";
 import ModalLoading from "@/components/UICustoms/Modal/ModalLoading";
@@ -12,14 +11,7 @@ import Button from "@/components/UICustoms/Button";
 import { formatDateTime } from "@/utils/dateTimeUtils";
 import BrandLogo from "@/components/UICustoms/BrandLogo";
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-interface HistoryDetailModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    historyId: number | null;
-}
-
-// ─── QR Status badge ──────────────────────────────────────────────────────────
+//#region Sub-components
 function QrStatusBadge({ status }: { status: string }) {
     const map: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
         PAID: {
@@ -91,7 +83,7 @@ function InfoRow({ icon, label, value, mono, fullWidth }: InfoRowProps) {
                 {icon}
                 {label}
             </span>
-            <span className={`text-sm text-foreground break-all ${mono ? "font-mono" : ""}`}>
+            <span className={`text-sm text-foreground break-all ${mono ? "font-primary" : ""}`}>
                 {value ?? <span className="text-foreground-muted">—</span>}
             </span>
         </div>
@@ -116,21 +108,26 @@ function formatAmount(amount?: number, currency?: string) {
     const cur = currency ?? "VND";
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: cur }).format(amount);
 }
+//#endregion
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+interface HistoryDetailModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    historyId: number | null;
+}
+
 const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose, historyId }) => {
+    //#region States & Hooks
     const [detail, setDetail] = useState<QrRes | null>(null);
     const [loading, setLoading] = useState(false);
+    //#endregion
 
+    //#region Data Fetching & Side Effects
     const fetchDetail = useCallback(async (id: number) => {
         try {
             setLoading(true);
             const res = await qrApi.getById(id);
             setDetail(res);
-        } catch (error) {
-            console.error("Error fetching QR history detail:", error);
-            toast.error("Không thể tải chi tiết lịch sử QR.");
-            onClose();
         } finally {
             setLoading(false);
         }
@@ -149,12 +146,18 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
         if (isOpen) window.addEventListener("keydown", handler);
         return () => window.removeEventListener("keydown", handler);
     }, [isOpen, onClose]);
+    //#endregion
 
+    //#region Derived Data
+    const logoUrl = useMemo(() => {
+        const bankLogo = detail?.bankLogoUrl;
+        const providerLogo = detail?.providerLogoUrl;
+        return bankLogo || providerLogo;
+    }, [detail?.bankLogoUrl, detail?.providerLogoUrl]);
+    //#endregion
+
+    //#region Render
     if (!isOpen) return null;
-
-    const bankLogo = detail?.bankLogoUrl;
-    const providerLogo = detail?.providerLogoUrl;
-    const logoUrl = bankLogo || providerLogo;
 
     return (
         <div
@@ -222,7 +225,7 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
 
                             {/* Provider / Bank card */}
                             <div className="flex items-center gap-sm bg-surface-muted/40 p-sm rounded-xl border border-border">
-                                <BrandLogo 
+                                <BrandLogo
                                     logoUrl={logoUrl}
                                     name={detail.bankShortName ?? detail.providerName}
                                     code={detail.bankCodeSnapshot ?? detail.providerCode}
@@ -315,7 +318,7 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
                                                 Raw QR String
                                             </span>
                                         </div>
-                                        <p className="text-xs font-mono text-foreground-secondary break-all leading-relaxed">
+                                        <p className="text-xs font-primary text-foreground-secondary break-all leading-relaxed">
                                             {detail.qrData}
                                         </p>
                                     </div>
@@ -384,6 +387,7 @@ const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({ isOpen, onClose
             </div>
         </div>
     );
+    //#endregion
 };
 
 export default HistoryDetailModal;

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
-import { Outlet, Link } from "react-router-dom";
+import { useNavigate, Outlet, Link } from "react-router-dom";
 import { RouteConstant } from "@/constants/route.constant";
 import { useAuthContext } from "@/auth/AuthContext";
 import { ChevronDown, LogOut, UserIcon } from "lucide-react";
@@ -10,6 +10,7 @@ import Logo from "@/components/UICustoms/Logo";
 const ProfileModal = lazy(() => import("@/components/UICustoms/Modal/ProfileModal"));
 
 const AdminLayout: React.FC = () => {
+    const navigate = useNavigate();
     const { logout, user, roles } = useAuthContext();
     const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -56,7 +57,7 @@ const AdminLayout: React.FC = () => {
             // ignore
         }
         logout();
-        window.location.href = "/";
+        navigate("/");
     };
 
     return (
@@ -69,11 +70,18 @@ const AdminLayout: React.FC = () => {
                                 <Logo />
                             </Link>
                             <nav className="hidden items-center gap-6 md:flex">
+                                <Link to={RouteConstant.ADMIN_CONTACT_MESSAGES} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
+                                    Liên hệ
+                                </Link>
                                 <Link to={RouteConstant.ADMIN_USERS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     User
                                 </Link>
                                 <Link to={RouteConstant.ADMIN_ROLES} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     Role
+                                </Link>
+
+                                <Link to={RouteConstant.ADMIN_ACCOUNTS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
+                                    Account
                                 </Link>
                                 <Link to={RouteConstant.ADMIN_PROVIDERS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     Provider
@@ -81,17 +89,25 @@ const AdminLayout: React.FC = () => {
                                 <Link to={RouteConstant.ADMIN_BANKS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     Bank
                                 </Link>
-                                <Link to={RouteConstant.ADMIN_ACCOUNTS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
-                                    Account
+
+                                <Link to={RouteConstant.ADMIN_QR_STYLE_LIB} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
+                                    QR Style
+                                </Link>
+                                <Link to={RouteConstant.ADMIN_SMTP_SETTINGS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
+                                    SMTP
+                                </Link>
+                                <Link to={RouteConstant.ADMIN_EMAIL_TEMPLATES} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
+                                    Templates
+                                </Link>
+
+                                <Link to={RouteConstant.ADMIN_SEED} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
+                                    Seed
                                 </Link>
                                 <Link to={RouteConstant.ADMIN_HISTORY} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     History
                                 </Link>
-                                <Link to={RouteConstant.ADMIN_SEED} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
-                                    Seed
-                                </Link>
-                                <Link to={RouteConstant.ADMIN_QR_STYLE_LIB} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
-                                    QR Style
+                                <Link to={RouteConstant.ADMIN_EMAIL_LOG} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
+                                    Email Log
                                 </Link>
                             </nav>
                         </div>

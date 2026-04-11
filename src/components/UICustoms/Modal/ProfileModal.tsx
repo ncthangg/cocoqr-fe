@@ -88,7 +88,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user, role
 
                         <div className="text-center flex flex-col gap-xs">
                             <p className="text-xl font-extrabold text-foreground tracking-tight">{user.fullName}</p>
-                            <p className="text-sm text-foreground-muted font-mono">{user.email}</p>
+                            <p className="text-sm text-foreground-muted font-primary">{user.email}</p>
                         </div>
                     </div>
 
@@ -110,7 +110,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user, role
                             <Mail className="w-4 h-4 text-primary shrink-0" />
                             <div className="flex flex-col min-w-0">
                                 <span className="text-xs text-foreground-muted font-bold uppercase tracking-widest">Email</span>
-                                <span className="text-sm font-mono font-semibold text-foreground truncate">{user.email}</span>
+                                <span className="text-sm font-primary font-semibold text-foreground truncate">{user.email}</span>
                             </div>
                         </div>
                     </div>

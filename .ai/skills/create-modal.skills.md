@@ -1,28 +1,63 @@
 ---
 name: create-modal
-description: Blueprint for accessible, animated, and performant UI Modals.
+description: Blueprint for accessible, animated modals using project design tokens.
 ---
 # Create Modal Skill
 
-## Purpose
-- Deliver standardized popup interfaces.
-- Guarantee consistent accessibility and interaction UX.
+## Prerequisites
+- Follow `.ai/rules/modal.rules.md` strictly.
+- Use `modal-overlay` + `modal-content` CSS classes (globals.css). Never inline overlay/content styles.
+- Size with `max-w-modal-sm|md|lg|xl|2xl|3xl|4xl`. Never use raw `max-w-2xl` etc.
 
-## Steps
-1. **Props**: Enforce explicit `<Props>` (`isOpen`, `onClose`, data payload).
-2. **Backdrop**: Implement fixed screen overlay (`bg-black/50`, `fixed inset-0`, `z-50`).
-3. **Body**: Centralize modal UI via `flex items-center justify-center`. Use semantic `dialog` tags.
-4. **A11y**: 
-   - Ensure "click outside backdrop" fires `onClose`.
-   - Attach specific `keydown` listener mapping `Escape` key to `onClose`.
-5. **Animation**: Utilize Tailwind transitions (`transition-all duration-300 hover:scale-[1.01]`).
+## Template
+```tsx
+import React, { useCallback } from "react";
+import { X } from "lucide-react";
 
-## Performance
-- **Code Swap**: Wrap heavy/modal chunks using React `lazy` + `Suspense` inside `page.tsx`.
-- **Cleanup**: ALWAYS invoke `removeEventListener` inside `useEffect` returns to block memory leaks.
-- **Re-renders**: Maintain modal `isOpen` state independently to prevent whole-page layout resets.
+interface ExampleModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
 
-## Follow Rules
-- **Styling**: Tailwind + `cn()`. Utilize specific tokens `shadow-md`, `rounded-lg`, `bg-bg`. 
-- **Icons**: Standardize `X` icon from `lucide-react` for deliberate close actions.
-- **UI**: Depend on `components/UICustoms/` for structured layout controls.
+const ExampleModal: React.FC<ExampleModalProps> = ({ isOpen, onClose }) => {
+    const handleOverlayClick = useCallback((e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) onClose();
+    }, [onClose]);
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="modal-overlay" onClick={handleOverlayClick}>
+            <div className="modal-content max-w-modal-lg flex flex-col overflow-hidden"
+                 onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+                    <h2 className="text-lg font-bold">Title</h2>
+                    <button onClick={onClose} className="text-foreground-muted hover:text-foreground transition-colors">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                {/* Body */}
+                <div className="p-5 overflow-y-auto custom-scrollbar">{/* content */}</div>
+                {/* Footer */}
+                <div className="p-4 border-t border-border flex justify-end gap-sm">
+                    <button onClick={onClose} className="btn-secondary">Hủy</button>
+                    <button className="btn-primary">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default React.memo(ExampleModal);
+```
+
+## Checklist
+- [ ] Props: `isOpen` + `onClose`
+- [ ] Overlay: `modal-overlay` class, `handleOverlayClick` with `useCallback`
+- [ ] Content: `modal-content` + `max-w-modal-*`, `stopPropagation`
+- [ ] Early return `null` when `!isOpen`
+- [ ] Close icon: `<X />` from `lucide-react`
+- [ ] Export with `React.memo`
+- [ ] Cleanup `keydown` listeners in `useEffect` return
+- [ ] Reuse components from `components/UICustoms/`
