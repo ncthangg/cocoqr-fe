@@ -36,6 +36,7 @@ const ContactMessagePage = lazy(() => import("@/pages/admin/contactMessage/page"
 const GuidePage = lazy(() => import("@/pages/share/guide/page"))
 const CommitmentPage = lazy(() => import("@/pages/share/commitment/page"))
 const AboutPage = lazy(() => import("@/pages/share/about/page"))
+const ThankToPage = lazy(() => import("@/pages/share/thankto/page"))
 
 const RootWrapper = () => (
     <UnauthorizedProvider>
@@ -58,6 +59,7 @@ export const router = createBrowserRouter([
             { path: RouteConstant.GUIDE, element: <GuidePage /> },
             { path: RouteConstant.COMMITMENT, element: <CommitmentPage /> },
             { path: RouteConstant.ABOUT, element: <AboutPage /> },
+            { path: RouteConstant.THANK_TO, element: <ThankToPage /> },
 
             // ─── USER ROUTES (Role = "user") ──────────────────────────────────
             {

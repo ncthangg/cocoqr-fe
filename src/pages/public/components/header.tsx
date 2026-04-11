@@ -46,6 +46,12 @@ export function Header() {
                         >
                             Về tôi
                         </Link>
+                        <Link 
+                            to={RouteConstant.THANK_TO} 
+                            className="text-base font-bold text-foreground transition-all hover:text-primary hover:scale-105"
+                        >
+                            Thanks to
+                        </Link>
                     </nav>
                 </div>
 

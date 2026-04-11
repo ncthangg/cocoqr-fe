@@ -3,7 +3,6 @@ import {
     X, User, Mail, Calendar, Shield, ShieldCheck, ShieldOff,
     Lock, LockOpen, UserCircle2, BadgeCheck,
 } from "lucide-react";
-import { toast } from "react-toastify";
 import { userApi } from "@/services/user-api.service";
 import type { GetUserBaseRes } from "@/models/entity.model";
 import ModalLoading from "@/components/UICustoms/Modal/ModalLoading";
@@ -70,12 +69,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user, onStatusCh
         try {
             setActionLoading(true);
             const newStatus = !detail.status;
-            await userApi.updateStatus(user.id, newStatus);
-            toast.success(
-                newStatus
-                    ? "Đã mở khóa tài khoản người dùng thành công."
-                    : "Đã khóa tài khoản người dùng thành công."
-            );
+            await userApi.patchStatus(user.id);
             setDetail(prev => prev ? { ...prev, status: newStatus } : prev);
             onStatusChanged?.(user.id, newStatus);
         } finally {

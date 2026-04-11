@@ -48,7 +48,7 @@ const HeroSection: React.FC<HeroSectionProps> = React.memo(({ hasError, onError 
                         <span className="text-5xl select-none">👋</span>
                     ) : (
                         <img
-                            src="/avt.JPG"
+                            src="https://res.cloudinary.com/dyy8nd8sd/image/upload/v1775891960/avt_jyxfia.webp"
                             alt="Nguyễn Chiến Thắng"
                             onError={onError}
                             className="w-full h-full object-cover"
@@ -166,12 +166,6 @@ const AboutPage: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-5 gap-2xl items-center border-t border-border/50 pt-2xl">
                             <StorySection />
                             <TechSection />
-                        </div>
-
-                        <div className="text-center select-none cursor-default">
-                            <p className="text-2xl font-serif italic text-foreground-muted opacity-40">
-                                "Make it simple but significant."
-                            </p>
                         </div>
                     </main>
 

@@ -81,7 +81,7 @@ const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountId,
         try {
             setActionLoading(true);
             const newStatus = !detail.status;
-            await accountApi.updateStatus(accountId, newStatus);
+            await accountApi.patchStatus(accountId);
             setDetail(prev => prev ? { ...prev, status: newStatus } : prev);
             onStatusChanged?.(accountId, newStatus);
         } finally {

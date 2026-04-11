@@ -41,7 +41,6 @@ export interface PutAccountReq {
     bankCode: string | null;
     bankName: string | null;
     providerId: string;
-    isPinned?: boolean;
     isActive: boolean;
 }
 
