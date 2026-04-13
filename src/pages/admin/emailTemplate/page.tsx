@@ -218,7 +218,7 @@ const EmailTemplatePage: React.FC = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 flex-1">
+            <div className="bg-bg border border-border rounded-lg shadow-lg flex flex-col min-h-0 border-b-0">
                 <div className="min-h-0 flex-1 overflow-hidden">
                     <DataTable
                         loading={loading}

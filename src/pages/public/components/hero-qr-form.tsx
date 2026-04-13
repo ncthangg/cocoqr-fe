@@ -3,7 +3,7 @@ import { QrCode, Eraser, Hash, Banknote, StickyNote } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
 import AccountProviderSelector from "@/components/UICustoms/Form/AccountProviderSelector";
 import { providerApi } from "@/services/provider-api.service";
-import type { PostQrRes, ProviderRes } from "@/models/entity.model";
+import type { PostQrRes } from "@/models/entity.model";
 import type { PostQrReq } from "@/models/entity.request.model";
 import { toast } from "react-toastify";
 import { ProviderCode } from "@/models/enum";
@@ -11,28 +11,22 @@ import { qrApi } from "@/services/qr-api.service";
 import { formatVNDInput } from "@/utils/currencyUtils";
 import { Link } from "react-router-dom";
 import { RouteConstant } from "@/constants/route.constant";
+import { useAppDispatch, useAppSelector } from "@/store/redux.hooks";
+import {
+    setFormData,
+    setAllProviders,
+    setHasFetchedProviders,
+    setIsAgreed,
+    setIsProviderMaintenance,
+    setIsBankMaintenance,
+    resetHeroForm,
+} from "@/store/slices/hero-form.slice";
 
 //#region Types & Constants
 interface HeroQRFormProps {
     onQrCreated?: (res: PostQrRes) => void;
     onReset?: () => void;
 }
-
-const DEFAULT_FORM = {
-    providerId: "",
-    providerCode: "",
-    providerName: "",
-    isProviderInactive: null as boolean | null,
-    napasBin: "",
-    bankCode: "",
-    bankName: "",
-    bankShortName: "",
-    bankLogoUrl: "" as string | null,
-    isBankInactive: null as boolean | null,
-    number: "",
-    amount: "", // raw digits
-    note: "",
-};
 //#endregion
 
 //#region Sub-components
@@ -77,14 +71,17 @@ const TermsAgreement = memo(({ isAgreed, onChange }: { isAgreed: boolean; onChan
 
 export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
     //#region States & Refs
-    const [allProviders, setAllProviders] = useState<ProviderRes[]>([]);
-    const [hasFetchedProviders, setHasFetchedProviders] = useState(false);
-    const [formData, setFormData] = useState(DEFAULT_FORM);
-    const [isProviderMaintenance, setIsProviderMaintenance] = useState(false);
-    const [isBankMaintenance, setIsBankMaintenance] = useState(false);
+    const dispatch = useAppDispatch();
+    const {
+        formData,
+        allProviders,
+        hasFetchedProviders,
+        isAgreed,
+        isProviderMaintenance,
+        isBankMaintenance,
+    } = useAppSelector((state) => state.heroForm);
+
     const [qrLoading, setQrLoading] = useState(false);
-    const [isAgreed, setIsAgreed] = useState(false);
-    
     const lastCreateTimeRef = useRef<number>(0);
     //#endregion
 
@@ -101,21 +98,19 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
         try {
             const res = await providerApi.getAll();
             if (res) {
-                setAllProviders(res);
-                setHasFetchedProviders(true);
+                dispatch(setAllProviders(res));
             }
+        } catch {
+            // Silently fail as in original logic
         } finally {
-            setHasFetchedProviders(true);
+            dispatch(setHasFetchedProviders(true));
         }
-    }, [hasFetchedProviders]);
+    }, [hasFetchedProviders, dispatch]);
 
     const handleReset = useCallback(() => {
-        setFormData(DEFAULT_FORM);
-        setIsProviderMaintenance(false);
-        setIsBankMaintenance(false);
-        setIsAgreed(false);
+        dispatch(resetHeroForm());
         onReset?.();
-    }, [onReset]);
+    }, [onReset, dispatch]);
 
     const handleCreateQR = useCallback(async () => {
         const now = Date.now();
@@ -175,14 +170,14 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
     const handleAmountChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const raw = e.target.value.replace(/\D/g, "");
         if (raw.length <= 15) {
-            setFormData(prev => ({ ...prev, amount: raw }));
+            dispatch(setFormData({ amount: raw }));
         }
-    }, []);
+    }, [dispatch]);
 
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    }, []);
+        dispatch(setFormData({ [name]: value }));
+    }, [dispatch]);
     //#endregion
 
     //#region Render
@@ -216,8 +211,7 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                     onFetchProviders={fetchProviders}
                     onProviderChange={(id) => {
                         const p = allProviders.find(item => item.id === id);
-                        setFormData(prev => ({
-                            ...prev,
+                        dispatch(setFormData({
                             providerId: id,
                             providerCode: p?.code || "",
                             providerName: p?.name || "",
@@ -226,12 +220,11 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                             bankName: "",
                             bankLogoUrl: "",
                         }));
-                        setIsProviderMaintenance(p ? !p.isActive : false);
-                        setIsBankMaintenance(false);
+                        dispatch(setIsProviderMaintenance(p ? !p.isActive : false));
+                        dispatch(setIsBankMaintenance(false));
                     }}
                     onBankSelect={(napasBin, code, shortName, bankName, logoUrl, isActive) => {
-                        setFormData(prev => ({ 
-                            ...prev, 
+                        dispatch(setFormData({ 
                             napasBin, 
                             bankCode: code, 
                             bankShortName: shortName, 
@@ -239,7 +232,7 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                             bankLogoUrl: logoUrl, 
                             isBankInactive: !isActive 
                         }));
-                        setIsBankMaintenance(!isActive);
+                        dispatch(setIsBankMaintenance(!isActive));
                     }}
                     isProviderInactive={isProviderInactive || false}
                     isBankInactive={isBankInactive || false}
@@ -311,7 +304,7 @@ export function HeroQRForm({ onQrCreated, onReset }: HeroQRFormProps) {
                     </div>
                 )}
 
-                <TermsAgreement isAgreed={isAgreed} onChange={setIsAgreed} />
+                <TermsAgreement isAgreed={isAgreed} onChange={(val) => dispatch(setIsAgreed(val))} />
 
                 <div className="flex gap-md mt-xs">
                     <Button

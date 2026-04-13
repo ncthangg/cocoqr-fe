@@ -4,6 +4,8 @@ import type { GetEmailLogByIdRes } from "@/models/entity.model";
 import { formatDateTime } from "@/utils/dateTimeUtils";
 import { EmailLogStatus, EmailDirection } from "@/models/enum";
 import { TagBadge } from "@/components/UICustoms/TagBadge";
+import { StatusBadge } from "@/components/UICustoms/StatusBadge";
+import { Clock } from "lucide-react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 
@@ -23,7 +25,6 @@ const EmailDetailModal: React.FC<EmailDetailModalProps> = ({ isOpen, onClose, lo
     //#region Render
     if (!isOpen || !log) return null;
 
-    const isSuccess = log.status === EmailLogStatus.SUCCESS || log.status === "SENT";
 
     return (
         <div
@@ -43,12 +44,12 @@ const EmailDetailModal: React.FC<EmailDetailModalProps> = ({ isOpen, onClose, lo
                         <h3 className="text-xl font-bold text-foreground flex items-center gap-3">
                             Chi tiết Email
                             {/* Move status to top bar */}
-                            <span className={`px-2 py-0.5 mt-0.5 rounded-full text-xs font-bold border uppercase tracking-wider ${isSuccess
-                                ? "bg-green-500/10 text-green-500 border-green-500/20"
-                                : "bg-red-500/10 text-red-500 border-red-500/20"
-                                }`}>
-                                {log.status || "Failed"}
-                            </span>
+                            <StatusBadge
+                                status={log.status}
+                                size="sm"
+                                icon={log.status === EmailLogStatus.PENDING ? <Clock className="w-3.5 h-3.5" /> : undefined}
+                                className="mt-0.5"
+                            />
                         </h3>
                     </div>
                     <div className="flex items-center gap-4">

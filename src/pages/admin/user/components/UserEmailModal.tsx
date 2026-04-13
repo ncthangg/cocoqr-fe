@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import type { GetUserBaseRes, GetEmailLogRes, GetEmailLogByIdRes, PagingVM, EmailTemplateRes } from "@/models/entity.model";
 import { emailLogApi } from "@/services/email-log-api.service";
 import { adminContactApi } from "@/services/admin-contact-api.service";
 import { emailTemplateApi } from "@/services/email-template-api.service";
 import type { AdminPostContactReq } from "@/models/entity.request.model";
-import { SmtpSettingType } from "@/models/enum";
+import { SmtpSettingType, EmailLogStatus } from "@/models/enum";
 import {
     X,
     Mail,
@@ -18,25 +18,139 @@ import {
     Loader2,
     Search,
     Info,
-    Settings
+    Settings,
+    RefreshCw,
+    Clock
 } from "lucide-react";
 import { formatDateTime } from "@/utils/dateTimeUtils";
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { useDebounce } from "@/hooks/useDebounce";
 import { StatusBadge } from "@/components/UICustoms/StatusBadge";
-import { EmailLogStatus } from "@/models/enum";
+import { cn } from "@/lib/utils";
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
+//#region Types
 interface UserEmailModalProps {
     isOpen: boolean;
     onClose: void | (() => void);
     user: GetUserBaseRes | null;
 }
 
+interface LogItemProps {
+    log: GetEmailLogRes;
+    isActive: boolean;
+    isFetchingDetail: boolean;
+    onClick: (id: string) => void;
+}
+//#endregion
+
+//#region Sub-components
+const LogItem = memo(({ log, isActive, isFetchingDetail, onClick }: LogItemProps) => (
+    <div
+        onClick={() => onClick(log.id)}
+        className={cn(
+            "p-4 hover:bg-primary/5 transition-colors group cursor-pointer border-l-4",
+            isActive ? "bg-primary/5 border-l-primary" : "border-l-transparent"
+        )}
+    >
+        <div className="flex justify-between items-start mb-1 gap-2">
+            <span className="text-sm font-bold text-foreground line-clamp-2">{log.subject}</span>
+            <div className="shrink-0 mt-0.5">
+                {isFetchingDetail ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                ) : log.status === EmailLogStatus.SUCCESS || log.status === 'SENT' ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                ) : log.status === EmailLogStatus.PENDING ? (
+                    <Clock className="w-5 h-5 text-amber-500" />
+                ) : (
+                    <AlertCircle className="w-5 h-5 text-red-500" />
+                )}
+            </div>
+        </div>
+        <div className="flex items-center gap-3 text-[10px] text-foreground-muted font-bold mt-2">
+            <span className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                {formatDateTime(log.createdAt)}
+            </span>
+            <span className="px-1.5 py-0.5 bg-border/50 rounded text-foreground uppercase border border-border/20">
+                {log.smtpType}
+            </span>
+        </div>
+    </div>
+));
+
+const DetailView = memo(({ log, onBack }: { log: GetEmailLogByIdRes; onBack: () => void }) => (
+    <div className="flex flex-col h-full overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="p-4 border-b border-border flex justify-between items-center bg-bg/10">
+            <div className="flex items-center gap-2 font-bold text-foreground">
+                <Mail className="w-4 h-4 text-primary" />
+                <span>Chi tiết Email</span>
+            </div>
+            <button onClick={onBack} className="p-1.5 lg:hidden hover:bg-border rounded-full text-foreground-muted">
+                <X className="w-4 h-4" />
+            </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-muted/30 p-5 rounded-2xl border border-border">
+                <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><Settings className="w-3 h-3 text-primary" />SMTP</p>
+                    <p className="text-sm font-bold text-foreground">{log.smtpType}</p>
+                </div>
+                <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><User className="w-3 h-3 text-primary" />Người nhận</p>
+                    <p className="text-sm font-bold text-foreground truncate">{log.recipientFullName || "Khách"} ({log.toEmail})</p>
+                </div>
+                <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><Calendar className="w-3 h-3 text-primary" />Thời gian gửi</p>
+                    <p className="text-sm font-bold text-foreground">{formatDateTime(log.createdAt)}</p>
+                </div>
+                <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><Info className="w-3 h-3 text-primary" />Trạng thái</p>
+                    <div className="flex items-center gap-2">
+                        <StatusBadge
+                            status={log.status}
+                            size="lg"
+                            icon={log.status === EmailLogStatus.PENDING ? <Clock className="w-5 h-5" /> : undefined}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider pl-1">Tiêu đề</p>
+                <div className="p-4 bg-bg rounded-xl border border-border font-extrabold text-foreground shadow-sm">
+                    {log.subject}
+                </div>
+            </div>
+
+            <div className="space-y-2 flex-1 flex flex-col">
+                <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider pl-1">Nội dung</p>
+                <div
+                    className="flex-1 p-5 bg-bg rounded-xl border border-border text-sm text-foreground leading-relaxed shadow-sm min-h-[250px] overflow-auto prose-content"
+                    dangerouslySetInnerHTML={{ __html: log.body || '' }}
+                />
+            </div>
+
+            {log.errorMessage && (
+                <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-red-500 uppercase tracking-wider flex items-center gap-1.5 pl-1">
+                        <AlertCircle className="w-3 h-3" /> Lỗi gửi Email
+                    </p>
+                    <div className="p-4 bg-red-500/5 rounded-xl border border-red-500/20 text-sm text-red-500 font-medium">
+                        {log.errorMessage}
+                    </div>
+                </div>
+            )}
+        </div>
+    </div>
+));
+//#endregion
+
 const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }) => {
     //#region States & Hooks
     const [loading, setLoading] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [fetchingDetailId, setFetchingDetailId] = useState<string | null>(null);
     const [logs, setLogs] = useState<GetEmailLogRes[]>([]);
     const [isFormView, setIsFormView] = useState(false);
@@ -67,11 +181,13 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
     }, [isOpen]);
     //#endregion
 
-    //#region Data Fetching & Side Effects
-    const fetchHistory = useCallback(async (page: number, size: number, subj: string) => {
+    //#region Data Fetching
+    const fetchHistory = useCallback(async (page: number, size: number, subj: string, showSoftLoading = false) => {
         if (!user) return;
         try {
-            setLoading(true);
+            if (showSoftLoading) setIsRefreshing(true);
+            else setLoading(true);
+
             const res = await emailLogApi.getAll({
                 pageNumber: page,
                 pageSize: size,
@@ -88,15 +204,18 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
             console.error("Error fetching email history", error);
         } finally {
             setLoading(false);
+            setIsRefreshing(false);
         }
     }, [user]);
 
+    // Initial fetch when opening or user changes
     useEffect(() => {
         if (isOpen && user) {
-            fetchHistory(paging.pageNumber, paging.pageSize, debouncedSubject);
+            fetchHistory(paging.pageNumber, paging.pageSize, debouncedSubject, logs.length > 0);
         }
     }, [isOpen, user, fetchHistory, paging.pageNumber, paging.pageSize, debouncedSubject]);
 
+    // Reset view on open
     useEffect(() => {
         if (isOpen) {
             setIsFormView(false);
@@ -110,6 +229,10 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
     //#endregion
 
     //#region Handlers
+    const handleOnClose = useCallback(() => {
+        if (typeof onClose === 'function') onClose();
+    }, [onClose]);
+
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= paging.totalPages) {
             setPaging(prev => ({ ...prev, pageNumber: newPage }));
@@ -128,6 +251,8 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
             const detail = await emailLogApi.getById(id);
             setSelectedLog(detail);
             setIsFormView(false);
+        } catch (err) {
+            console.error(err);
         } finally {
             setFetchingDetailId(null);
         }
@@ -153,33 +278,46 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
             setContent("");
             setSmtpType("");
             setIsFormView(false);
-            setPaging(prev => ({ ...prev, pageNumber: 1 }));
-            fetchHistory(1, paging.pageSize, debouncedSubject);
+            // Non-intrusive refresh
+            fetchHistory(1, paging.pageSize, debouncedSubject, true);
         } finally {
             setSubmitting(false);
         }
     };
     //#endregion
 
-    //#region Render
-    if (!isOpen || !user) return null;
-
-    const handleOnClose = typeof onClose === 'function' ? onClose : () => { };
+    //#region Render Helpers
+    const isReady = isOpen && user;
+    if (!isOpen) return null;
+    //#endregion
 
     return (
         <div className="modal-overlay" onClick={handleOnClose}>
-            <div className="modal-content max-w-modal-4xl h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div
+                className="modal-content max-w-modal-4xl h-[80vh] flex flex-col animate-in zoom-in-95 duration-200"
+                onClick={e => e.stopPropagation()}
+            >
                 {/* Header */}
                 <div className="p-5 border-b border-border flex justify-between items-center bg-bg/50">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-primary/10 rounded-xl">
-                            <Mail className="w-6 h-6 text-primary" />
+                    {!user ? (
+                        <div className="flex items-center gap-4 animate-pulse">
+                            <div className="w-12 h-12 bg-border rounded-xl" />
+                            <div className="space-y-2">
+                                <div className="w-32 h-5 bg-border rounded" />
+                                <div className="w-48 h-3 bg-border rounded" />
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="text-xl font-bold text-foreground">Email cho {user.fullName}</h3>
-                            <p className="text-xs text-foreground-muted font-medium">{user.email}</p>
+                    ) : (
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-primary/10 rounded-xl">
+                                <Mail className="w-6 h-6 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-foreground">Email cho {user.fullName}</h3>
+                                <p className="text-xs text-foreground-muted font-medium">{user.email}</p>
+                            </div>
                         </div>
-                    </div>
+                    )}
                     <button
                         onClick={handleOnClose}
                         className="p-2 hover:bg-border rounded-full transition-colors text-foreground-muted hover:text-foreground"
@@ -189,12 +327,16 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                 </div>
 
                 <div className="flex-1 flex overflow-hidden">
-                    {/* Left Panel: Email History Table (Full width or split) */}
-                    <div className={`${isFormView ? 'hidden lg:flex' : 'flex'} flex-col w-full lg:w-1/3 border-r border-border bg-bg/30`}>
+                    {/* Left Panel: Email History */}
+                    <div className={cn(
+                        "flex-col w-full lg:w-1/3 border-r border-border bg-bg/30",
+                        isFormView ? "hidden lg:flex" : "flex"
+                    )}>
                         <div className="p-4 border-b border-border flex justify-between items-center bg-surface/50">
                             <div className="flex items-center gap-2 font-bold text-foreground overflow-hidden">
                                 <History className="w-4 h-4 text-primary shrink-0" />
                                 <span className="truncate">Lịch sử Email</span>
+                                {isRefreshing && <RefreshCw className="w-3 h-3 animate-spin text-primary" />}
                             </div>
                             <button
                                 onClick={() => { setIsFormView(true); setSelectedLog(null); }}
@@ -225,7 +367,6 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                                             setPaging(prev => ({ ...prev, pageNumber: 1 }));
                                         }}
                                         className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-surface-muted text-foreground-muted hover:text-foreground transition-all duration-200 z-10"
-                                        title="Xóa tìm kiếm"
                                     >
                                         <X className="w-3.5 h-3.5" />
                                     </button>
@@ -233,66 +374,62 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto custom-scrollbar p-0 flex flex-col">
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-0 flex flex-col relative">
                             {loading ? (
                                 <div className="h-full flex items-center justify-center">
                                     <Loader2 className="w-8 h-8 text-primary animate-spin" />
                                 </div>
                             ) : logs.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-foreground-muted gap-3 p-8 text-center">
+                                <div className="h-full flex flex-col items-center justify-center text-foreground-muted gap-3 p-8 text-center animate-in fade-in">
                                     <div className="p-4 bg-border/20 rounded-full">
                                         <Mail className="w-12 h-12 opacity-20" />
                                     </div>
-                                    <p className="font-medium">Chưa có lịch sử gửi email cho người dùng này.</p>
+                                    <p className="font-medium">Chưa có lịch sử gửi email.</p>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-border flex-1">
+                                <div className={cn(
+                                    "divide-y divide-border flex-1 transition-opacity duration-200",
+                                    isRefreshing ? "opacity-50" : "opacity-100"
+                                )}>
                                     {logs.map((log) => (
-                                        <div
+                                        <LogItem
                                             key={log.id}
-                                            onClick={() => handleViewDetail(log.id)}
-                                            className={`p-4 hover:bg-primary/5 transition-colors group cursor-pointer ${selectedLog?.id === log.id ? 'bg-primary/5 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'}`}
-                                        >
-                                            <div className="flex justify-between items-start mb-1 gap-2">
-                                                <span className="text-sm font-bold text-foreground line-clamp-2">{log.subject}</span>
-                                                <div className="shrink-0 mt-0.5">
-                                                    {fetchingDetailId === log.id ? (
-                                                        <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-                                                    ) : (log.status === EmailLogStatus.SUCCESS || log.status === 'SENT') ? (
-                                                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                                                    ) : (
-                                                        <AlertCircle className="w-3.5 h-3.5 text-red-500" />
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3 text-[10px] text-foreground-muted font-bold mt-2">
-                                                <span className="flex items-center gap-1">
-                                                    <Calendar className="w-3 h-3" />
-                                                    {formatDateTime(log.createdAt)}
-                                                </span>
-                                                <span className="px-1.5 py-0.5 bg-border/50 rounded text-foreground uppercase border border-border/20">
-                                                    {log.smtpType}
-                                                </span>
-                                            </div>
-                                        </div>
+                                            log={log}
+                                            isActive={selectedLog?.id === log.id}
+                                            isFetchingDetail={fetchingDetailId === log.id}
+                                            onClick={handleViewDetail}
+                                        />
                                     ))}
                                 </div>
                             )}
                         </div>
                         <div className="p-3 border-border bg-surface shrink-0">
-                            <TablePagination pageNumber={paging.pageNumber} pageSize={paging.pageSize} totalItems={paging.totalItems} totalPages={paging.totalPages} onPageChange={handlePageChange} />
+                            <TablePagination
+                                pageNumber={paging.pageNumber}
+                                pageSize={paging.pageSize}
+                                totalItems={paging.totalItems}
+                                totalPages={paging.totalPages}
+                                onPageChange={handlePageChange}
+                            />
                         </div>
                     </div>
 
-                    {/* Right Panel: Send Email Form / Details */}
-                    <div className={`${isFormView || selectedLog ? 'flex' : 'hidden lg:flex'} flex-col flex-1 bg-surface relative`}>
-                        {!isFormView && !selectedLog ? (
-                            <div className="flex-1 flex flex-col justify-center items-center text-foreground-muted gap-3 p-8 text-center bg-surface-muted/20">
+                    {/* Right Panel: Content View */}
+                    <div className={cn(
+                        "flex-1 bg-surface relative",
+                        isFormView || selectedLog ? "flex" : "hidden lg:flex"
+                    )}>
+                        {!isReady ? (
+                            <div className="flex-1 flex flex-col justify-center items-center gap-4">
+                                <Loader2 className="w-10 h-10 text-primary animate-spin opacity-20" />
+                            </div>
+                        ) : !isFormView && !selectedLog ? (
+                            <div className="flex-1 flex flex-col justify-center items-center text-foreground-muted gap-3 p-8 text-center bg-surface-muted/20 animate-in fade-in">
                                 <Mail className="w-16 h-16 opacity-10" />
                                 <p className="font-medium text-sm max-w-[250px]">Chọn một email bên trái để xem chi tiết, hoặc tạo thư mới.</p>
                             </div>
                         ) : isFormView ? (
-                            <>
+                            <div className="flex flex-col flex-1 h-full overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
                                 <div className="p-4 border-b border-border flex justify-between items-center bg-bg/10">
                                     <div className="flex items-center gap-2 font-bold text-foreground">
                                         <Send className="w-4 h-4 text-primary" />
@@ -309,7 +446,7 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                                                     <User className="w-3 h-3 text-primary" /> Người nhận
                                                 </label>
                                                 <div className="px-4 py-3 bg-bg/50 border border-border rounded-xl text-foreground font-semibold">
-                                                    {user.fullName}
+                                                    {user?.fullName}
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
@@ -317,14 +454,14 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                                                     <Mail className="w-3 h-3 text-primary" /> Email
                                                 </label>
                                                 <div className="px-4 py-3 bg-bg/50 border border-border rounded-xl text-foreground font-semibold">
-                                                    {user.email}
+                                                    {user?.email}
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
                                             <label htmlFor="smtpType" className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-2">
-                                                <Settings className="w-3 h-3 text-primary" /> Loại SMTP (Người gửi)
+                                                <Settings className="w-3 h-3 text-primary" /> Loại SMTP
                                             </label>
                                             <select
                                                 id="smtpType"
@@ -424,79 +561,15 @@ const UserEmailModal: React.FC<UserEmailModalProps> = ({ isOpen, onClose, user }
                                         </div>
                                     </form>
                                 </div>
-                            </>
-                        ) : selectedLog ? (
-                            <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-300">
-                                <div className="p-4 border-b border-border flex justify-between items-center bg-bg/10">
-                                    <div className="flex items-center gap-2 font-bold text-foreground">
-                                        <Mail className="w-4 h-4 text-primary" />
-                                        <span>Chi tiết Email</span>
-                                    </div>
-                                    <button onClick={() => setSelectedLog(null)} className="p-1.5 lg:hidden hover:bg-border rounded-full text-foreground-muted">
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-                                <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-muted/30 p-5 rounded-2xl border border-border">
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><Settings className="w-3 h-3 text-primary" />Người gửi (SMTP)</p>
-                                            <p className="text-sm font-bold text-foreground">{selectedLog?.smtpType}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><User className="w-3 h-3 text-primary" />Người nhận</p>
-                                            <p className="text-sm font-bold text-foreground truncate">{selectedLog?.recipientFullName || "Khách"} ({selectedLog?.toEmail})</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><Calendar className="w-3 h-3 text-primary" />Thời gian gửi</p>
-                                            <p className="text-sm font-bold text-foreground">{selectedLog?.createdAt ? formatDateTime(selectedLog.createdAt) : ''}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5"><Info className="w-3 h-3 text-primary" />Trạng thái</p>
-                                            <div className="flex items-center gap-2">
-                                                <StatusBadge
-                                                    status={selectedLog?.status === EmailLogStatus.SUCCESS || selectedLog?.status === 'SENT'}
-                                                    activeText={selectedLog?.status || "Success"}
-                                                    inactiveText={selectedLog?.status || "Failed"}
-                                                    size="md"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider pl-1">Tiêu đề</p>
-                                        <div className="p-4 bg-bg rounded-xl border border-border font-extrabold text-foreground shadow-sm">
-                                            {selectedLog?.subject}
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2 flex-1 flex flex-col">
-                                        <p className="text-[10px] font-bold text-foreground-muted uppercase tracking-wider pl-1">Nội dung</p>
-                                        <div
-                                            className="flex-1 p-5 bg-bg rounded-xl border border-border text-sm text-foreground leading-relaxed shadow-sm min-h-[250px] overflow-auto prose-content"
-                                            dangerouslySetInnerHTML={{ __html: selectedLog?.body || '' }}
-                                        />
-                                    </div>
-
-                                    {selectedLog?.errorMessage && (
-                                        <div className="space-y-2">
-                                            <p className="text-[10px] font-bold text-red-500 uppercase tracking-wider flex items-center gap-1.5 pl-1">
-                                                <AlertCircle className="w-3 h-3" /> Lỗi gửi Email
-                                            </p>
-                                            <div className="p-4 bg-red-500/5 rounded-xl border border-red-500/20 text-sm text-red-500 font-medium">
-                                                {selectedLog?.errorMessage}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
                             </div>
+                        ) : selectedLog ? (
+                            <DetailView log={selectedLog} onBack={() => setSelectedLog(null)} />
                         ) : null}
                     </div>
                 </div>
             </div>
         </div>
     );
-    //#endregion
 };
 
-export default UserEmailModal;
+export default memo(UserEmailModal);

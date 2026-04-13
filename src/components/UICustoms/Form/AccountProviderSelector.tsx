@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
+import React, { useState, useCallback, lazy, Suspense } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { BankRes, ProviderRes } from "@/models/entity.model";
 import { ProviderCode } from '@/models/enum';
 import { bankApi } from '@/services/bank-api.service';
 import BrandLogo from '@/components/UICustoms/BrandLogo';
+import SearchableDropdown from '@/components/UICustoms/Form/SearchableDropdown';
 
 const BankSelectionModal = lazy(() => import("@/components/UICustoms/Modal/BankSelectionModal"));
 
+//#region Types
 interface AccountProviderSelectorProps {
     providerId: string;
     providerCode?: string;
@@ -16,7 +18,7 @@ interface AccountProviderSelectorProps {
     bankShortName?: string | null;
     bankLogoUrl?: string | null;
     allProviders: ProviderRes[];
-    onFetchProviders: () => void;
+    onFetchProviders: () => Promise<void> | void;
     onProviderChange: (providerId: string) => void;
     onBankSelect: (napasBin: string, code: string, shortName: string, bankName: string, logoUrl: string | null, isActive: boolean) => void;
     isBankInactive?: boolean | null;
@@ -25,6 +27,43 @@ interface AccountProviderSelectorProps {
     layout?: 'vertical' | 'horizontal';
     bankSelectionMode?: 'modal' | 'dropdown';
 }
+//#endregion
+
+//#region Provider Dropdown Option
+interface ProviderOption {
+    id: string;
+    name: string;
+    code: string;
+    isActive: boolean;
+    disabled?: boolean;
+}
+
+const providerFilterFn = (option: ProviderOption, query: string): boolean => {
+    return option.name.toLowerCase().includes(query);
+};
+//#endregion
+
+//#region Bank Dropdown Option
+interface BankOption {
+    id: string;
+    napasBin: string;
+    bankCode: string;
+    bankName: string;
+    shortName: string;
+    logoUrl?: string;
+    isActive: boolean;
+    disabled?: boolean;
+}
+
+const bankFilterFn = (option: BankOption, query: string): boolean => {
+    return (
+        option.bankCode.toLowerCase().includes(query) ||
+        option.napasBin?.toLowerCase().includes(query) ||
+        option.shortName?.toLowerCase().includes(query) ||
+        false
+    );
+};
+//#endregion
 
 const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
     providerId,
@@ -52,36 +91,75 @@ const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
     const selectedProvider = allProviders.find(p => p.id === providerId);
     const isBank = selectedProvider ? selectedProvider.code === ProviderCode.BANK : providerCode === ProviderCode.BANK;
 
+    //#region Provider dropdown helpers
+    const providerOptions: ProviderOption[] = allProviders.map(p => ({
+        id: p.id,
+        name: p.name,
+        code: p.code,
+        isActive: p.isActive,
+        disabled: !p.isActive && !allowInactiveSelection,
+    }));
+
+    // When editing an existing record and providers haven't been fetched yet,
+    // show a placeholder option so the trigger isn't blank.
+    const providerOptionsWithFallback: ProviderOption[] =
+        providerOptions.length === 0 && providerId !== ""
+            ? [{
+                id: providerId,
+                name: providerName || (providerCode === ProviderCode.BANK ? ProviderCode.BANK : ""),
+                code: providerCode || "",
+                isActive: true,
+            }]
+            : providerOptions;
+
+    const handleProviderSelect = useCallback((option: ProviderOption) => {
+        onProviderChange(option.id);
+    }, [onProviderChange]);
+
+    const renderProviderValue = useCallback(
+        (option: ProviderOption | undefined) => {
+            if (!option) return null;
+            return <span className="truncate">{option.name}</span>;
+        },
+        []
+    );
+
+    const renderProviderOption = useCallback(
+        (option: ProviderOption) => (
+            <>
+                <span className="text-sm text-foreground font-medium truncate">
+                    {option.name}
+                </span>
+                {!option.isActive && (
+                    <span className="ml-auto text-xs text-danger font-bold shrink-0">
+                        Bảo trì
+                    </span>
+                )}
+            </>
+        ),
+        []
+    );
+    //#endregion
+
     return (
         <div className={containerClass}>
-            <div className="flex flex-col gap-sm">
-                <label className="text-sm font-medium text-foreground-secondary">Loại tài khoản</label>
-                <div className="relative">
-                    <select
-                        className={`input cursor-pointer appearance-none pr-10 h-11 ${selectedProvider && !selectedProvider.isActive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
-                        value={providerId}
-                        onChange={(e) => onProviderChange(e.target.value)}
-                        onMouseDown={() => onFetchProviders()}
-                        onFocus={() => onFetchProviders()}
-                    >
-                        <option value="" disabled hidden>Loại tài khoản</option>
-                        {allProviders.length === 0 && providerId !== "" && (
-                            <option value={providerId}>{providerName || (isBank ? ProviderCode.BANK : "")}</option>
-                        )}
-                        {allProviders.map(p => (
-                            <option key={p.id} value={p.id} disabled={!p.isActive && !allowInactiveSelection}>
-                                {p.name}
-                            </option>
-                        ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted pointer-events-none" />
-                </div>
-                {isProviderInactive && (
-                    <p className="text-xs text-danger font-medium">
-                        Phương thức thanh toán đang bảo trì
-                    </p>
-                )}
-            </div>
+            {/* Provider selector dropdown */}
+            <SearchableDropdown<ProviderOption>
+                id="provider-selector"
+                label="Loại tài khoản"
+                placeholder="Loại tài khoản"
+                value={providerId}
+                options={providerOptionsWithFallback}
+                onFetch={onFetchProviders}
+                onSelect={handleProviderSelect}
+                renderValue={renderProviderValue}
+                renderOption={renderProviderOption}
+                filterFn={providerFilterFn}
+                searchable={false}
+                hasError={!!(selectedProvider && !selectedProvider.isActive)}
+                errorMessage={isProviderInactive ? "Phương thức thanh toán đang bảo trì" : undefined}
+                emptyText="Không tìm thấy loại tài khoản"
+            />
 
             {isBank && bankSelectionMode === 'modal' && (
                 <BankFieldModal
@@ -120,6 +198,7 @@ const AccountProviderSelector: React.FC<AccountProviderSelectorProps> = ({
     );
 };
 
+//#region BankFieldModal (unchanged)
 interface BankFieldModalProps {
     napasBin: string;
     bankCode: string;
@@ -193,7 +272,9 @@ const BankFieldModal: React.FC<BankFieldModalProps> = ({
         </div>
     );
 };
+//#endregion
 
+//#region BankFieldDropdown — now powered by SearchableDropdown
 interface BankFieldDropdownProps {
     napasBin: string;
     bankCode: string;
@@ -211,131 +292,111 @@ const BankFieldDropdown: React.FC<BankFieldDropdownProps> = ({
     logoUrl,
     onBankSelect,
 }) => {
-    const [isOpen, setIsOpen] = useState(false);
     const [banks, setBanks] = useState<BankRes[]>([]);
-    const [hasFetched, setHasFetched] = useState(false);
-    const [search, setSearch] = useState("");
-    const containerRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
 
     const fetchBanks = useCallback(async () => {
-        if (hasFetched) return;
         try {
             const res = await bankApi.getAll({ pageNumber: 1, pageSize: 200, sortField: null, sortDirection: null, isActive: true, searchValue: null, status: null });
             if (res?.list) {
                 setBanks(res.list);
-                setHasFetched(true);
             }
         } catch {
-            setHasFetched(true);
+            // silently ignore — hasFetched is tracked by SearchableDropdown
         }
-    }, [hasFetched]);
-
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
     }, []);
 
-    const handleOpen = () => {
-        fetchBanks();
-        setIsOpen(true);
-        setSearch("");
-        setTimeout(() => inputRef.current?.focus(), 50);
-    };
+    const bankOptions: BankOption[] = banks.map(b => ({
+        id: b.id,
+        napasBin: b.napasBin,
+        bankCode: b.bankCode,
+        bankName: b.bankName,
+        shortName: b.shortName,
+        logoUrl: b.logoUrl,
+        isActive: b.isActive,
+    }));
 
-    const filtered = banks.filter(b => {
-        if (!search) return true;
-        const q = search.toLowerCase();
-        return (
-            b.bankCode.toLowerCase().includes(q) ||
-            (b.napasBin?.toLowerCase().includes(q))
-        );
-    });
+    // Build a synthetic selected value id from the current bankCode
+    // because the parent tracks bankCode, not bank id.
+    const selectedBankId = banks.find(b => b.bankCode === bankCode)?.id ?? "";
 
-    const handleInputClick = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
+    const handleBankSelect = useCallback((option: BankOption) => {
+        onBankSelect(option.napasBin, option.bankCode, option.shortName, option.bankName, option.logoUrl ?? null, option.isActive);
+    }, [onBankSelect]);
+
+    const renderBankValue = useCallback(
+        (option: BankOption | undefined) => {
+            // When the bank hasn't been fetched yet but we have napasBin from the parent
+            if (!option && napasBin) {
+                return (
+                    <div className="flex items-center gap-md">
+                        <BrandLogo
+                            logoUrl={logoUrl}
+                            name={bankShortName}
+                            code={bankCode}
+                            size="sm"
+                        />
+                        <span className="truncate">
+                            ({napasBin}) {bankShortName}
+                        </span>
+                    </div>
+                );
+            }
+            if (!option) return null;
+            return (
+                <div className="flex items-center gap-md">
+                    <BrandLogo
+                        logoUrl={option.logoUrl ?? null}
+                        name={option.shortName}
+                        code={option.bankCode}
+                        size="sm"
+                    />
+                    <span className="truncate">
+                        ({option.napasBin}) {option.shortName}
+                    </span>
+                </div>
+            );
+        },
+        [napasBin, bankShortName, bankCode, logoUrl]
+    );
+
+    const renderBankOption = useCallback(
+        (option: BankOption, _isSelected: boolean) => (
+            <>
+                <span className="text-sm font-primary text-foreground-secondary shrink-0">
+                    ({option.napasBin})
+                </span>
+                <span className="text-sm text-foreground font-medium">
+                    {option.shortName}
+                </span>
+                {!option.isActive && (
+                    <span className="ml-auto text-xs text-danger font-bold shrink-0">Bảo trì</span>
+                )}
+            </>
+        ),
+        []
+    );
 
     return (
-        <div className="flex flex-col gap-sm relative" ref={containerRef}>
-            <label className="text-sm font-medium text-foreground-secondary">Ngân hàng</label>
-            <div
-                className={`input cursor-pointer flex items-center justify-between h-11 pr-3 ${isBankInactive ? 'border-danger focus:border-danger focus:ring-danger' : ''}`}
-                onClick={handleOpen}
-            >
-                <span className="truncate w-full text-left text-sm">
-                    {
-                        napasBin ? (
-                            <div className="flex items-center gap-md">
-                                <BrandLogo
-                                    logoUrl={logoUrl}
-                                    name={bankShortName}
-                                    code={bankCode}
-                                    size="sm"
-                                />
-                                <span className="truncate">
-                                    ({napasBin}) {bankShortName}
-                                </span>
-                            </div>
-                        )
-                            : <span className="text-foreground-muted">Chọn ngân hàng</span>
-                    }
-                </span>
-                <ChevronDown className={`w-4 h-4 text-foreground-muted flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-            </div>
-            {isBankInactive && (
-                <p className="text-xs text-danger font-medium">Ngân hàng đang bảo trì</p>
-            )}
-
-            {isOpen && (
-                <div className="absolute top-full left-0 right-0 mt-xs z-dropdown bg-surface border border-border rounded-lg shadow-lg overflow-hidden animate-in fade-in zoom-in duration-200">
-                    <div className="p-sm border-b border-border">
-                        <div className="relative">
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                className="input pl-xl text-sm"
-                                placeholder="Tìm theo BIN hoặc mã NH..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                onClick={handleInputClick}
-                            />
-                        </div>
-                    </div>
-                    <ul className="max-h-[240px] overflow-y-auto">
-                        {filtered.length === 0 && (
-                            <li className="px-md py-sm text-sm text-foreground-muted text-center">
-                                Không tìm thấy ngân hàng
-                            </li>
-                        )}
-                        {filtered.map(b => (
-                            <li
-                                key={b.id}
-                                className={`flex items-center gap-sm px-md py-sm cursor-pointer transition-colors hover:bg-surface-muted ${b.bankCode === bankCode ? 'bg-primary/5 font-semibold' : ''}`}
-                                onClick={() => {
-                                    onBankSelect(b.napasBin, b.bankCode, b.shortName, b.bankName, b.logoUrl ?? null, b.isActive);
-                                    setIsOpen(false);
-                                }}
-                            >
-                                <span className="text-sm font-primary text-foreground-secondary shrink-0">
-                                    ({b.napasBin})
-                                </span>
-                                <span className="text-sm text-foreground font-medium">
-                                    {b.shortName}
-                                </span>
-                                {!b.isActive && (
-                                    <span className="ml-auto text-xs text-danger font-bold shrink-0">Bảo trì</span>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-        </div>
+        <SearchableDropdown<BankOption>
+            id="bank-selector"
+            label="Ngân hàng"
+            placeholder="Chọn ngân hàng"
+            value={napasBin ? (selectedBankId || napasBin) : ""}
+            options={bankOptions}
+            onFetch={fetchBanks}
+            onSelect={handleBankSelect}
+            renderValue={renderBankValue}
+            renderOption={renderBankOption}
+            filterFn={bankFilterFn}
+            searchPlaceholder="Tìm theo BIN hoặc mã NH..."
+            searchable={true}
+            emptyText="Không tìm thấy ngân hàng"
+            hasError={isBankInactive}
+            errorMessage={isBankInactive ? "Ngân hàng đang bảo trì" : undefined}
+        />
     );
 };
+//#endregion
+
 
 export default AccountProviderSelector;

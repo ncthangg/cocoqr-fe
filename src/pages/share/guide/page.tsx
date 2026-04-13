@@ -87,6 +87,7 @@ const StepImage: React.FC<{ label: string; imageUrl?: string }> = React.memo(({ 
             <img
                 src={imageUrl}
                 alt={label}
+                loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
         ) : (
