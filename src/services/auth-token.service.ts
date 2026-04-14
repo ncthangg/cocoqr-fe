@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosHeaders } from "axios";
 import type { AxiosRequestConfig } from "axios";
 import { getCookie, getFromLocalStorage, removeCookie, setCookie } from "../utils/storage";
-import { clearCredentials } from "../store/slices/auth.slice";
+import { clearCredentials, updateAccessToken } from "../store/slices/auth.slice";
 import { store } from "../store";
 
 /**
@@ -80,7 +80,8 @@ const refreshToken = async (): Promise<string> => {
         const { accessToken, refreshToken: newRefreshToken } = response.data.data;
 
         if (accessToken) {
-            setCookie(ACCESS_TOKEN_KEY, accessToken, 60);
+            // setCookie(ACCESS_TOKEN_KEY, accessToken, 60);
+            store.dispatch(updateAccessToken(accessToken));
             setCookie(REFRESH_TOKEN_KEY, newRefreshToken, 60 * 24 * 7);
             return accessToken;
         }
@@ -104,7 +105,7 @@ const refreshToken = async (): Promise<string> => {
 
 /** Thực sự clear session (cookies + Redux) và dùng cho bước logout cuối cùng */
 export function finalizeSession() {
-    removeCookie(ACCESS_TOKEN_KEY);
+    // removeCookie(ACCESS_TOKEN_KEY);
     removeCookie(REFRESH_TOKEN_KEY);
     store.dispatch(clearCredentials());
 }

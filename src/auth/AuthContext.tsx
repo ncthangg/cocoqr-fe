@@ -1,19 +1,18 @@
 import React, { createContext, useContext } from "react";
-import type { UserRes, TokenRes, RoleRes } from "../models/entity.model";
+import type { UserRes, RoleRes } from "../models/entity.model";
 import { useAppDispatch, useAppSelector } from "../store/redux.hooks";
-import { clearCredentials } from "../store/slices/auth.slice";
+import { clearCredentials, closeRoleSelectionModal } from "../store/slices/auth.slice";
+import { authApi } from "../services/auth-api.service";
 import { removeCookie } from "../utils/storage";
 
 interface AuthContextType {
     user: UserRes | null;
-    token: TokenRes | null;
+    token: string | null;
     roles: RoleRes[] | null;
-    // login: (user: UserRes, tokens: TokenRes, roles: RoleRes[]) => void;
-    // logout: () => void;
     isAuthenticated: boolean;
     isLoading: boolean;
     isIntentionalLogout: boolean;
-    logout: () => void;
+    logout: (callback?: () => void) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,11 +29,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isLoading = false;
     const isIntentionalLogout = React.useRef(false);
 
-    const logout = () => {
+    const logout = async (callback?: () => void) => {
         isIntentionalLogout.current = true;
-        dispatch(clearCredentials());
-        removeCookie("accessToken");
-        removeCookie("refreshToken");
+        try {
+            await authApi.signOut();
+        } catch (e) {
+            // ignore
+        } finally {
+            dispatch(clearCredentials());
+            dispatch(closeRoleSelectionModal());
+            removeCookie("refreshToken");
+            if (callback) {
+                callback();
+            }
+        }
     };
 
     return (

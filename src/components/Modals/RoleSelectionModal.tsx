@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/redux.hooks";
-import { closeRoleSelectionModal, setCredentials } from "../../store/slices/auth.slice";
+import { setCredentials } from "../../store/slices/auth.slice";
 import { authApi } from "../../services/auth-api.service";
 import { toast } from "react-toastify";
 import { setCookie } from "../../utils/storage";
@@ -8,44 +8,56 @@ import { useNavigate } from "react-router-dom";
 import { RouteConstant } from "../../constants/route.constant";
 import { Shield, User, Loader2, LogOut } from "lucide-react";
 import Button from "@/components/UICustoms/Button";
+import { RoleConstant } from "@/constants/role.constant";
+import { useAuthContext } from "@/auth/AuthContext";
 
 const RoleSelectionModal: React.FC = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const { logout } = useAuthContext();
     const { isRoleSelectionModalOpen, tempAuthData } = useAppSelector((state) => state.auth);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
 
-    if (!isRoleSelectionModalOpen || !tempAuthData) return null;
+    const { roleRes } = tempAuthData || {};
 
-    const { userId, userRes, roleRes } = tempAuthData;
+    // Auto-select if only one role exists
+    useEffect(() => {
+        if (isRoleSelectionModalOpen && roleRes && roleRes.length === 1 && !selectedRoleId) {
+            setSelectedRoleId(roleRes[0].id);
+        }
+    }, [isRoleSelectionModalOpen, roleRes, selectedRoleId]);
+
+    if (!isRoleSelectionModalOpen || !tempAuthData || !roleRes) return null;
+
+    const { userRes } = tempAuthData;
 
     const handleContinue = async () => {
         if (!selectedRoleId) return;
         setIsLoading(true);
         try {
-            const res = await authApi.switchRole({ userId, roleId: selectedRoleId });
+            const res = await authApi.switchRole({ roleId: selectedRoleId });
 
-            // Set cookies
-            setCookie("accessToken", res.tokenRes.accessToken ?? "", 60);
+            // Set cookies (Chỉ set refreshToken vào cookie)
             setCookie("refreshToken", res.tokenRes.refreshToken ?? "", 60 * 24 * 7);
 
-            // Set credentials in Redux
+            // Set credentials in Redux (đồng thời close modal + clear tempAuthData)
             dispatch(setCredentials({
                 user: userRes,
                 token: res.tokenRes,
                 roles: [res.roleRes]
             }));
 
-            // Navigate
-            if (res.roleRes.name === "admin") {
-                navigate(RouteConstant.ADMIN);
-            } else {
-                navigate(RouteConstant.USER);
-            }
-
             toast.success(`Đăng nhập thành công với quyền ${res.roleRes.nameUpperCase}`);
-            dispatch(closeRoleSelectionModal());
+
+            // Navigate sau cùng để đảm bảo state đã ổn định
+            if (res.roleRes.name === RoleConstant.ADMIN) {
+                navigate(RouteConstant.ADMIN);
+            } else if (res.roleRes.name === RoleConstant.USER) {
+                navigate(RouteConstant.USER);
+            } else {
+                await handleLogout();
+            }
         } catch (error: any) {
             toast.error(error?.response?.data?.message || "Lỗi khi chọn quyền truy cập.");
         } finally {
@@ -53,9 +65,9 @@ const RoleSelectionModal: React.FC = () => {
         }
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         if (isLoading) return;
-        dispatch(closeRoleSelectionModal());
+        await logout(() => navigate("/"));
     };
 
     return (

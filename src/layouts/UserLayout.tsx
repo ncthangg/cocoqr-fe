@@ -4,7 +4,6 @@ import { RouteConstant } from "@/constants/route.constant";
 import { useAuthContext } from "@/auth/AuthContext";
 import { ChevronDown, LogOut, UserIcon } from "lucide-react";
 import ThemeToggle from "@/components/UICustoms/ThemeToggle";
-import { authApi } from "@/services/auth-api.service";
 import Logo from "@/components/UICustoms/Logo";
 
 const ProfileModal = lazy(() => import("@/components/UICustoms/Modal/ProfileModal"));
@@ -51,13 +50,7 @@ const UserLayout: React.FC = () => {
 
     const handleLogout = async () => {
         setProfileMenuOpen(false);
-        try {
-            await authApi.signOut();
-        } catch (e) {
-            // ignore
-        }
-        logout();
-        navigate("/");
+        await logout(() => navigate("/"));
     };
 
     return (

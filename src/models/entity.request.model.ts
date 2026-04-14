@@ -11,7 +11,6 @@ export interface PostPutUserRoleReq {
 }
 
 export interface SwitchRoleReq {
-    userId: string;
     roleId: string;
 }
 

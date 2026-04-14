@@ -7,6 +7,7 @@ export const store = configureStore({
         auth: authReducer,
         heroForm: heroFormReducer,
     },
+    devTools: import.meta.env.DEV
 });
 
 export type RootState = ReturnType<typeof store.getState>;
