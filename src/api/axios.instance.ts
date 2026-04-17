@@ -3,6 +3,7 @@ import EnvConfig from "../config/env.config";
 import { getCookie } from "../utils/storage";
 import { tokenRefresher, clearAuthAndRedirect, setAuthorizationHeader } from "../services/auth-token.service";
 import { toast } from "react-toastify";
+import { store } from "../store";
 
 // Helper để toast lỗi dựa trên HTTP Status Codes
 export const handleApiError = (error: any) => {
@@ -67,7 +68,8 @@ const axiosPrivate = axios.create({
 
 axiosPrivate.interceptors.request.use(
     (config) => {
-        const token = getCookie("accessToken");
+        const state = store.getState().auth;
+        const token = state.token || state.tempAuthData?.tokenRes?.accessToken;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

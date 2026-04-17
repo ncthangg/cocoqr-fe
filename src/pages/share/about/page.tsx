@@ -50,6 +50,7 @@ const HeroSection: React.FC<HeroSectionProps> = React.memo(({ hasError, onError 
                         <img
                             src="https://res.cloudinary.com/dyy8nd8sd/image/upload/v1775891960/avt_jyxfia.webp"
                             alt="Nguyễn Chiến Thắng"
+                            loading="lazy"
                             onError={onError}
                             className="w-full h-full object-cover"
                         />

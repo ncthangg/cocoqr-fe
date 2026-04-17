@@ -269,7 +269,7 @@ const ContactMessagePage: React.FC = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 flex-1">
+            <div className="bg-bg border border-border rounded-lg shadow-lg flex flex-col min-h-0 border-b-0">
                 {/* Filters */}
                 <div className="p-4 border-b border-border">
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">

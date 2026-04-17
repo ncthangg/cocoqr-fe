@@ -1,18 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import type { SignInGoogleRes } from "../models/entity.model";
 import { buildGoogleAuthUrl, getBackendOrigin, GOOGLE_AUTH_TIMEOUT_MS, openGooglePopup, parseGoogleAuthPayload, registerGoogleAuthListener } from "../utils/googleUtils";
 import type { ApiSuccessResponse } from "../models/system.model";
 import { ApiConstant } from "../constants/api.constant";
 import { useAppDispatch } from "../store/redux.hooks";
-import { openRoleSelectionModal, setCredentials } from "../store/slices/auth.slice";
-import { setCookie } from "../utils/storage";
-import { RouteConstant } from "../constants/route.constant";
+import { openRoleSelectionModal } from "../store/slices/auth.slice";
 
 export const useGoogleAuth = (onSuccessCallback?: () => void) => {
     const dispatch = useAppDispatch();
-    const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const popupRef = useRef<Window | null>(null);
     const timeoutRef = useRef<number | null>(null);
@@ -65,28 +61,24 @@ export const useGoogleAuth = (onSuccessCallback?: () => void) => {
             }
 
             if (parsedPayload.code === "SUCCESS" && parsedPayload.data) {
-                const { userRes: user, tokenRes: token, roleRes: roles } = parsedPayload.data;
+                const { tokenRes: token, roleRes: roles } = parsedPayload.data;
 
-                if (roles.length > 1) {
-                    dispatch(openRoleSelectionModal(parsedPayload.data));
-                    cleanupSideEffects();
-                } else if (roles.length === 1 && token) {
-                    setCookie("accessToken", token.accessToken ?? "", 60);
-                    setCookie("refreshToken", token.refreshToken ?? "", 60 * 24 * 7);
+                if (roles.length >= 1 && token?.accessToken) {
+                    // Chỉ giữ lại accessToken trong tokenRes trước khi đưa vào Redux
+                    const cleanedData: SignInGoogleRes = {
+                        ...parsedPayload.data,
+                        tokenRes: {
+                            accessToken: token.accessToken,
+                            refreshToken: undefined // Đảm bảo không có refreshToken trong Redux lúc này
+                        }
+                    };
 
-                    dispatch(setCredentials({ user, token, roles }));
-
-                    if (roles[0].name === "admin") {
-                        navigate(RouteConstant.ADMIN);
-                    } else {
-                        navigate(RouteConstant.USER);
-                    }
-
-                    toast.success(`Chào mừng ${user.fullName}!`);
-                    cleanupSideEffects();
+                    // Mở modal chọn role (kể cả khi chỉ có 1 role để call switchRole)
+                    dispatch(openRoleSelectionModal(cleanedData));
                     if (onSuccessCallback) {
                         onSuccessCallback();
                     }
+                    cleanupSideEffects();
                 } else {
                     toast.error("Không có thông tin xác thực hoặc không có quyền truy cập.");
                     cleanupSideEffects();

@@ -114,6 +114,7 @@ const AccountsPage: React.FC = () => {
     //#region Render
     return (
         <div className="flex flex-col gap-6 flex-1 min-h-0">
+            {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 px-1">
                 <div className="space-y-1">
                     <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Quản lý Tài khoản</h1>
@@ -136,7 +137,8 @@ const AccountsPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
+            {/* Table */}
+            <div className="bg-bg border border-border rounded-lg shadow-lg flex flex-col min-h-0 border-b-0">
                 <div className="shrink-0 border-b border-border">
                     <TableToolbar
                         value={searchValue}
@@ -284,19 +286,17 @@ const AccountsPage: React.FC = () => {
                     />
                 </div>
 
-                <div className="shrink-0">
-                    <TablePagination
-                        pageNumber={paging.pageNumber}
-                        pageSize={paging.pageSize}
-                        totalItems={paging.totalItems}
-                        totalPages={paging.totalPages}
-                        loading={loading}
-                        onPageChange={handlePageChange}
-                        onPageSizeChange={(newSize) => {
-                            setPaging(prev => ({ ...prev, pageSize: newSize, pageNumber: 1 }));
-                        }}
-                    />
-                </div>
+                <TablePagination
+                    pageNumber={paging.pageNumber}
+                    pageSize={paging.pageSize}
+                    totalItems={paging.totalItems}
+                    totalPages={paging.totalPages}
+                    loading={loading}
+                    onPageChange={handlePageChange}
+                    onPageSizeChange={(newSize) => {
+                        setPaging(prev => ({ ...prev, pageSize: newSize, pageNumber: 1 }));
+                    }}
+                />
             </div>
 
             {isAccountModalOpen && (

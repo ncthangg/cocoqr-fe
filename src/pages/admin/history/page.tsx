@@ -114,7 +114,7 @@ const AdminHistoryPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-bg border border-border rounded-lg shadow-sm flex flex-col min-h-0 border-b-0">
+            <div className="bg-bg border border-border rounded-lg shadow-lg flex flex-col min-h-0 border-b-0">
                 <div className="shrink-0 border-b border-border">
                     <TableToolbar
                         value={searchValue}

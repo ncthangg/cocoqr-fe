@@ -70,6 +70,7 @@ export const ContactMessageStatus = {
 export type ContactMessageStatus = keyof typeof ContactMessageStatus;
 ///=====================================================================
 export const EmailLogStatus = {
+    PENDING: "PENDING",
     SUCCESS: "SUCCESS",
     FAIL: "FAIL"
 } as const;

@@ -4,7 +4,7 @@ import type { RoleRes, SignInGoogleRes, TokenRes, UserRes } from "@/models/entit
 
 export interface AuthState {
     user: UserRes | null;
-    token: TokenRes | null;
+    token: string | null; // Chỉ lưu accessToken
     roles: RoleRes[] | null;
     isAuthModalOpen: boolean;
     authModalTitle: string | null;
@@ -17,7 +17,7 @@ const AUTH_STORAGE_KEY = "ss_auth_state";
 
 interface PersistedAuthState {
     user?: UserRes | null;
-    token?: TokenRes | null;
+    token?: string | null;
     roles?: RoleRes[] | null;
     tempAuthData?: SignInGoogleRes | null;
     isRoleSelectionModalOpen?: boolean;
@@ -28,7 +28,7 @@ const loadPersistedAuthState = (): PersistedAuthState => {
     if (stored && typeof stored === "object") {
         return {
             user: stored.user ?? null,
-            token: stored.token ?? null,
+            token: typeof stored.token === 'string' ? stored.token : null,
             roles: stored.roles ?? null,
             tempAuthData: stored.tempAuthData ?? null,
             isRoleSelectionModalOpen: stored.isRoleSelectionModalOpen ?? false,
@@ -47,7 +47,7 @@ const persistAuthState = (state: Pick<AuthState, "user" | "token" | "roles" | "t
 
 const initialState: AuthState = {
     user: null as UserRes | null,
-    token: null as TokenRes | null,
+    token: null as string | null,
     roles: null as RoleRes[] | null,
     isAuthModalOpen: false,
     authModalTitle: null as string | null,
@@ -82,10 +82,13 @@ const authSlice = createSlice({
         },
         setCredentials(state, action: PayloadAction<{ user: UserRes; token: TokenRes; roles: RoleRes[] }>) {
             state.user = action.payload.user;
-            state.token = action.payload.token;
+            state.token = action.payload.token.accessToken ?? null;
             state.roles = action.payload.roles;
             state.isAuthModalOpen = false;
             state.isUserSynced = true;
+            // Đồng thời clear tempAuthData để tránh re-render thừa
+            state.isRoleSelectionModalOpen = false;
+            state.tempAuthData = null;
             persistAuthState(state);
         },
         clearCredentials(state) {
@@ -108,6 +111,10 @@ const authSlice = createSlice({
         syncUserFailed(state) {
             state.isUserSynced = true;
         },
+        updateAccessToken(state, action: PayloadAction<string>) {
+            state.token = action.payload;
+            persistAuthState(state);
+        },
     },
 });
 
@@ -124,6 +131,7 @@ export const {
     loadUserInfo,
     startUserSync,
     syncUserFailed,
+    updateAccessToken,
 } = authSlice.actions;
 
 export default authSlice.reducer;

@@ -75,11 +75,8 @@ export function ContactSection() {
                 subject: "Liên hệ từ trang chủ",
                 content: content
             });
-            toast.success("Gửi liên hệ thành công!");
             setFormData({ fullName: "", email: "" });
             setContent("");
-        } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Gửi liên hệ không thành công.");
         } finally {
             setLoading(false);
         }

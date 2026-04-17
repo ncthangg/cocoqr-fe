@@ -7,7 +7,7 @@ import { DataTable, type Column } from "@/components/UICustoms/Table/data-table"
 import { TablePagination } from "@/components/UICustoms/Table/table-pagination";
 import { useDebounce } from "@/hooks/useDebounce";
 import { formatDateTime } from "@/utils/dateTimeUtils";
-import { Mail, Calendar, Settings, Eye, ArrowRightLeft } from "lucide-react";
+import { Mail, Calendar, Settings, Eye, ArrowRightLeft, Clock } from "lucide-react";
 import { StatCard } from "@/components/UICustoms/StatCard";
 import EmailDetailModal from "./components/EmailDetailModal";
 import ActionButton from "@/components/UICustoms/ActionButton";
@@ -22,6 +22,7 @@ import RefreshButton from "@/components/UICustoms/RefreshButton";
 const statusOptions = [
     { label: "Success", value: EmailLogStatus.SUCCESS },
     { label: "Failed", value: EmailLogStatus.FAIL },
+    { label: "Pending", value: EmailLogStatus.PENDING },
 ];
 
 const directionOptions = [
@@ -205,16 +206,15 @@ const EmailLogPage: React.FC = () => {
                 cell: (log) => (
                     <div className="flex flex-col items-start gap-1">
                         <StatusBadge
-                            status={log.status === EmailLogStatus.SUCCESS || log.status === "SENT"}
-                            activeText={log.status || "Sent"}
-                            inactiveText={log.status || "Failed"}
-                            size="sm"
+                            status={log.status}
+                            size="lg"
+                            icon={log.status === EmailLogStatus.PENDING ? <Clock className="w-3 h-3" /> : undefined}
                         />
-                        {log.errorMessage && (
+                        {/* {log.errorMessage && (
                             <span className="text-xs text-danger font-medium line-clamp-1 max-w-[120px]" title={log.errorMessage}>
                                 {log.errorMessage}
                             </span>
-                        )}
+                        )} */}
                     </div>
                 ),
             },
