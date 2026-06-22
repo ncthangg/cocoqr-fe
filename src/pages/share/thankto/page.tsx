@@ -1,7 +1,7 @@
 import React from "react";
 import { Header } from "../../public/components/header";
 import { Footer } from "../../public/components/footer";
-import { Sparkles, Bot, Github, MousePointer2, Heart, Code2 } from "lucide-react";
+import { Sparkles, Bot, GitBranch, MousePointer2, Heart, Code2 } from "lucide-react";
 
 //#region Types
 interface AIContributor {
@@ -25,7 +25,7 @@ const CONTRIBUTORS: AIContributor[] = [
     {
         name: "GitHub Copilot",
         description: "Người cộng sự đắc lực trong việc xây dựng hệ thống lõi Backend, xử lý logic nghiệp vụ và quản lý dữ liệu hiệu quả.",
-        icon: Github,
+        icon: GitBranch,
         color: "text-zinc-400",
         tag: "Backend Engineering"
     },
