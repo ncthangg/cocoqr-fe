@@ -1,6 +1,5 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { EmailLogStatus } from "@/models/enum";
 
 type StatusBadgeProps = {
     status: boolean | string | undefined | null;
@@ -37,13 +36,13 @@ export function StatusBadge({
         // Case 2: String/Enum
         if (typeof status === 'string') {
             const upStatus = status.toUpperCase();
-            if (upStatus === EmailLogStatus.SUCCESS || upStatus === 'SENT') {
+            if (upStatus === 'SUCCESS' || upStatus === 'SENT') {
                 return "bg-success/10 text-success border border-success/20";
             }
-            if (upStatus === EmailLogStatus.PENDING) {
+            if (upStatus === 'PENDING') {
                 return "bg-amber-500/10 text-amber-500 border-amber-500/20";
             }
-            if (upStatus === EmailLogStatus.FAIL || upStatus === 'FAILED') {
+            if (upStatus === 'FAIL' || upStatus === 'FAILED') {
                 return "bg-danger/10 text-danger border border-danger/20";
             }
         }
@@ -58,12 +57,12 @@ export function StatusBadge({
         }
         if (typeof status === 'string') {
             switch (status.toUpperCase()) {
-                case EmailLogStatus.SUCCESS:
+                case 'SUCCESS':
                 case 'SENT':
                     return activeText === "Active" ? "Thành công" : activeText;
-                case EmailLogStatus.PENDING:
+                case 'PENDING':
                     return inactiveText === "Inactive" ? "Đang chờ" : inactiveText;
-                case EmailLogStatus.FAIL:
+                case 'FAIL':
                 case 'FAILED':
                     return inactiveText === "Inactive" ? "Thất bại" : inactiveText;
                 default:

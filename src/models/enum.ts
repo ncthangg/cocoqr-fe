@@ -69,21 +69,6 @@ export const ContactMessageStatus = {
 
 export type ContactMessageStatus = keyof typeof ContactMessageStatus;
 ///=====================================================================
-export const EmailLogStatus = {
-    PENDING: "PENDING",
-    SUCCESS: "SUCCESS",
-    FAIL: "FAIL"
-} as const;
-
-export type EmailLogStatus = keyof typeof EmailLogStatus;
-///=====================================================================
-export const EmailDirection = {
-    INCOMING: "INCOMING",
-    OUTGOING: "OUTGOING"
-} as const;
-
-export type EmailDirection = keyof typeof EmailDirection;
-///=====================================================================
 export const SmtpSettingType = {
     CONTACT: "CONTACT",
     SYSTEM: "SYSTEM",

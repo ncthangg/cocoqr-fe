@@ -98,7 +98,6 @@ export interface AdminPostContactReq {
     content: string;
     templateKey?: string | null;
     htmlBody?: string | null;
-    smtpType?: SmtpSettingType | null;
 }
 
 export interface PutSmtpSettingReq {
@@ -183,18 +182,6 @@ export interface GetEmailTemplatesReq extends BasePagingReq {
 
 export interface GetRolesReq extends BasePagingReq {
     searchValue?: string | null;
-}
-
-export interface GetEmailLogReq extends BasePagingReq {
-    type?: SmtpSettingType | null;
-    recipientUserId?: string | null;
-    toEmail?: string | null;
-    recipientFullName?: string | null;
-    subject?: string | null;
-    fromDate?: string | null;
-    toDate?: string | null;
-    direction?: string | null;
-    templateKey?: string | null;
 }
 
 export interface GetSmtpSettingReq extends BasePagingReq {

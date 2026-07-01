@@ -5,9 +5,7 @@ import Button from "@/components/UICustoms/Button";
 import { adminContactApi } from "@/services/admin-contact-api.service";
 import { emailTemplateApi } from "@/services/email-template-api.service";
 import type { ContactMessageRes, EmailTemplateRes } from "@/models/entity.model";
-import { SmtpSettingType } from "@/models/enum";
 import { toast } from "react-toastify";
-import { getSmtpTypeOptions } from "@/pages/admin/smtpSettings/utils";
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
@@ -22,7 +20,6 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
     //#region States & Refs
     const [subject, setSubject] = useState("");
     const [content, setContent] = useState("");
-    const [smtpType, setSmtpType] = useState<keyof typeof SmtpSettingType | "">("");
     const [submitting, setSubmitting] = useState(false);
     const [hasFetchedTemplates, setHasFetchedTemplates] = useState(false);
     const [templates, setTemplates] = useState<EmailTemplateRes[]>([]);
@@ -34,7 +31,6 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
         if (isOpen) {
             setSubject("");
             setContent("");
-            setSmtpType("");
             setSelectedTemplateKey("");
         }
     }, [isOpen]);
@@ -75,8 +71,8 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
                 email: message.email,
                 subject: subject.trim(),
                 content: content,
-                smtpType: smtpType ? (smtpType as SmtpSettingType) : null,
-                templateKey: selectedTemplateKey || null
+                templateKey: selectedTemplateKey || null,
+                htmlBody: content,
             });
             if (onSuccess) onSuccess();
             onClose();
@@ -88,8 +84,6 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
 
     //#region Render
     if (!message) return null;
-
-    const smtpOptions = getSmtpTypeOptions();
 
     return (
         <div
@@ -146,25 +140,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            {/* SMTP Type options */}
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex justify-between">
-                                    Loại Email
-                                    <span className="text-[10px] font-medium opacity-60 normal-case">(Tùy chọn)</span>
-                                </label>
-                                <select
-                                    value={smtpType}
-                                    onChange={e => setSmtpType(e.target.value as any)}
-                                    className="select w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary/50 appearance-none"
-                                >
-                                    <option value="">Mặc định (Default System SMTP)</option>
-                                    {smtpOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-
+                        <div className="grid grid-cols-1 gap-4">
                             {/* Template Dropdown */}
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-foreground-muted uppercase tracking-wider flex justify-between">

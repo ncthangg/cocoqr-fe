@@ -162,36 +162,6 @@ export interface QrStyleLibraryRes extends BaseRes {
     type: QRStyleType;
     isActive: boolean;
 }
-///===================================================
-export interface GetEmailLogRes {
-    id: string;
-    recipientUserId?: string | null;
-    recipientFullName?: string | null;
-    toEmail: string;
-    subject: string;
-    status: string;
-    errorMessage?: string | null;
-    smtpType: string;
-    templateKey?: string | null;
-    emailDirection?: string | null;
-    createdAt: string;
-}
-
-export interface GetEmailLogByIdRes {
-    id: string;
-    recipientUserId?: string | null;
-    recipientFullName?: string | null;
-    toEmail: string;
-    subject: string;
-    body: string;
-    status: string;
-    errorMessage?: string | null;
-    smtpType: string;
-    templateKey?: string | null;
-    emailDirection?: string | null;
-    createdAt: string;
-}
-///===================================================
 export interface SmtpSettingRes {
     id: string;
     type: SmtpSettingType;

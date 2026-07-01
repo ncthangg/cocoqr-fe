@@ -99,9 +99,6 @@ const AdminLayout: React.FC = () => {
                                 <Link to={RouteConstant.ADMIN_HISTORY} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     History
                                 </Link>
-                                <Link to={RouteConstant.ADMIN_EMAIL_LOG} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
-                                    Email Log
-                                </Link>
                             </nav>
                         </div>
 
