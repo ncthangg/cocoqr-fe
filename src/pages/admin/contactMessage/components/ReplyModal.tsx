@@ -108,7 +108,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ isOpen, onClose, message, onSuc
                         </div>
                         <div>
                             <h3 className="text-lg font-bold text-foreground">Trả lời liên hệ</h3>
-                            <p className="text-xs text-foreground-muted font-medium">Gửi email qua SMTP server</p>
+                            <p className="text-xs text-foreground-muted font-medium">Gửi email qua hệ thống</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-border rounded-full transition-colors text-foreground-muted hover:text-foreground">

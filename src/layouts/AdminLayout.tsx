@@ -86,9 +86,6 @@ const AdminLayout: React.FC = () => {
                                 <Link to={RouteConstant.ADMIN_QR_STYLE_LIB} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     QR Style
                                 </Link>
-                                <Link to={RouteConstant.ADMIN_SMTP_SETTINGS} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
-                                    SMTP
-                                </Link>
                                 <Link to={RouteConstant.ADMIN_EMAIL_TEMPLATES} className="text-sm font-bold text-foreground transition-colors hover:text-primary">
                                     Templates
                                 </Link>
